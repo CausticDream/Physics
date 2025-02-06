@@ -149,6 +149,15 @@ struct Mat33
 	Vec3 col1, col2, col3;
 };
 
+struct Quat
+{
+	Quat() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) {}
+	Quat(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+	void Set(float x_, float y_, float z_, float w_) { x = x_; y = y_; z = z_; w = w_; }
+
+	float x, y, z, w;
+};
+
 inline float Dot(const Vec2& a, const Vec2& b)
 {
 	return a.x * b.x + a.y * b.y;
