@@ -9,35 +9,35 @@
 * It is provided "as is" without express or implied warranty.
 */
 
-#ifndef BODY_H
-#define BODY_H
+#ifndef BODY3D_H
+#define BODY3D_H
 
 #include "MathUtils.h"
 
-struct Body
+struct Body3D
 {
-	Body();
-	void Set(const Vec2& w, float m);
+	Body3D();
+	void Set(const Vec3& w, float m);
 
-	void AddForce(const Vec2& f)
+	void AddForce(const Vec3& f)
 	{
 		force += f;
 	}
 
-	Vec2 position;
-	float rotation;
+	Vec3 position;
+	Quat rotation;
 
-	Vec2 velocity;
-	float angularVelocity;
+	Vec3 velocity;
+	Vec3 angularVelocity;
 
-	Vec2 force;
-	float torque;
+	Vec3 force;
+	Vec3 torque;
 
-	Vec2 width;
+	Vec3 width;
 
 	float friction;
 	float mass, invMass;
-	float I, invI;
+	float I[3], invI[3];
 };
 
 #endif
