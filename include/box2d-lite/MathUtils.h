@@ -4,8 +4,8 @@
 * Permission to use, copy, modify, distribute and sell this software
 * and its documentation for any purpose is hereby granted without fee,
 * provided that the above copyright notice appear in all copies.
-* Erin Catto makes no representations about the suitability 
-* of this software for any purpose.  
+* Erin Catto makes no representations about the suitability
+* of this software for any purpose.
 * It is provided "as is" without express or implied warranty.
 */
 
@@ -27,12 +27,12 @@ struct Vec2
 	void Set(float x_, float y_) { x = x_; y = y_; }
 
 	Vec2 operator -() { return Vec2(-x, -y); }
-	
+
 	void operator += (const Vec2& v)
 	{
 		x += v.x; y += v.y;
 	}
-	
+
 	void operator -= (const Vec2& v)
 	{
 		x -= v.x; y -= v.y;
@@ -49,6 +49,38 @@ struct Vec2
 	}
 
 	float x, y;
+};
+
+struct Vec3
+{
+	Vec3() {}
+	Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
+
+	void Set(float x_, float y_, float z_) { x = x_; y = y_; z = z_; }
+
+	Vec3 operator -() { return Vec3(-x, -y, -z); }
+
+	void operator += (const Vec3& v)
+	{
+		x += v.x; y += v.y; z += v.z;
+	}
+
+	void operator -= (const Vec3& v)
+	{
+		x -= v.x; y -= v.y; z -= v.z;
+	}
+
+	void operator *= (float a)
+	{
+		x *= a; y *= a; z *= a;
+	}
+
+	float Length() const
+	{
+		return sqrtf(x * x + y * y + z * z);
+	}
+
+	float x, y, z;
 };
 
 struct Mat22
@@ -81,6 +113,40 @@ struct Mat22
 	}
 
 	Vec2 col1, col2;
+};
+
+struct Mat33
+{
+	Mat33() {}
+	Mat33(const Vec3& col1, const Vec3& col2, const Vec3& col3) : col1(col1), col2(col2), col3(col3) {}
+
+	Mat33 Transpose() const
+	{
+		return Mat33(Vec3(col1.x, col2.x, col3.x), Vec3(col1.y, col2.y, col3.y), Vec3(col1.z, col2.z, col3.z));
+	}
+
+	Mat33 Invert() const
+	{
+		float a11 = col1.x, a12 = col2.x, a13 = col3.x;
+		float a21 = col1.y, a22 = col2.y, a23 = col3.y;
+		float a31 = col1.z, a32 = col2.z, a33 = col3.z;
+		float det = a11 * (a22 * a33 - a23 * a32) - a12 * (a21 * a33 - a23 * a31) + a13 * (a21 * a32 - a22 * a31);
+		assert(det != 0.0f);
+		det = 1.0f / det;
+		Mat33 B;
+		B.col1.x = det * (a22 * a33 - a23 * a32);
+		B.col2.x = det * (a13 * a32 - a12 * a33);
+		B.col3.x = det * (a12 * a23 - a13 * a22);
+		B.col1.y = det * (a23 * a31 - a21 * a33);
+		B.col2.y = det * (a11 * a33 - a13 * a31);
+		B.col3.y = det * (a13 * a21 - a11 * a23);
+		B.col1.z = det * (a21 * a32 - a22 * a31);
+		B.col2.z = det * (a12 * a31 - a11 * a32);
+		B.col3.z = det * (a11 * a22 - a12 * a21);
+		return B;
+	}
+
+	Vec3 col1, col2, col3;
 };
 
 inline float Dot(const Vec2& a, const Vec2& b)
