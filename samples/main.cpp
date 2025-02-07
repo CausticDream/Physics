@@ -24,6 +24,10 @@
 #include "box2d-lite/Body.h"
 #include "box2d-lite/Joint.h"
 
+#include "box2d-lite/World3D.h"
+#include "box2d-lite/Body3D.h"
+#include "box2d-lite/Joint3D.h"
+
 namespace
 {
 	GLFWwindow* mainWindow = NULL;
@@ -43,6 +47,7 @@ namespace
 	Joint joints[100];
 
 	Body* bomb = NULL;
+	Body3D* bomb3D = NULL;
 
 	int numBodies = 0;
 	int numJoints = 0;
@@ -110,6 +115,72 @@ static void DrawJoint(Joint* joint)
 	glVertex2f(p1.x, p1.y);
 	glVertex2f(x2.x, x2.y);
 	glVertex2f(p2.x, p2.y);
+	glEnd();
+}
+
+static void DrawBody3D(Body3D* body)
+{
+	Mat33 R = body->rotation.ToMatrix();
+	Vec3 x = body->position;
+	Vec3 h = 0.5f * body->width;
+
+	Vec3 v1 = x + R * Vec3(-h.x, -h.y, -h.z);
+	Vec3 v2 = x + R * Vec3(h.x, -h.y, -h.z);
+	Vec3 v3 = x + R * Vec3(h.x, h.y, -h.z);
+	Vec3 v4 = x + R * Vec3(-h.x, h.y, -h.z);
+	Vec3 v5 = x + R * Vec3(-h.x, -h.y, h.z);
+	Vec3 v6 = x + R * Vec3(h.x, -h.y, h.z);
+	Vec3 v7 = x + R * Vec3(h.x, h.y, h.z);
+	Vec3 v8 = x + R * Vec3(-h.x, h.y, h.z);
+
+	if (body == bomb3D)
+		glColor3f(0.4f, 0.9f, 0.4f);
+	else
+		glColor3f(0.8f, 0.8f, 0.9f);
+
+	glBegin(GL_LINES);
+
+	// bottom
+	glVertex3f(v1.x, v1.y, v1.z); glVertex3f(v2.x, v2.y, v2.z);
+	glVertex3f(v2.x, v2.y, v2.z); glVertex3f(v3.x, v3.y, v3.z);
+	glVertex3f(v3.x, v3.y, v3.z); glVertex3f(v4.x, v4.y, v4.z);
+	glVertex3f(v4.x, v4.y, v4.z); glVertex3f(v1.x, v1.y, v1.z);
+
+	// top
+	glVertex3f(v5.x, v5.y, v5.z); glVertex3f(v6.x, v6.y, v6.z);
+	glVertex3f(v6.x, v6.y, v6.z); glVertex3f(v7.x, v7.y, v7.z);
+	glVertex3f(v7.x, v7.y, v7.z); glVertex3f(v8.x, v8.y, v8.z);
+	glVertex3f(v8.x, v8.y, v8.z); glVertex3f(v5.x, v5.y, v5.z);
+
+	// close the cube
+	glVertex3f(v1.x, v1.y, v1.z); glVertex3f(v5.x, v5.y, v5.z);
+	glVertex3f(v2.x, v2.y, v2.z); glVertex3f(v6.x, v6.y, v6.z);
+	glVertex3f(v3.x, v3.y, v3.z); glVertex3f(v7.x, v7.y, v7.z);
+	glVertex3f(v4.x, v4.y, v4.z); glVertex3f(v8.x, v8.y, v8.z);
+
+	glEnd();
+}
+
+static void DrawJoint3D(Joint3D* joint)
+{
+	Body3D* b1 = joint->body1;
+	Body3D* b2 = joint->body2;
+
+	Mat33 R1 = b1->rotation.ToMatrix();
+	Mat33 R2 = b2->rotation.ToMatrix();
+
+	Vec3 x1 = b1->position;
+	Vec3 p1 = x1 + R1 * joint->localAnchor1;
+
+	Vec3 x2 = b2->position;
+	Vec3 p2 = x2 + R2 * joint->localAnchor2;
+
+	glColor3f(0.5f, 0.5f, 0.8f);
+	glBegin(GL_LINES);
+	glVertex3f(x1.x, x1.y, x1.z);
+	glVertex3f(p1.x, p1.y, p1.z);
+	glVertex3f(x2.x, x2.y, x2.z);
+	glVertex3f(p2.x, p2.y, p2.z);
 	glEnd();
 }
 
