@@ -4,8 +4,8 @@
 * Permission to use, copy, modify, distribute and sell this software
 * and its documentation for any purpose is hereby granted without fee,
 * provided that the above copyright notice appear in all copies.
-* Erin Catto makes no representations about the suitability 
-* of this software for any purpose.  
+* Erin Catto makes no representations about the suitability
+* of this software for any purpose.
 * It is provided "as is" without express or implied warranty.
 */
 
@@ -28,24 +28,24 @@ namespace
 {
 	GLFWwindow* mainWindow = NULL;
 
-	Body bodies[200];
-	Joint joints[100];
-	
-	Body* bomb = NULL;
-
-	float timeStep = 1.0f / 60.0f;
-	int iterations = 10;
-	Vec2 gravity(0.0f, -10.0f);
-
-	int numBodies = 0;
-	int numJoints = 0;
+	int width = 1920;
+	int height = 1080;
+	float zoom = 10.0f;
+	float pan_y = 8.0f;
 
 	int demoIndex = 0;
 
-	int width = 1280;
-	int height = 720;
-	float zoom = 10.0f;
-	float pan_y = 8.0f;
+	float timeStep = 1.0f / 60.0f;
+	Vec2 gravity(0.0f, -9.81f);
+	int iterations = 10;
+
+	Body bodies[200];
+	Joint joints[100];
+
+	Body* bomb = NULL;
+
+	int numBodies = 0;
+	int numJoints = 0;
 
 	World world(gravity, iterations);
 }
@@ -632,7 +632,7 @@ int main(int, char**)
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	
+
 	float aspect = float(width) / float(height);
 	if (width >= height)
 	{
