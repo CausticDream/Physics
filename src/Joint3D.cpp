@@ -43,27 +43,22 @@ void Joint3D::PreStep(float inv_dt)
 
     // Compute effective mass matrix (K)
     Mat33 K1;
-    K1.col1 = Vec3(body1->invMass + body2->invMass, 0.0f, 0.0f);
-    K1.col2 = Vec3(0.0f, body1->invMass + body2->invMass, 0.0f);
-    K1.col3 = Vec3(0.0f, 0.0f, body1->invMass + body2->invMass);
+    float diagonalValue = body1->invMass + body2->invMass;
+    K1.col1 = Vec3(diagonalValue, 0.0f, 0.0f);
+    K1.col2 = Vec3(0.0f, diagonalValue, 0.0f);
+    K1.col3 = Vec3(0.0f, 0.0f, diagonalValue);
 
     // K2: Contribution from body1's angular inertia
     Mat33 K2;
-    Vec3 r1CrossX = Cross(r1, Vec3(1.0f, 0.0f, 0.0f));
-    Vec3 r1CrossY = Cross(r1, Vec3(0.0f, 1.0f, 0.0f));
-    Vec3 r1CrossZ = Cross(r1, Vec3(0.0f, 0.0f, 1.0f));
-    K2.col1 = body1->invI.x * r1CrossX;
-    K2.col2 = body1->invI.y * r1CrossY;
-    K2.col3 = body1->invI.z * r1CrossZ;
+    K2.col1 = body1->invI * Cross(r1, Vec3(1.0f, 0.0f, 0.0f));
+    K2.col2 = body1->invI * Cross(r1, Vec3(0.0f, 1.0f, 0.0f));
+    K2.col3 = body1->invI * Cross(r1, Vec3(0.0f, 0.0f, 1.0f));
 
     // K3: Contribution from body2's angular inertia
     Mat33 K3;
-    Vec3 r2CrossX = Cross(r2, Vec3(1.0f, 0.0f, 0.0f));
-    Vec3 r2CrossY = Cross(r2, Vec3(0.0f, 1.0f, 0.0f));
-    Vec3 r2CrossZ = Cross(r2, Vec3(0.0f, 0.0f, 1.0f));
-    K3.col1 = body2->invI.x * r2CrossX;
-    K3.col2 = body2->invI.y * r2CrossY;
-    K3.col3 = body2->invI.z * r2CrossZ;
+    K3.col1 = body2->invI * Cross(r2, Vec3(1.0f, 0.0f, 0.0f));
+    K3.col2 = body2->invI * Cross(r2, Vec3(0.0f, 1.0f, 0.0f));
+    K3.col3 = body2->invI * Cross(r2, Vec3(0.0f, 0.0f, 1.0f));
 
     // Combine contributions to form the full effective mass matrix
     Mat33 K = K1 + K2 + K3;
@@ -94,10 +89,10 @@ void Joint3D::PreStep(float inv_dt)
     {
         // Apply accumulated impulse (warm start)
         body1->velocity -= body1->invMass * P;
-        body1->angularVelocity -= Cross(r1, P) * body1->invI;
+        body1->angularVelocity -= body1->invI * Cross(r1, P);
 
         body2->velocity += body2->invMass * P;
-        body2->angularVelocity += Cross(r2, P) * body2->invI;
+        body2->angularVelocity += body2->invI * Cross(r2, P);
     }
     else
     {
@@ -108,13 +103,13 @@ void Joint3D::PreStep(float inv_dt)
 void Joint3D::ApplyImpulse()
 {
     Vec3 dv = body2->velocity + Cross(body2->angularVelocity, r2) - body1->velocity - Cross(body1->angularVelocity, r1);
-	Vec3 impulse = M * (bias - dv - softness * P);
+    Vec3 impulse = M * (bias - dv - softness * P);
 
-	body1->velocity -= body1->invMass * impulse;
-	body1->angularVelocity -= body1->invI * Cross(r1, impulse);
+    body1->velocity -= body1->invMass * impulse;
+    body1->angularVelocity -= body1->invI * Cross(r1, impulse);
 
-	body2->velocity += body2->invMass * impulse;
-	body2->angularVelocity += body2->invI * Cross(r2, impulse);
+    body2->velocity += body2->invMass * impulse;
+    body2->angularVelocity += body2->invI * Cross(r2, impulse);
 
-	P += impulse;
+    P += impulse;
 }

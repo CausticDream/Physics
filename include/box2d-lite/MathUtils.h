@@ -120,6 +120,20 @@ struct Mat33
 	Mat33() {}
 	Mat33(const Vec3& col1, const Vec3& col2, const Vec3& col3) : col1(col1), col2(col2), col3(col3) {}
 
+	void Identity()
+	{
+		col1 = Vec3(1.0f, 0.0f, 0.0f);
+		col2 = Vec3(0.0f, 1.0f, 0.0f);
+		col3 = Vec3(0.0f, 0.0f, 1.0f);
+	}
+
+	void Zero()
+	{
+		col1 = Vec3(0.0f, 0.0f, 0.0f);
+		col2 = Vec3(0.0f, 0.0f, 0.0f);
+		col3 = Vec3(0.0f, 0.0f, 0.0f);
+	}
+
 	Mat33 Transpose() const
 	{
 		return Mat33(Vec3(col1.x, col2.x, col3.x), Vec3(col1.y, col2.y, col3.y), Vec3(col1.z, col2.z, col3.z));
@@ -154,6 +168,14 @@ struct Quat
 	Quat() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) {}
 	Quat(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 	void Set(float x_, float y_, float z_, float w_) { x = x_; y = y_; z = z_; w = w_; }
+
+	void Identity()
+	{
+		x = 0.0f;
+		y = 0.0f;
+		z = 0.0f;
+		w = 1.0f;
+	}
 
 	Mat33 ToMatrix() const
 	{
