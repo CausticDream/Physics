@@ -95,7 +95,7 @@ inline bool operator < (const Arbiter3DKey& a1, const Arbiter3DKey& a2)
 	return false;
 }
 
-int Collide(Contact3D* contacts, Body3D* body1, Body3D* body2)
+inline int Collide(Contact3D* contacts, Body3D* body1, Body3D* body2)
 {
 	// TODO
 	return 0;

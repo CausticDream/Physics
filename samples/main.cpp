@@ -36,23 +36,34 @@ namespace
 	int height = 1080;
 	float zoom = 10.0f;
 	float pan_y = 8.0f;
-
 	int demoIndex = 0;
-
 	float timeStep = 1.0f / 60.0f;
-	Vec2 gravity(0.0f, -9.81f);
-	int iterations = 10;
 
+	// 2D
 	Body bodies[200];
 	Joint joints[100];
 
 	Body* bomb = NULL;
-	Body3D* bomb3D = NULL;
 
 	int numBodies = 0;
 	int numJoints = 0;
 
+	Vec2 gravity(0.0f, -9.81f);
+	int iterations = 10;
 	World world(gravity, iterations);
+
+	// 3D
+	Body3D bodies3D[200];
+	Joint3D joints3D[100];
+
+	Body3D* bomb3D = NULL;
+
+	int numBodies3D = 0;
+	int numJoints3D = 0;
+
+	Vec3 gravity3D(0.0f, -9.81f, 0.0f);
+	int iterations3D = 10;
+	World3D world3D(gravity3D, iterations3D);
 }
 
 static void glfwErrorCallback(int error, const char* description)
@@ -589,6 +600,35 @@ static void InitDemo(int index)
 	demos[index](bodies, joints);
 }
 
+// Single box3D
+static void Demo13D(Body3D* b, Joint3D* j)
+{
+	b->Set(Vec3(100.0f, 20.0f, 0.0f), FLT_MAX);
+	b->position.Set(0.0f, -0.5f * b->width.y, 0.0f);
+	world3D.Add(b);
+	++b; ++numBodies3D;
+
+	b->Set(Vec3(1.0f, 1.0f, 0.0f), 200.0f);
+	b->position.Set(0.0f, 4.0f, 0.0f);
+	world3D.Add(b);
+	++b; ++numBodies3D;
+}
+
+void (*demos3D[])(Body3D* b, Joint3D* j) = { Demo13D };
+const char* demoStrings3D[] = {
+	"Demo 1: A Single Box" };
+
+static void InitDemo3D(int index)
+{
+	world3D.Clear();
+	numBodies3D = 0;
+	numJoints3D = 0;
+	bomb3D = NULL;
+
+	demoIndex = index;
+	demos3D[index](bodies3D, joints3D);
+}
+
 static void Keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (action != GLFW_PRESS)
@@ -612,7 +652,7 @@ static void Keyboard(GLFWwindow* window, int key, int scancode, int action, int 
 	case '7':
 	case '8':
 	case '9':
-		InitDemo(key - GLFW_KEY_1);
+		InitDemo3D(key - GLFW_KEY_1);
 		break;
 
 	case GLFW_KEY_A:
@@ -716,7 +756,7 @@ int main(int, char**)
 		glOrtho(-zoom, zoom, -zoom / aspect + pan_y, zoom / aspect + pan_y, -1.0, 1.0);
 	}
 
-	InitDemo(0);
+	InitDemo3D(0);
 
 	while (!glfwWindowShouldClose(mainWindow))
 	{
@@ -731,7 +771,7 @@ int main(int, char**)
 		ImGui::Begin("Overlay", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar);
 		ImGui::End();
 
-		DrawText(5, 5, demoStrings[demoIndex]);
+		DrawText(5, 5, demoStrings3D[demoIndex]);
 		DrawText(5, 35, "Keys: 1-9 Demos, Space to Launch the Bomb");
 
 		char buffer[64];
@@ -748,6 +788,7 @@ int main(int, char**)
 		glLoadIdentity();
 
 		world.Step(timeStep);
+		world3D.Step(timeStep);
 
 		for (int i = 0; i < numBodies; ++i)
 			DrawBody(bodies + i);
@@ -755,9 +796,16 @@ int main(int, char**)
 		for (int i = 0; i < numJoints; ++i)
 			DrawJoint(joints + i);
 
+		for (int i = 0; i < numBodies3D; ++i)
+			DrawBody3D(bodies3D + i);
+
+		for (int i = 0; i < numJoints3D; ++i)
+			DrawJoint3D(joints3D + i);
+
 		glPointSize(4.0f);
 		glColor3f(1.0f, 0.0f, 0.0f);
 		glBegin(GL_POINTS);
+
 		std::map<ArbiterKey, Arbiter>::const_iterator iter;
 		for (iter = world.arbiters.begin(); iter != world.arbiters.end(); ++iter)
 		{
@@ -768,6 +816,18 @@ int main(int, char**)
 				glVertex2f(p.x, p.y);
 			}
 		}
+
+		std::map<Arbiter3DKey, Arbiter3D>::const_iterator iter3D;
+		for (iter3D = world3D.arbiters.begin(); iter3D != world3D.arbiters.end(); ++iter3D)
+		{
+			const Arbiter3D& arbiter = iter3D->second;
+			for (int i = 0; i < arbiter.numContacts; ++i)
+			{
+				Vec3 p = arbiter.contacts[i].position;
+				glVertex3f(p.x, p.y, p.z);
+			}
+		}
+
 		glEnd();
 		glPointSize(1.0f);
 
