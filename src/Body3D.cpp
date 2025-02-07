@@ -24,11 +24,12 @@ Body3D::Body3D()
 	width.Set(1.0f, 1.0f, 1.0f);
 	mass = FLT_MAX;
 	invMass = 0.0f;
-	for (int i = 0; i < 3; ++i)
-	{
-		I[i] = FLT_MAX;
-		invI[i] = 0.0f;
-	}
+	I.x = FLT_MAX;
+	invI.x = 0.0f;
+	I.y = FLT_MAX;
+	invI.y = 0.0f;
+	I.z = FLT_MAX;
+	invI.z = 0.0f;
 }
 
 void Body3D::Set(const Vec3& w, float m)
@@ -47,20 +48,21 @@ void Body3D::Set(const Vec3& w, float m)
 	if (mass < FLT_MAX)
 	{
 		invMass = 1.0f / mass;
-		I[0] = mass * (width.y * width.y + width.z * width.z) / 12.0f;
-		I[1] = mass * (width.x * width.x + width.z * width.z) / 12.0f;
-		I[2] = mass * (width.x * width.x + width.y * width.y) / 12.0f;
-		invI[0] = 1.0f / I[0];
-		invI[1] = 1.0f / I[1];
-		invI[2] = 1.0f / I[2];
+		I.x = mass * (width.y * width.y + width.z * width.z) / 12.0f;
+		I.y = mass * (width.x * width.x + width.z * width.z) / 12.0f;
+		I.z = mass * (width.x * width.x + width.y * width.y) / 12.0f;
+		invI.x = 1.0f / I.x;
+		invI.y = 1.0f / I.y;
+		invI.z = 1.0f / I.z;
 	}
 	else
 	{
 		invMass = 0.0f;
-		for (int i = 0; i < 3; ++i)
-		{
-			I[i] = FLT_MAX;
-			invI[i] = 0.0f;
-		}
+		I.x = FLT_MAX;
+		invI.x = 0.0f;
+		I.y = FLT_MAX;
+		invI.y = 0.0f;
+		I.z = FLT_MAX;
+		invI.z = 0.0f;
 	}
 }

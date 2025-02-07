@@ -9,35 +9,35 @@
 * It is provided "as is" without express or implied warranty.
 */
 
-#ifndef BODY3D_H
-#define BODY3D_H
+#ifndef JOINT3D_H
+#define JOINT3D_H
 
 #include "MathUtils.h"
 
-struct Body3D
+struct Body3D;
+
+struct Joint3D
 {
-	Body3D();
-	void Set(const Vec3& w, float m);
+	Joint3D() :
+		body1(0), body2(0),
+		P(0.0f, 0.0f, 0.0f),
+		biasFactor(0.2f), softness(0.0f)
+		{}
 
-	void AddForce(const Vec3& f)
-	{
-		force += f;
-	}
+	void Set(Body3D* body1, Body3D* body2, const Vec3& anchor);
 
-	Vec3 position;
-	Quat rotation;
+	void PreStep(float inv_dt);
+	void ApplyImpulse();
 
-	Vec3 velocity;
-	Vec3 angularVelocity;
-
-	Vec3 force;
-	Vec3 torque;
-
-	Vec3 width;
-
-	float friction;
-	float mass, invMass;
-	Vec3 I, invI;
+	Mat33 M;
+	Vec3 localAnchor1, localAnchor2;
+	Vec3 r1, r2;
+	Vec3 bias;
+	Vec3 P;		// accumulated impulse
+	Body3D* body1;
+	Body3D* body2;
+	float biasFactor;
+	float softness;
 };
 
 #endif

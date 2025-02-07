@@ -4,6 +4,7 @@ set(BOX2D_SOURCE_FILES
 	Body3D.cpp
 	Collide.cpp
 	Joint.cpp
+	Joint3D.cpp
 	World.cpp)
 
 set(BOX2D_HEADER_FILES
@@ -11,6 +12,7 @@ set(BOX2D_HEADER_FILES
 	../include/box2d-lite/Body.h
 	../include/box2d-lite/Body3D.h
 	../include/box2d-lite/Joint.h
+	../include/box2d-lite/Joint3D.h
 	../include/box2d-lite/MathUtils.h
 	../include/box2d-lite/World.h)
 

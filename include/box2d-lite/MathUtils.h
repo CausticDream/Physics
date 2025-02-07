@@ -155,6 +155,30 @@ struct Quat
 	Quat(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 	void Set(float x_, float y_, float z_, float w_) { x = x_; y = y_; z = z_; w = w_; }
 
+	Mat33 ToMatrix() const
+	{
+		Mat33 M;
+		float xx = x * x;
+		float yy = y * y;
+		float zz = z * z;
+		float xy = x * y;
+		float xz = x * z;
+		float yz = y * z;
+		float wx = w * x;
+		float wy = w * y;
+		float wz = w * z;
+		M.col1.x = 1.0f - 2.0f * (yy + zz);
+		M.col1.y = 2.0f * (xy + wz);
+		M.col1.z = 2.0f * (xz - wy);
+		M.col2.x = 2.0f * (xy - wz);
+		M.col2.y = 1.0f - 2.0f * (xx + zz);
+		M.col2.z = 2.0f * (yz + wx);
+		M.col3.x = 2.0f * (xz + wy);
+		M.col3.y = 2.0f * (yz - wx);
+		M.col3.z = 1.0f - 2.0f * (xx + yy);
+		return M;
+	}
+
 	float x, y, z, w;
 };
 
@@ -198,6 +222,38 @@ inline Vec2 operator * (float s, const Vec2& v)
 	return Vec2(s * v.x, s * v.y);
 }
 
+inline Vec3 operator * (const Mat33& A, const Vec3& v)
+{
+	return Vec3(A.col1.x * v.x + A.col2.x * v.y + A.col3.x * v.z,
+		        A.col1.y * v.x + A.col2.y * v.y + A.col3.y * v.z,
+		        A.col1.z * v.x + A.col2.z * v.y + A.col3.z * v.z);
+}
+
+inline Vec3 operator + (const Vec3& a, const Vec3& b)
+{
+	return Vec3(a.x + b.x, a.y + b.y, a.z + b.z);
+}
+
+inline Vec3 operator - (const Vec3& a, const Vec3& b)
+{
+	return Vec3(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+
+inline Vec3 operator * (float s, const Vec3& v)
+{
+	return Vec3(s * v.x, s * v.y, s * v.z);
+}
+
+inline Vec3 operator * (const Vec3& a, const Vec3& b)
+{
+	return Vec3(a.x * b.x, a.y * b.y, a.z * b.z);
+}
+
+inline Vec3 Cross(const Vec3& a, const Vec3& b)
+{
+	return Vec3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
+}
+
 inline Mat22 operator + (const Mat22& A, const Mat22& B)
 {
 	return Mat22(A.col1 + B.col1, A.col2 + B.col2);
@@ -206,6 +262,11 @@ inline Mat22 operator + (const Mat22& A, const Mat22& B)
 inline Mat22 operator * (const Mat22& A, const Mat22& B)
 {
 	return Mat22(A * B.col1, A * B.col2);
+}
+
+inline Mat33 operator + (const Mat33& A, const Mat33& B)
+{
+	return Mat33(A.col1 + B.col1, A.col2 + B.col2, A.col3 + B.col3);
 }
 
 inline float Abs(float a)
