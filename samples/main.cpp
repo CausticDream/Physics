@@ -30,6 +30,7 @@
 
 namespace
 {
+	bool demo3D = true;
 	GLFWwindow* mainWindow = NULL;
 
 	int width = 1920;
@@ -210,6 +211,23 @@ static void LaunchBomb()
 	bomb->rotation = Random(-1.5f, 1.5f);
 	bomb->velocity = -1.5f * bomb->position;
 	bomb->angularVelocity = Random(-20.0f, 20.0f);
+}
+
+static void LaunchBomb3D()
+{
+	if (!bomb3D)
+	{
+		bomb3D = bodies3D + numBodies3D;
+		bomb3D->Set(Vec3(1.0f, 1.0f, 0.0f), 50.0f);
+		bomb3D->friction = 0.2f;
+		world3D.Add(bomb3D);
+		++numBodies3D;
+	}
+
+	bomb3D->position.Set(Random(-15.0f, 15.0f), 15.0f, 0.0f);
+	bomb3D->rotation = Quat(Vec3(0.0f, 0.0f, Random(-1.5f, 1.5f)));
+	bomb3D->velocity = -1.5f * bomb3D->position;
+	bomb3D->angularVelocity = Vec3(0.0f, 0.0f, Random(-20.0f, 20.0f));
 }
 
 // Single box
@@ -652,7 +670,14 @@ static void Keyboard(GLFWwindow* window, int key, int scancode, int action, int 
 	case '7':
 	case '8':
 	case '9':
-		InitDemo3D(key - GLFW_KEY_1);
+		if (demo3D)
+		{
+			InitDemo3D(0);
+		}
+		else
+		{
+			InitDemo(key - GLFW_KEY_1);
+		}
 		break;
 
 	case GLFW_KEY_A:
@@ -668,7 +693,14 @@ static void Keyboard(GLFWwindow* window, int key, int scancode, int action, int 
 		break;
 
 	case GLFW_KEY_SPACE:
-		LaunchBomb();
+		if (demo3D)
+		{
+			LaunchBomb3D();
+		}
+		else
+		{
+			LaunchBomb();
+		}
 		break;
 	}
 }
@@ -756,7 +788,14 @@ int main(int, char**)
 		glOrtho(-zoom, zoom, -zoom / aspect + pan_y, zoom / aspect + pan_y, -1.0, 1.0);
 	}
 
-	InitDemo3D(0);
+	if (demo3D)
+	{
+		InitDemo3D(0);
+	}
+	else
+	{
+		InitDemo(0);
+	}
 
 	while (!glfwWindowShouldClose(mainWindow))
 	{
@@ -771,8 +810,16 @@ int main(int, char**)
 		ImGui::Begin("Overlay", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar);
 		ImGui::End();
 
-		DrawText(5, 5, demoStrings3D[demoIndex]);
-		DrawText(5, 35, "Keys: 1-9 Demos, Space to Launch the Bomb");
+		if (demo3D)
+		{
+			DrawText(5, 5, demoStrings3D[demoIndex]);
+			DrawText(5, 35, "Keys: 1-1 Demos, Space to Launch the Bomb");
+		}
+		else
+		{
+			DrawText(5, 5, demoStrings[demoIndex]);
+			DrawText(5, 35, "Keys: 1-9 Demos, Space to Launch the Bomb");
+		}
 
 		char buffer[64];
 		sprintf(buffer, "(A)ccumulation %s", World::accumulateImpulses ? "ON" : "OFF");
