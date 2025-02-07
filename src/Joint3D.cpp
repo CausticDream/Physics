@@ -11,7 +11,7 @@
 
 #include "box2d-lite/Joint3D.h"
 #include "box2d-lite/Body3D.h"
-#include "box2d-lite/World.h"
+#include "box2d-lite/World3D.h"
 
 void Joint3D::Set(Body3D* b1, Body3D* b2, const Vec3& anchor)
 {
@@ -76,7 +76,7 @@ void Joint3D::PreStep(float inv_dt)
     Vec3 p2 = body2->position + r2;
     Vec3 dp = p2 - p1;
 
-    if (World::positionCorrection)
+    if (World3D::positionCorrection)
     {
         bias = -biasFactor * inv_dt * dp;
     }
@@ -85,7 +85,7 @@ void Joint3D::PreStep(float inv_dt)
         bias.Set(0.0f, 0.0f, 0.0f);
     }
 
-    if (World::warmStarting)
+    if (World3D::warmStarting)
     {
         // Apply accumulated impulse (warm start)
         body1->velocity -= body1->invMass * P;

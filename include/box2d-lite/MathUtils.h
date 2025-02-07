@@ -80,6 +80,17 @@ struct Vec3
 		return sqrtf(x * x + y * y + z * z);
 	}
 
+	Vec3 Normalized() const
+	{
+		Vec3 v = *this;
+		float len = Length();
+		if (len > 0.0f)
+		{
+			v *= 1.0f / len;
+		}
+		return v;
+	}
+
 	float x, y, z;
 };
 
@@ -167,6 +178,22 @@ struct Quat
 {
 	Quat() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) {}
 	Quat(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+	Quat(const Vec3& angles)
+	{
+		float halfPitch = angles.x * 0.5f;
+		float halfYaw = angles.y * 0.5f;
+		float halfRoll = angles.z * 0.5f;
+		float sinPitch = sinf(halfPitch);
+		float cosPitch = cosf(halfPitch);
+		float sinYaw = sinf(halfYaw);
+		float cosYaw = cosf(halfYaw);
+		float sinRoll = sinf(halfRoll);
+		float cosRoll = cosf(halfRoll);
+		x = sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw;
+		y = cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw;
+		z = cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw;
+		w = cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw;
+	}
 	void Set(float x_, float y_, float z_, float w_) { x = x_; y = y_; z = z_; w = w_; }
 
 	void Identity()
@@ -201,12 +228,30 @@ struct Quat
 		return M;
 	}
 
+	Quat operator*(const Quat& q) const
+	{
+		return Quat(w * q.x + x * q.w + y * q.z - z * q.y,
+			w * q.y + y * q.w + z * q.x - x * q.z,
+			w * q.z + z * q.w + x * q.y - y * q.x,
+			w * q.w - x * q.x - y * q.y - z * q.z);
+	}
+
+	const Quat& operator*=(const Quat& q)
+	{
+		return *this = *this * q;
+	}
+
 	float x, y, z, w;
 };
 
 inline float Dot(const Vec2& a, const Vec2& b)
 {
 	return a.x * b.x + a.y * b.y;
+}
+
+inline float Dot(const Vec3& a, const Vec3& b)
+{
+	return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
 inline float Cross(const Vec2& a, const Vec2& b)
