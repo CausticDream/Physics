@@ -11,6 +11,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
+#include <cmath>
 
 #include "imgui/imgui.h"
 #include "imgui_impl_glfw.h"
@@ -218,7 +219,7 @@ static void LaunchBomb3D()
 	if (!bomb3D)
 	{
 		bomb3D = bodies3D + numBodies3D;
-		bomb3D->Set(Vec3(1.0f, 1.0f, 0.0f), 50.0f);
+		bomb3D->Set(Vec3(1.0f, 1.0f, 1.0f), 50.0f);
 		bomb3D->friction = 0.2f;
 		world3D.Add(bomb3D);
 		++numBodies3D;
@@ -621,12 +622,12 @@ static void InitDemo(int index)
 // Single box3D
 static void Demo13D(Body3D* b, Joint3D* j)
 {
-	b->Set(Vec3(100.0f, 20.0f, 0.0f), FLT_MAX);
+	b->Set(Vec3(100.0f, 20.0f, 2.0f), FLT_MAX);
 	b->position.Set(0.0f, -0.5f * b->width.y, 0.0f);
 	world3D.Add(b);
 	++b; ++numBodies3D;
 
-	b->Set(Vec3(1.0f, 1.0f, 0.0f), 200.0f);
+	b->Set(Vec3(1.0f, 1.0f, 1.0f), 200.0f);
 	b->position.Set(0.0f, 4.0f, 0.0f);
 	world3D.Add(b);
 	++b; ++numBodies3D;
@@ -705,25 +706,85 @@ static void Keyboard(GLFWwindow* window, int key, int scancode, int action, int 
 	}
 }
 
+constexpr float M_PI = 3.14159265358979323846f;
+
+void createViewMatrix(const float* eye, const float* center, const float* up, float* matrix)
+{
+	float forward[3];
+	forward[0] = center[0] - eye[0];
+	forward[1] = center[1] - eye[1];
+	forward[2] = center[2] - eye[2];
+	float forwardLength = std::sqrt(forward[0] * forward[0] + forward[1] * forward[1] + forward[2] * forward[2]);
+	if (forwardLength > 0.0f) {
+		forward[0] /= forwardLength;
+		forward[1] /= forwardLength;
+		forward[2] /= forwardLength;
+	}
+
+	float side[3];
+	side[0] = forward[1] * up[2] - forward[2] * up[1];
+	side[1] = forward[2] * up[0] - forward[0] * up[2];
+	side[2] = forward[0] * up[1] - forward[1] * up[0];
+	float sideLength = std::sqrt(side[0] * side[0] + side[1] * side[1] + side[2] * side[2]);
+	if (sideLength > 0.0f) {
+		side[0] /= sideLength;
+		side[1] /= sideLength;
+		side[2] /= sideLength;
+	}
+
+	float trueUp[3];
+	trueUp[0] = side[1] * forward[2] - side[2] * forward[1];
+	trueUp[1] = side[2] * forward[0] - side[0] * forward[2];
+	trueUp[2] = side[0] * forward[1] - side[1] * forward[0];
+
+	matrix[0] = side[0];   matrix[4] = side[1];   matrix[8] = side[2];   matrix[12] = -(side[0] * eye[0] + side[1] * eye[1] + side[2] * eye[2]);
+	matrix[1] = trueUp[0]; matrix[5] = trueUp[1]; matrix[9] = trueUp[2]; matrix[13] = -(trueUp[0] * eye[0] + trueUp[1] * eye[1] + trueUp[2] * eye[2]);
+	matrix[2] = -forward[0]; matrix[6] = -forward[1]; matrix[10] = -forward[2]; matrix[14] = (forward[0] * eye[0] + forward[1] * eye[1] + forward[2] * eye[2]);
+	matrix[3] = 0.0f;      matrix[7] = 0.0f;      matrix[11] = 0.0f;      matrix[15] = 1.0f;
+}
+
+static void createPerspectiveMatrix(float fovY, float aspect, float nearPlane, float farPlane, float* matrix)
+{
+	float f = 1.0f / tan(fovY * 0.5f * M_PI / 180.0f);
+	float nf = 1.0f / (nearPlane - farPlane);
+	matrix[0] = f / aspect;  matrix[1] = 0.0f;   matrix[2] = 0.0f;                            matrix[3] = 0.0f;
+	matrix[4] = 0.0f;        matrix[5] = f;      matrix[6] = 0.0f;                            matrix[7] = 0.0f;
+	matrix[8] = 0.0f;        matrix[9] = 0.0f;   matrix[10] = (farPlane + nearPlane) * nf;    matrix[11] = -1.0f;
+	matrix[12] = 0.0f;       matrix[13] = 0.0f;  matrix[14] = (2.0f * farPlane * nearPlane) * nf; matrix[15] = 0.0f;
+}
+
 static void Reshape(GLFWwindow*, int w, int h)
 {
 	width = w;
 	height = h > 0 ? h : 1;
 
 	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
 
-	float aspect = float(width) / float(height);
-	if (width >= height)
+	if (demo3D)
 	{
-		// aspect >= 1, set the height from -1 to 1, with larger width
-		glOrtho(-zoom * aspect, zoom * aspect, -zoom + pan_y, zoom + pan_y, -1.0, 1.0);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		float projectionMatrix[16];
+		createPerspectiveMatrix(60.0f, float(width) / float(height), 0.1f, 100.0f, projectionMatrix);
+		glLoadMatrixf(projectionMatrix);
 	}
 	else
 	{
-		// aspect < 1, set the width to -1 to 1, with larger height
-		glOrtho(-zoom, zoom, -zoom / aspect + pan_y, zoom / aspect + pan_y, -1.0, 1.0);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		float aspect = float(width) / float(height);
+		if (width >= height)
+		{
+			// aspect >= 1, set the height from -1 to 1, with larger width
+			glOrtho(-zoom * aspect, zoom * aspect, -zoom + pan_y, zoom + pan_y, -1.0, 1.0);
+		}
+		else
+		{
+			// aspect < 1, set the width to -1 to 1, with larger height
+			glOrtho(-zoom, zoom, -zoom / aspect + pan_y, zoom / aspect + pan_y, -1.0, 1.0);
+		}
 	}
 }
 
@@ -773,19 +834,32 @@ int main(int, char**)
 	io.FontGlobalScale = uiScale;
 
 	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
 
-	float aspect = float(width) / float(height);
-	if (width >= height)
+	if (demo3D)
 	{
-		// aspect >= 1, set the height from -1 to 1, with larger width
-		glOrtho(-zoom * aspect, zoom * aspect, -zoom + pan_y, zoom + pan_y, -1.0, 1.0);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		float projectionMatrix[16];
+		createPerspectiveMatrix(60.0f, float(width) / float(height), 0.1f, 100.0f, projectionMatrix);
+		glLoadMatrixf(projectionMatrix);
 	}
 	else
 	{
-		// aspect < 1, set the width to -1 to 1, with larger height
-		glOrtho(-zoom, zoom, -zoom / aspect + pan_y, zoom / aspect + pan_y, -1.0, 1.0);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		float aspect = float(width) / float(height);
+		if (width >= height)
+		{
+			// aspect >= 1, set the height from -1 to 1, with larger width
+			glOrtho(-zoom * aspect, zoom * aspect, -zoom + pan_y, zoom + pan_y, -1.0, 1.0);
+		}
+		else
+		{
+			// aspect < 1, set the width to -1 to 1, with larger height
+			glOrtho(-zoom, zoom, -zoom / aspect + pan_y, zoom / aspect + pan_y, -1.0, 1.0);
+		}
 	}
 
 	if (demo3D)
@@ -831,8 +905,22 @@ int main(int, char**)
 		sprintf(buffer, "(W)arm Starting %s", World::warmStarting ? "ON" : "OFF");
 		DrawText(5, 125, buffer);
 
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
+		if (demo3D)
+		{
+			float viewMatrix[16];
+			float eye[3] = { 0.0f, 10.0f, 50.0f };
+			float target[3] = { 0.0f, 10.0f, 0.0f };
+			float up[3] = { 0.0f, 1.0f, 0.0f };
+			createViewMatrix(eye, target, up, viewMatrix);
+
+			glMatrixMode(GL_MODELVIEW);
+			glLoadMatrixf(viewMatrix);
+		}
+		else
+		{
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+		}
 
 		world.Step(timeStep);
 		world3D.Step(timeStep);
