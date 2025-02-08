@@ -42,20 +42,24 @@ void Joint3D::PreStep(float inv_dt)
     r2 = Rot2 * localAnchor2;
 
     // Compute effective mass matrix (K)
-    float diagonalValue = body1->invMass + body2->invMass;
-    glm::mat3 K1 = glm::mat3(diagonalValue);
+    float linearMass = body1->invMass + body2->invMass;
+    glm::mat3 K1 = glm::mat3(linearMass);
 
     // K2: Contribution from body1's angular inertia
-    glm::mat3 K2 = glm::mat3(
-        body1->invI * glm::cross(r1, glm::vec3(1.0f, 0.0f, 0.0f)),
-        body1->invI * glm::cross(r1, glm::vec3(0.0f, 1.0f, 0.0f)),
-        body1->invI * glm::cross(r1, glm::vec3(0.0f, 0.0f, 1.0f)));
+    glm::mat3 skew_r1(
+        glm::vec3(0.0f, -r1.z, r1.y),
+        glm::vec3(r1.z, 0.0f, -r1.x),
+        glm::vec3(-r1.y, r1.x, 0.0f)
+    );
+    glm::mat3 K2 = -skew_r1 * body1->invI * glm::transpose(skew_r1);
 
     // K3: Contribution from body2's angular inertia
-    glm::mat3 K3 = glm::mat3(
-        body2->invI * glm::cross(r2, glm::vec3(1.0f, 0.0f, 0.0f)),
-        body2->invI * glm::cross(r2, glm::vec3(0.0f, 1.0f, 0.0f)),
-        body2->invI * glm::cross(r2, glm::vec3(0.0f, 0.0f, 1.0f)));
+    glm::mat3 skew_r2(
+        glm::vec3(0.0f, -r2.z, r2.y),
+        glm::vec3(r2.z, 0.0f, -r2.x),
+        glm::vec3(-r2.y, r2.x, 0.0f)
+    );
+    glm::mat3 K3 = -skew_r2 * body2->invI * glm::transpose(skew_r2);
 
     // Combine contributions to form the full effective mass matrix
     glm::mat3 K = K1 + K2 + K3;
