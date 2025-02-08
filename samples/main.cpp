@@ -623,7 +623,7 @@ static void InitDemo(int index)
 }
 
 // Single box3D
-static void Demo13D(Body3D* b, Joint3D* j)
+static void Demo3D1(Body3D* b, Joint3D* j)
 {
 	b->Set(glm::vec3(100.0f, 20.0f, 2.0f), FLT_MAX);
 	b->position = glm::vec3(0.0f, -0.5f * b->width.y, 0.0f);
@@ -636,9 +636,35 @@ static void Demo13D(Body3D* b, Joint3D* j)
 	++b; ++numBodies3D;
 }
 
-void (*demos3D[])(Body3D* b, Joint3D* j) = { Demo13D };
+// A simple pendulum
+static void Demo3D2(Body3D* b, Joint3D* j)
+{
+	Body3D* b1 = b + 0;
+	b1->Set(glm::vec3(100.0f, 20.0f, 2.0f), FLT_MAX);
+	b1->friction = 0.2f;
+	b1->position = glm::vec3(0.0f, -0.5f * b1->width.y, 0.0f);
+	b1->rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+	world3D.Add(b1);
+
+	Body3D* b2 = b + 1;
+	b2->Set(glm::vec3(1.0f, 1.0f, 1.0f), 100.0f);
+	b2->friction = 0.2f;
+	b2->position = glm::vec3(9.0f, 11.0f, 0.0f);
+	b2->rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+	world3D.Add(b2);
+
+	numBodies3D += 2;
+
+	j->Set(b1, b2, glm::vec3(0.0f, 11.0f, 0.0f));
+	world3D.Add(j);
+
+	numJoints3D += 1;
+}
+
+void (*demos3D[])(Body3D* b, Joint3D* j) = { Demo3D1, Demo3D2 };
 const char* demoStrings3D[] = {
-	"Demo 1: A Single Box" };
+	"Demo 1: A Single Box",
+	"Demo 2: Simple Pendulum"};
 
 static void InitDemo3D(int index)
 {
@@ -676,7 +702,7 @@ static void Keyboard(GLFWwindow* window, int key, int scancode, int action, int 
 	case '9':
 		if (demo3D)
 		{
-			InitDemo3D(0);
+			InitDemo3D(glm::clamp(0, 1, key - GLFW_KEY_1));
 		}
 		else
 		{
@@ -846,7 +872,7 @@ int main(int, char**)
 		if (demo3D)
 		{
 			DrawText(5, 5, demoStrings3D[demoIndex]);
-			DrawText(5, 35, "Keys: 1-1 Demos, Space to Launch the Bomb");
+			DrawText(5, 35, "Keys: 1-2 Demos, Space to Launch the Bomb");
 		}
 		else
 		{
