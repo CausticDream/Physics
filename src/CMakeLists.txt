@@ -4,6 +4,7 @@ set(BOX2D_SOURCE_FILES
 	Body.cpp
 	Body3D.cpp
 	Collide.cpp
+	Collide3D.cpp
 	Joint.cpp
 	Joint3D.cpp
 	World.cpp

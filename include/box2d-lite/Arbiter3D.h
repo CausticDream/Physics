@@ -19,14 +19,16 @@ struct Body3D;
 
 union Feature3DPair
 {
-	struct Edges
+	struct Planes
 	{
-		char inEdge1;
-		char outEdge1;
-		char inEdge2;
-		char outEdge2;
+		char inPlane1;
+		char outPlane1;
+		char inPlane2;
+		char outPlane2;
+		char inPlane3;
+		char outPlane3;
 	} e;
-	int value;
+	int64_t value;
 };
 
 struct Contact3D
@@ -65,7 +67,7 @@ struct Arbiter3DKey
 
 struct Arbiter3D
 {
-	enum {MAX_POINTS = 2};
+	enum {MAX_POINTS = 4};
 
 	Arbiter3D(Body3D* b1, Body3D* b2);
 
@@ -96,10 +98,6 @@ inline bool operator < (const Arbiter3DKey& a1, const Arbiter3DKey& a2)
 	return false;
 }
 
-inline int Collide(Contact3D* contacts, Body3D* body1, Body3D* body2)
-{
-	// TODO
-	return 0;
-}
+int Collide3D(Contact3D* contacts, Body3D* body1, Body3D* body2);
 
 #endif

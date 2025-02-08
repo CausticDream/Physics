@@ -26,14 +26,14 @@ Arbiter3D::Arbiter3D(Body3D* b1, Body3D* b2)
 		body2 = b1;
 	}
 
-	numContacts = Collide(contacts, body1, body2);
+	numContacts = Collide3D(contacts, body1, body2);
 
 	friction = sqrtf(body1->friction * body2->friction);
 }
 
 void Arbiter3D::Update(Contact3D* newContacts, int numNewContacts)
 {
-	Contact3D mergedContacts[4];
+	Contact3D mergedContacts[MAX_POINTS];
 
 	for (int i = 0; i < numNewContacts; ++i)
 	{
