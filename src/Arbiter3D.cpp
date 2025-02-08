@@ -1,14 +1,3 @@
-/*
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com
-*
-* Permission to use, copy, modify, distribute and sell this software
-* and its documentation for any purpose is hereby granted without fee,
-* provided that the above copyright notice appear in all copies.
-* Erin Catto makes no representations about the suitability
-* of this software for any purpose.
-* It is provided "as is" without express or implied warranty.
-*/
-
 #include "box2d-lite/Arbiter3D.h"
 #include "box2d-lite/Body3D.h"
 #include "box2d-lite/World3D.h"
@@ -113,7 +102,7 @@ void Arbiter3D::PreStep(float inv_dt)
 		kTangent += glm::dot(glm::cross(r2, tangent), body2->invI * glm::cross(r2, tangent));
 		c->massTangent = 1.0f / kTangent;
 
-		c->bias = -k_biasFactor * inv_dt * Min(0.0f, c->separation + k_allowedPenetration);
+		c->bias = -k_biasFactor * inv_dt * glm::min(0.0f, c->separation + k_allowedPenetration);
 
 		if (World3D::accumulateImpulses)
 		{
@@ -153,12 +142,12 @@ void Arbiter3D::ApplyImpulse()
 		{
 			// Clamp the accumulated impulse
 			float Pn0 = c->Pn;
-			c->Pn = Max(Pn0 + dPn, 0.0f);
+			c->Pn = glm::max(Pn0 + dPn, 0.0f);
 			dPn = c->Pn - Pn0;
 		}
 		else
 		{
-			dPn = Max(dPn, 0.0f);
+			dPn = glm::max(dPn, 0.0f);
 		}
 
 		// Apply contact impulse
@@ -189,13 +178,13 @@ void Arbiter3D::ApplyImpulse()
 
 			// Clamp friction
 			float oldTangentImpulse = c->Pt;
-			c->Pt = Clamp(oldTangentImpulse + dPt, -maxPt, maxPt);
+			c->Pt = glm::clamp(oldTangentImpulse + dPt, -maxPt, maxPt);
 			dPt = c->Pt - oldTangentImpulse;
 		}
 		else
 		{
 			float maxPt = friction * dPn;
-			dPt = Clamp(dPt, -maxPt, maxPt);
+			dPt = glm::clamp(dPt, -maxPt, maxPt);
 		}
 
 		// Apply tangent impulse
