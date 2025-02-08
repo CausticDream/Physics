@@ -66,7 +66,7 @@ namespace
 	int numBodies3D = 0;
 	int numJoints3D = 0;
 
-	Vec3 gravity3D(0.0f, -9.81f, 0.0f);
+	glm::vec3 gravity3D(0.0f, -9.81f, 0.0f);
 	int iterations3D = 10;
 	World3D world3D(gravity3D, iterations3D);
 }
@@ -136,18 +136,18 @@ static void DrawJoint(Joint* joint)
 
 static void DrawBody3D(Body3D* body)
 {
-	Mat33 R = body->rotation.ToMatrix();
-	Vec3 x = body->position;
-	Vec3 h = 0.5f * body->width;
+	glm::mat3 R = glm::mat3_cast(body->rotation);
+	glm::vec3 x = body->position;
+	glm::vec3 h = 0.5f * body->width;
 
-	Vec3 v1 = x + R * Vec3(-h.x, -h.y, -h.z);
-	Vec3 v2 = x + R * Vec3(h.x, -h.y, -h.z);
-	Vec3 v3 = x + R * Vec3(h.x, h.y, -h.z);
-	Vec3 v4 = x + R * Vec3(-h.x, h.y, -h.z);
-	Vec3 v5 = x + R * Vec3(-h.x, -h.y, h.z);
-	Vec3 v6 = x + R * Vec3(h.x, -h.y, h.z);
-	Vec3 v7 = x + R * Vec3(h.x, h.y, h.z);
-	Vec3 v8 = x + R * Vec3(-h.x, h.y, h.z);
+	glm::vec3 v1 = x + R * glm::vec3(-h.x, -h.y, -h.z);
+	glm::vec3 v2 = x + R * glm::vec3(h.x, -h.y, -h.z);
+	glm::vec3 v3 = x + R * glm::vec3(h.x, h.y, -h.z);
+	glm::vec3 v4 = x + R * glm::vec3(-h.x, h.y, -h.z);
+	glm::vec3 v5 = x + R * glm::vec3(-h.x, -h.y, h.z);
+	glm::vec3 v6 = x + R * glm::vec3(h.x, -h.y, h.z);
+	glm::vec3 v7 = x + R * glm::vec3(h.x, h.y, h.z);
+	glm::vec3 v8 = x + R * glm::vec3(-h.x, h.y, h.z);
 
 	if (body == bomb3D)
 		glColor3f(0.4f, 0.9f, 0.4f);
@@ -182,14 +182,14 @@ static void DrawJoint3D(Joint3D* joint)
 	Body3D* b1 = joint->body1;
 	Body3D* b2 = joint->body2;
 
-	Mat33 R1 = b1->rotation.ToMatrix();
-	Mat33 R2 = b2->rotation.ToMatrix();
+	glm::mat3 R1 = glm::mat3_cast(b1->rotation);
+	glm::mat3 R2 = glm::mat3_cast(b2->rotation);
 
-	Vec3 x1 = b1->position;
-	Vec3 p1 = x1 + R1 * joint->localAnchor1;
+	glm::vec3 x1 = b1->position;
+	glm::vec3 p1 = x1 + R1 * joint->localAnchor1;
 
-	Vec3 x2 = b2->position;
-	Vec3 p2 = x2 + R2 * joint->localAnchor2;
+	glm::vec3 x2 = b2->position;
+	glm::vec3 p2 = x2 + R2 * joint->localAnchor2;
 
 	glColor3f(0.5f, 0.5f, 0.8f);
 	glBegin(GL_LINES);
@@ -222,16 +222,16 @@ static void LaunchBomb3D()
 	if (!bomb3D)
 	{
 		bomb3D = bodies3D + numBodies3D;
-		bomb3D->Set(Vec3(1.0f, 1.0f, 1.0f), 50.0f);
+		bomb3D->Set(glm::vec3(1.0f, 1.0f, 1.0f), 50.0f);
 		bomb3D->friction = 0.2f;
 		world3D.Add(bomb3D);
 		++numBodies3D;
 	}
 
-	bomb3D->position.Set(Random(-15.0f, 15.0f), 15.0f, 0.0f);
-	bomb3D->rotation = Quat(Vec3(0.0f, 0.0f, Random(-1.5f, 1.5f)));
+	bomb3D->position = glm::vec3(Random(-15.0f, 15.0f), 15.0f, 0.0f);
+	bomb3D->rotation = glm::quat(glm::vec3(0.0f, 0.0f, Random(-1.5f, 1.5f)));
 	bomb3D->velocity = -1.5f * bomb3D->position;
-	bomb3D->angularVelocity = Vec3(0.0f, 0.0f, Random(-20.0f, 20.0f));
+	bomb3D->angularVelocity = glm::vec3(0.0f, 0.0f, Random(-20.0f, 20.0f));
 }
 
 // Single box
@@ -625,13 +625,13 @@ static void InitDemo(int index)
 // Single box3D
 static void Demo13D(Body3D* b, Joint3D* j)
 {
-	b->Set(Vec3(100.0f, 20.0f, 2.0f), FLT_MAX);
-	b->position.Set(0.0f, -0.5f * b->width.y, 0.0f);
+	b->Set(glm::vec3(100.0f, 20.0f, 2.0f), FLT_MAX);
+	b->position = glm::vec3(0.0f, -0.5f * b->width.y, 0.0f);
 	world3D.Add(b);
 	++b; ++numBodies3D;
 
-	b->Set(Vec3(1.0f, 1.0f, 1.0f), 200.0f);
-	b->position.Set(0.0f, 4.0f, 0.0f);
+	b->Set(glm::vec3(1.0f, 1.0f, 1.0f), 200.0f);
+	b->position = glm::vec3(0.0f, 4.0f, 0.0f);
 	world3D.Add(b);
 	++b; ++numBodies3D;
 }
@@ -912,7 +912,7 @@ int main(int, char**)
 			const Arbiter3D& arbiter = iter3D->second;
 			for (int i = 0; i < arbiter.numContacts; ++i)
 			{
-				Vec3 p = arbiter.contacts[i].position;
+				glm::vec3 p = arbiter.contacts[i].position;
 				glVertex3f(p.x, p.y, p.z);
 			}
 		}

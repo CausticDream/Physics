@@ -89,23 +89,23 @@ void Arbiter3D::PreStep(float inv_dt)
 	{
 		Contact3D* c = contacts + i;
 
-		Vec3 r1 = c->position - body1->position;
-		Vec3 r2 = c->position - body2->position;
+		glm::vec3 r1 = c->position - body1->position;
+		glm::vec3 r2 = c->position - body2->position;
 
 		// Precompute normal mass, tangent mass, and bias.
-		float rn1 = Dot(r1, c->normal);
-		float rn2 = Dot(r2, c->normal);
+		float rn1 = glm::dot(r1, c->normal);
+		float rn2 = glm::dot(r2, c->normal);
 		float kNormal = body1->invMass + body2->invMass;
-		kNormal += Dot(Cross(r1, c->normal), body1->invI * Cross(r1, c->normal));
-		kNormal += Dot(Cross(r2, c->normal), body2->invI * Cross(r2, c->normal));
+		kNormal += glm::dot(glm::cross(r1, c->normal), body1->invI * glm::cross(r1, c->normal));
+		kNormal += glm::dot(glm::cross(r2, c->normal), body2->invI * glm::cross(r2, c->normal));
 		c->massNormal = 1.0f / kNormal;
 
-		Vec3 tangent = Cross(c->normal, Vec3(1.0f, 0.0f, 0.0f)).Normalized(); // Arbitrary perpendicular vector
-		float rt1 = Dot(r1, tangent);
-		float rt2 = Dot(r2, tangent);
+		glm::vec3 tangent = glm::normalize(glm::cross(c->normal, glm::vec3(1.0f, 0.0f, 0.0f))); // Arbitrary perpendicular vector
+		float rt1 = glm::dot(r1, tangent);
+		float rt2 = glm::dot(r2, tangent);
 		float kTangent = body1->invMass + body2->invMass;
-		kTangent += Dot(Cross(r1, tangent), body1->invI * Cross(r1, tangent));
-		kTangent += Dot(Cross(r2, tangent), body2->invI * Cross(r2, tangent));
+		kTangent += glm::dot(glm::cross(r1, tangent), body1->invI * glm::cross(r1, tangent));
+		kTangent += glm::dot(glm::cross(r2, tangent), body2->invI * glm::cross(r2, tangent));
 		c->massTangent = 1.0f / kTangent;
 
 		c->bias = -k_biasFactor * inv_dt * Min(0.0f, c->separation + k_allowedPenetration);
@@ -113,13 +113,13 @@ void Arbiter3D::PreStep(float inv_dt)
 		if (World3D::accumulateImpulses)
 		{
 			// Apply normal + friction impulse
-			Vec3 P = c->Pn * c->normal + c->Pt * tangent;
+			glm::vec3 P = c->Pn * c->normal + c->Pt * tangent;
 
 			body1->velocity -= body1->invMass * P;
-			body1->angularVelocity -= body1->invI * Cross(r1, P);
+			body1->angularVelocity -= body1->invI * glm::cross(r1, P);
 
 			body2->velocity += body2->invMass * P;
-			body2->angularVelocity += body2->invI * Cross(r2, P);
+			body2->angularVelocity += body2->invI * glm::cross(r2, P);
 		}
 	}
 }
@@ -133,14 +133,14 @@ void Arbiter3D::ApplyImpulse()
 	{
 		Contact3D* c = contacts + i;
 
-		Vec3 r1 = c->position - b1->position;
-		Vec3 r2 = c->position - b2->position;
+		glm::vec3 r1 = c->position - b1->position;
+		glm::vec3 r2 = c->position - b2->position;
 
 		// Relative velocity at contact
-		Vec3 dv = b2->velocity + Cross(b2->angularVelocity, r2) - b1->velocity - Cross(b1->angularVelocity, r1);
+		glm::vec3 dv = b2->velocity + glm::cross(b2->angularVelocity, r2) - b1->velocity - glm::cross(b1->angularVelocity, r1);
 
 		// Compute normal impulse
-		float vn = Dot(dv, c->normal);
+		float vn = glm::dot(dv, c->normal);
 
 		float dPn = c->massNormal * (-vn + c->bias);
 
@@ -157,19 +157,19 @@ void Arbiter3D::ApplyImpulse()
 		}
 
 		// Apply contact impulse
-		Vec3 Pn = dPn * c->normal;
+		glm::vec3 Pn = dPn * c->normal;
 
 		b1->velocity -= b1->invMass * Pn;
-		b1->angularVelocity -= b1->invI * Cross(r1, Pn);
+		b1->angularVelocity -= b1->invI * glm::cross(r1, Pn);
 
 		b2->velocity += b2->invMass * Pn;
-		b2->angularVelocity += b2->invI * Cross(r2, Pn);
+		b2->angularVelocity += b2->invI * glm::cross(r2, Pn);
 
 		// Relative velocity at contact
-		dv = b2->velocity + Cross(b2->angularVelocity, r2) - b1->velocity - Cross(b1->angularVelocity, r1);
+		dv = b2->velocity + glm::cross(b2->angularVelocity, r2) - b1->velocity - glm::cross(b1->angularVelocity, r1);
 
-		Vec3 tangent = Cross(Cross(c->normal, Vec3(1.0f, 0.0f, 0.0f)), c->normal).Normalized();
-		float vt = Dot(dv, tangent);
+		glm::vec3 tangent = glm::normalize(glm::cross(glm::cross(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)), c->normal));
+		float vt = glm::dot(dv, tangent);
 		float dPt = c->massTangent * (-vt);
 
 		if (World3D::accumulateImpulses)
@@ -189,12 +189,12 @@ void Arbiter3D::ApplyImpulse()
 		}
 
 		// Apply tangent impulse
-		Vec3 Pt = dPt * tangent;
+		glm::vec3 Pt = dPt * tangent;
 
 		b1->velocity -= b1->invMass * Pt;
-		b1->angularVelocity -= b1->invI * Cross(r1, Pt);
+		b1->angularVelocity -= b1->invI * glm::cross(r1, Pt);
 
 		b2->velocity += b2->invMass * Pt;
-		b2->angularVelocity += b2->invI * Cross(r2, Pt);
+		b2->angularVelocity += b2->invI * glm::cross(r2, Pt);
 	}
 }

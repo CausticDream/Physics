@@ -12,32 +12,34 @@
 #ifndef BODY3D_H
 #define BODY3D_H
 
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include "MathUtils.h"
 
 struct Body3D
 {
 	Body3D();
-	void Set(const Vec3& w, float m);
+	void Set(const glm::vec3& w, float m);
 
-	void AddForce(const Vec3& f)
+	void AddForce(const glm::vec3& f)
 	{
 		force += f;
 	}
 
-	Vec3 position;
-	Quat rotation;
+	glm::vec3 position;
+	glm::quat rotation;
 
-	Vec3 velocity;
-	Vec3 angularVelocity;
+	glm::vec3 velocity;
+	glm::vec3 angularVelocity;
 
-	Vec3 force;
-	Vec3 torque;
+	glm::vec3 force;
+	glm::vec3 torque;
 
-	Vec3 width;
+	glm::vec3 width;
 
 	float friction;
 	float mass, invMass;
-	Mat33 I, invI;
+	glm::mat3 I, invI;
 };
 
 #endif

@@ -12,6 +12,7 @@
 #ifndef ARBITER3D_H
 #define ARBITER3D_H
 
+#include <glm/glm.hpp>
 #include "MathUtils.h"
 
 struct Body3D;
@@ -32,9 +33,9 @@ struct Contact3D
 {
 	Contact3D() : Pn(0.0f), Pt(0.0f), Pnb(0.0f) {}
 
-	Vec3 position;
-	Vec3 normal;
-	Vec3 r1, r2;
+	glm::vec3 position;
+	glm::vec3 normal;
+	glm::vec3 r1, r2;
 	float separation;
 	float Pn;	// accumulated normal impulse
 	float Pt;	// accumulated tangent impulse

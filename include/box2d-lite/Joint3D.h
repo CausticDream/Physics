@@ -12,6 +12,7 @@
 #ifndef JOINT3D_H
 #define JOINT3D_H
 
+#include <glm/glm.hpp>
 #include "MathUtils.h"
 
 struct Body3D;
@@ -24,16 +25,16 @@ struct Joint3D
 		biasFactor(0.2f), softness(0.0f)
 		{}
 
-	void Set(Body3D* body1, Body3D* body2, const Vec3& anchor);
+	void Set(Body3D* body1, Body3D* body2, const glm::vec3& anchor);
 
 	void PreStep(float inv_dt);
 	void ApplyImpulse();
 
-	Mat33 M;
-	Vec3 localAnchor1, localAnchor2;
-	Vec3 r1, r2;
-	Vec3 bias;
-	Vec3 P;		// accumulated impulse
+	glm::mat3 M;
+	glm::vec3 localAnchor1, localAnchor2;
+	glm::vec3 r1, r2;
+	glm::vec3 bias;
+	glm::vec3 P;		// accumulated impulse
 	Body3D* body1;
 	Body3D* body2;
 	float biasFactor;

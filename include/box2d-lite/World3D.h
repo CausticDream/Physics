@@ -14,6 +14,7 @@
 
 #include <vector>
 #include <map>
+#include <glm/glm.hpp>
 #include "MathUtils.h"
 #include "Arbiter3D.h"
 
@@ -22,7 +23,7 @@ struct Joint3D;
 
 struct World3D
 {
-	World3D(Vec3 gravity, int iterations) : gravity(gravity), iterations(iterations) {}
+	World3D(glm::vec3 gravity, int iterations) : gravity(gravity), iterations(iterations) {}
 
 	void Add(Body3D* body);
 	void Add(Joint3D* joint);
@@ -35,7 +36,7 @@ struct World3D
 	std::vector<Body3D*> bodies;
 	std::vector<Joint3D*> joints;
 	std::map<Arbiter3DKey, Arbiter3D> arbiters;
-	Vec3 gravity;
+	glm::vec3 gravity;
 	int iterations;
 	static bool accumulateImpulses;
 	static bool warmStarting;

@@ -13,20 +13,20 @@
 #include "box2d-lite/Body3D.h"
 #include "box2d-lite/World3D.h"
 
-void Joint3D::Set(Body3D* b1, Body3D* b2, const Vec3& anchor)
+void Joint3D::Set(Body3D* b1, Body3D* b2, const glm::vec3& anchor)
 {
 	body1 = b1;
 	body2 = b2;
 
-	Mat33 Rot1 = body1->rotation.ToMatrix();
-	Mat33 Rot2 = body2->rotation.ToMatrix();
-	Mat33 Rot1T = Rot1.Transpose();
-	Mat33 Rot2T = Rot2.Transpose();
+	glm::mat3 Rot1 = glm::mat3_cast(body1->rotation);
+    glm::mat3 Rot2 = glm::mat3_cast(body2->rotation);
+    glm::mat3 Rot1T = glm::transpose(Rot1);
+    glm::mat3 Rot2T = glm::transpose(Rot2);
 
 	localAnchor1 = Rot1T * (anchor - body1->position);
 	localAnchor2 = Rot2T * (anchor - body2->position);
 
-	P.Set(0.0f, 0.0f, 0.0f);
+	P = glm::vec3(0.0f, 0.0f, 0.0f);
 
 	softness = 0.0f;
 	biasFactor = 0.2f;
@@ -35,46 +35,43 @@ void Joint3D::Set(Body3D* b1, Body3D* b2, const Vec3& anchor)
 void Joint3D::PreStep(float inv_dt)
 {
     // Pre-compute anchors, mass matrix, and bias.
-    Mat33 Rot1 = body1->rotation.ToMatrix();
-    Mat33 Rot2 = body2->rotation.ToMatrix();
+    glm::mat3 Rot1 = glm::mat3_cast(body1->rotation);
+    glm::mat3 Rot2 = glm::mat3_cast(body2->rotation);
 
     r1 = Rot1 * localAnchor1;
     r2 = Rot2 * localAnchor2;
 
     // Compute effective mass matrix (K)
-    Mat33 K1;
     float diagonalValue = body1->invMass + body2->invMass;
-    K1.col1 = Vec3(diagonalValue, 0.0f, 0.0f);
-    K1.col2 = Vec3(0.0f, diagonalValue, 0.0f);
-    K1.col3 = Vec3(0.0f, 0.0f, diagonalValue);
+    glm::mat3 K1 = glm::mat3(diagonalValue);
 
     // K2: Contribution from body1's angular inertia
-    Mat33 K2;
-    K2.col1 = body1->invI * Cross(r1, Vec3(1.0f, 0.0f, 0.0f));
-    K2.col2 = body1->invI * Cross(r1, Vec3(0.0f, 1.0f, 0.0f));
-    K2.col3 = body1->invI * Cross(r1, Vec3(0.0f, 0.0f, 1.0f));
+    glm::mat3 K2 = glm::mat3(
+        body1->invI * glm::cross(r1, glm::vec3(1.0f, 0.0f, 0.0f)),
+        body1->invI * glm::cross(r1, glm::vec3(0.0f, 1.0f, 0.0f)),
+        body1->invI * glm::cross(r1, glm::vec3(0.0f, 0.0f, 1.0f)));
 
     // K3: Contribution from body2's angular inertia
-    Mat33 K3;
-    K3.col1 = body2->invI * Cross(r2, Vec3(1.0f, 0.0f, 0.0f));
-    K3.col2 = body2->invI * Cross(r2, Vec3(0.0f, 1.0f, 0.0f));
-    K3.col3 = body2->invI * Cross(r2, Vec3(0.0f, 0.0f, 1.0f));
+    glm::mat3 K3 = glm::mat3(
+        body2->invI * glm::cross(r2, glm::vec3(1.0f, 0.0f, 0.0f)),
+        body2->invI * glm::cross(r2, glm::vec3(0.0f, 1.0f, 0.0f)),
+        body2->invI * glm::cross(r2, glm::vec3(0.0f, 0.0f, 1.0f)));
 
     // Combine contributions to form the full effective mass matrix
-    Mat33 K = K1 + K2 + K3;
+    glm::mat3 K = K1 + K2 + K3;
 
     // Add softness to the diagonal
-    K.col1.x += softness;
-    K.col2.y += softness;
-    K.col3.z += softness;
+    K[0][0] += softness;
+    K[1][1] += softness;
+    K[2][2] += softness;
 
     // Invert the effective mass matrix
-    M = K.Invert();
+    M = glm::inverse(K);
 
     // Compute bias term for position correction
-    Vec3 p1 = body1->position + r1;
-    Vec3 p2 = body2->position + r2;
-    Vec3 dp = p2 - p1;
+    glm::vec3 p1 = body1->position + r1;
+    glm::vec3 p2 = body2->position + r2;
+    glm::vec3 dp = p2 - p1;
 
     if (World3D::positionCorrection)
     {
@@ -82,34 +79,34 @@ void Joint3D::PreStep(float inv_dt)
     }
     else
     {
-        bias.Set(0.0f, 0.0f, 0.0f);
+        bias = glm::vec3(0.0f, 0.0f, 0.0f);
     }
 
     if (World3D::warmStarting)
     {
         // Apply accumulated impulse (warm start)
         body1->velocity -= body1->invMass * P;
-        body1->angularVelocity -= body1->invI * Cross(r1, P);
+        body1->angularVelocity -= body1->invI * glm::cross(r1, P);
 
         body2->velocity += body2->invMass * P;
-        body2->angularVelocity += body2->invI * Cross(r2, P);
+        body2->angularVelocity += body2->invI * glm::cross(r2, P);
     }
     else
     {
-        P.Set(0.0f, 0.0f, 0.0f);
+        P = glm::vec3(0.0f, 0.0f, 0.0f);
     }
 }
 
 void Joint3D::ApplyImpulse()
 {
-    Vec3 dv = body2->velocity + Cross(body2->angularVelocity, r2) - body1->velocity - Cross(body1->angularVelocity, r1);
-    Vec3 impulse = M * (bias - dv - softness * P);
+    glm::vec3 dv = body2->velocity + glm::cross(body2->angularVelocity, r2) - body1->velocity - glm::cross(body1->angularVelocity, r1);
+    glm::vec3 impulse = M * (bias - dv - softness * P);
 
     body1->velocity -= body1->invMass * impulse;
-    body1->angularVelocity -= body1->invI * Cross(r1, impulse);
+    body1->angularVelocity -= body1->invI * glm::cross(r1, impulse);
 
     body2->velocity += body2->invMass * impulse;
-    body2->angularVelocity += body2->invI * Cross(r2, impulse);
+    body2->angularVelocity += body2->invI * glm::cross(r2, impulse);
 
     P += impulse;
 }

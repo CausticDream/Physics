@@ -128,9 +128,9 @@ void World3D::Step(float dt)
 		Body3D* b = bodies[i];
 
 		b->position += dt * b->velocity;
-		b->rotation = (Quat(dt * b->angularVelocity) * b->rotation).Normalized();
+		b->rotation = glm::normalize(glm::quat(dt * b->angularVelocity) * b->rotation);
 
-		b->force.Set(0.0f, 0.0f, 0.0f);
-		b->torque.Set(0.0f, 0.0f, 0.0f);
+		b->force = glm::vec3(0.0f, 0.0f, 0.0f);
+		b->torque = glm::vec3(0.0f, 0.0f, 0.0f);
 	}
 }
