@@ -21,4 +21,4 @@ set(BOX2D_HEADER_FILES
 	../include/box2d-lite/World3D.h)
 
 add_library(box2d-lite STATIC ${BOX2D_SOURCE_FILES} ${BOX2D_HEADER_FILES})
-target_include_directories(box2d-lite PUBLIC ../include)
+target_include_directories(box2d-lite PUBLIC ../include ../extern/glm)
