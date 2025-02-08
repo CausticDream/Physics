@@ -204,6 +204,27 @@ struct Quat
 		w = 1.0f;
 	}
 
+	void operator *= (float a)
+	{
+		x *= a; y *= a; z *= a; w *= a;
+	}
+
+	float Length() const
+	{
+		return sqrtf(x * x + y * y + z * z + w * w);
+	}
+
+	Quat Normalized() const
+	{
+		Quat q = *this;
+		float len = Length();
+		if (len > 0.0f)
+		{
+			q *= 1.0f / len;
+		}
+		return q;
+	}
+
 	Mat33 ToMatrix() const
 	{
 		Mat33 M;
