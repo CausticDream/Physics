@@ -33,7 +33,7 @@ Arbiter3D::Arbiter3D(Body3D* b1, Body3D* b2)
 
 void Arbiter3D::Update(Contact3D* newContacts, int numNewContacts)
 {
-	Contact3D mergedContacts[2];
+	Contact3D mergedContacts[4];
 
 	for (int i = 0; i < numNewContacts; ++i)
 	{
