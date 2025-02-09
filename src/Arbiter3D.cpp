@@ -83,19 +83,19 @@ void Arbiter3D::PreStep(float inv_dt)
         glm::vec3 r2 = c->position - body2->position;
 
         // Precompute normal mass, tangent mass, and bias.
-        float rn1 = glm::dot(r1, c->normal);
-        float rn2 = glm::dot(r2, c->normal);
+        glm::vec3 rn1 = glm::cross(r1, c->normal);
+        glm::vec3 rn2 = glm::cross(r2, c->normal);
         float kNormal = body1->invMass + body2->invMass;
-        kNormal += glm::dot(glm::cross(r1, c->normal), body1->invI * glm::cross(r1, c->normal));
-        kNormal += glm::dot(glm::cross(r2, c->normal), body2->invI * glm::cross(r2, c->normal));
+        kNormal += glm::dot(rn1, body1->invI * rn1);
+        kNormal += glm::dot(rn2, body2->invI * rn2);
         c->massNormal = 1.0f / kNormal;
 
         glm::vec3 tangent = glm::normalize(glm::cross(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)));
-        float rt1 = glm::dot(r1, tangent);
-        float rt2 = glm::dot(r2, tangent);
+        glm::vec3 rt1 = glm::cross(r1, tangent);
+        glm::vec3 rt2 = glm::cross(r2, tangent);
         float kTangent = body1->invMass + body2->invMass;
-        kTangent += glm::dot(glm::cross(r1, tangent), body1->invI * glm::cross(r1, tangent));
-        kTangent += glm::dot(glm::cross(r2, tangent), body2->invI * glm::cross(r2, tangent));
+        kTangent += glm::dot(rt1, body1->invI * rt1);
+        kTangent += glm::dot(rt2, body2->invI * rt2);
         c->massTangent = 1.0f / kTangent;
 
         c->bias = -k_biasFactor * inv_dt * glm::min(0.0f, c->separation + k_allowedPenetration);
