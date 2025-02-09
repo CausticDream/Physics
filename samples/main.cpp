@@ -182,14 +182,11 @@ static void DrawJoint3D(Joint3D* joint)
 	Body3D* b1 = joint->body1;
 	Body3D* b2 = joint->body2;
 
-	glm::mat3 R1 = glm::mat3_cast(b1->rotation);
-	glm::mat3 R2 = glm::mat3_cast(b2->rotation);
-
 	glm::vec3 x1 = b1->position;
-	glm::vec3 p1 = x1 + R1 * joint->localAnchor1;
+	glm::vec3 p1 = x1 + b1->rotation * joint->localAnchor1;
 
 	glm::vec3 x2 = b2->position;
-	glm::vec3 p2 = x2 + R2 * joint->localAnchor2;
+	glm::vec3 p2 = x2 + b2->rotation * joint->localAnchor2;
 
 	glColor3f(0.5f, 0.5f, 0.8f);
 	glBegin(GL_LINES);
