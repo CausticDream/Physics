@@ -5,26 +5,26 @@
 
 struct Body3D
 {
-	Body3D();
-	void Set(const glm::vec3& w, float m);
+    Body3D();
+    void Set(const glm::vec3& w, float m);
 
-	void AddForce(const glm::vec3& f)
-	{
-		force += f;
-	}
+    void AddForce(const glm::vec3& f)
+    {
+        force += f;
+    }
 
-	glm::vec3 position;
-	glm::quat rotation;
+    glm::vec3 position;
+    glm::quat rotation;
 
-	glm::vec3 velocity;
-	glm::vec3 angularVelocity;
+    glm::vec3 velocity;
+    glm::vec3 angularVelocity;
 
-	glm::vec3 force;
-	glm::vec3 torque;
+    glm::vec3 force;
+    glm::vec3 torque;
 
-	glm::vec3 width;
+    glm::vec3 width;
 
-	float friction;
-	float mass, invMass;
-	glm::vec3 I, invI;
+    float friction;
+    float mass, invMass;
+    glm::vec3 I, invI;
 };

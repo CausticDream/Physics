@@ -4,16 +4,16 @@
 
 void Joint3D::Set(Body3D* b1, Body3D* b2, const glm::vec3& anchor)
 {
-	body1 = b1;
-	body2 = b2;
+    body1 = b1;
+    body2 = b2;
 
-	localAnchor1 = glm::conjugate(body1->rotation) * (anchor - body1->position);
-	localAnchor2 = glm::conjugate(body2->rotation) * (anchor - body2->position);
+    localAnchor1 = glm::conjugate(body1->rotation) * (anchor - body1->position);
+    localAnchor2 = glm::conjugate(body2->rotation) * (anchor - body2->position);
 
-	P = glm::vec3(0.0f, 0.0f, 0.0f);
+    P = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	softness = 0.0f;
-	biasFactor = 0.2f;
+    softness = 0.0f;
+    biasFactor = 0.2f;
 }
 
 void Joint3D::PreStep(float inv_dt)

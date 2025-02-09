@@ -24,7 +24,10 @@ enum FaceNumbers
 
 struct ClipVertex
 {
-    ClipVertex() { fp.value = 0; }
+    ClipVertex()
+    {
+        fp.value = 0;
+    }
     glm::vec3 v; // Vertex position
     Feature3DPair fp; // Feature information
 };
@@ -186,23 +189,26 @@ int Collide3D(Contact3D* contacts, Body3D* body1, Body3D* body2)
     glm::vec3 dA = rotAT * dp; // dp in box A's local space
     glm::vec3 dB = rotBT * dp; // dp in box B's local space
 
-    glm::mat3 C = rotAT * rotB;      // Rotation from B's local space to A's local space
+    glm::mat3 C = rotAT * rotB; // Rotation from B's local space to A's local space
     glm::mat3 absC(
         glm::vec3(std::abs(C[0][0]), std::abs(C[0][1]), std::abs(C[0][2])),
         glm::vec3(std::abs(C[1][0]), std::abs(C[1][1]), std::abs(C[1][2])),
-        glm::vec3(std::abs(C[2][0]), std::abs(C[2][1]), std::abs(C[2][2]))
-    );
+        glm::vec3(std::abs(C[2][0]), std::abs(C[2][1]), std::abs(C[2][2])));
     glm::mat3 absCT = glm::transpose(absC);
 
     // Check faces of box A
     glm::vec3 faceA = glm::abs(dA) - hA - absC * hB;
     if (faceA.x > 0.0f || faceA.y > 0.0f || faceA.z > 0.0f)
+    {
         return 0;
+    }
 
     // Check faces of box B
     glm::vec3 faceB = glm::abs(dB) - absCT * hA - hB;
     if (faceB.x > 0.0f || faceB.y > 0.0f || faceB.z > 0.0f)
+    {
         return 0;
+    }
 
     // Find the best axis of separation
     Axis axis;
@@ -259,7 +265,10 @@ int Collide3D(Contact3D* contacts, Body3D* body1, Body3D* body2)
         for (int j = 0; j < 3; ++j) // Axes of box B
         {
             glm::vec3 axisTest = glm::cross(rotA[i], rotB[j]);
-            if (glm::length(axisTest) < absoluteTol) continue; // Skip near-zero axes
+            if (glm::length(axisTest) < absoluteTol)
+            {
+                continue; // Skip near-zero axes
+            }
 
             axisTest = glm::normalize(axisTest);
             float projectionA =
@@ -276,7 +285,9 @@ int Collide3D(Contact3D* contacts, Body3D* body1, Body3D* body2)
                 std::abs(glm::dot(dp, axisTest)) - projectionA - projectionB;
 
             if (distance > relativeTol * separation + absoluteTol)
+            {
                 return 0;
+            }
 
             if (distance > separation)
             {
@@ -298,92 +309,92 @@ int Collide3D(Contact3D* contacts, Body3D* body1, Body3D* body2)
     // Compute the clipping lines and the line segment to be clipped.
     switch (axis)
     {
-    case FACE_A_X:
-    {
-        frontNormal = normal;
-        front = glm::dot(posA, frontNormal) + hA.x;
-        sideNormal = rotA[1];
-        float side = glm::dot(posA, sideNormal);
-        negSide = -side + hA.y;
-        posSide = side + hA.y;
-        negFace = FACE3;
-        posFace = FACE4;
-        ComputeIncidentFace(incidentFace, hB, posB, rotB, frontNormal);
-    }
-    break;
+        case FACE_A_X:
+        {
+            frontNormal = normal;
+            front = glm::dot(posA, frontNormal) + hA.x;
+            sideNormal = rotA[1];
+            float side = glm::dot(posA, sideNormal);
+            negSide = -side + hA.y;
+            posSide = side + hA.y;
+            negFace = FACE3;
+            posFace = FACE4;
+            ComputeIncidentFace(incidentFace, hB, posB, rotB, frontNormal);
+        }
+        break;
 
-    case FACE_A_Y:
-    {
-        frontNormal = normal;
-        front = glm::dot(posA, frontNormal) + hA.y;
-        sideNormal = rotA[0];
-        float side = glm::dot(posA, sideNormal);
-        negSide = -side + hA.x;
-        posSide = side + hA.x;
-        negFace = FACE5;
-        posFace = FACE6;
-        ComputeIncidentFace(incidentFace, hB, posB, rotB, frontNormal);
-    }
-    break;
+        case FACE_A_Y:
+        {
+            frontNormal = normal;
+            front = glm::dot(posA, frontNormal) + hA.y;
+            sideNormal = rotA[0];
+            float side = glm::dot(posA, sideNormal);
+            negSide = -side + hA.x;
+            posSide = side + hA.x;
+            negFace = FACE5;
+            posFace = FACE6;
+            ComputeIncidentFace(incidentFace, hB, posB, rotB, frontNormal);
+        }
+        break;
 
-    case FACE_A_Z:
-    {
-        frontNormal = normal;
-        front = glm::dot(posA, frontNormal) + hA.z;
-        sideNormal = rotA[0];
-        float side = glm::dot(posA, sideNormal);
-        negSide = -side + hA.x;
-        posSide = side + hA.x;
-        negFace = FACE1;
-        posFace = FACE2;
-        ComputeIncidentFace(incidentFace, hB, posB, rotB, frontNormal);
-    }
-    break;
+        case FACE_A_Z:
+        {
+            frontNormal = normal;
+            front = glm::dot(posA, frontNormal) + hA.z;
+            sideNormal = rotA[0];
+            float side = glm::dot(posA, sideNormal);
+            negSide = -side + hA.x;
+            posSide = side + hA.x;
+            negFace = FACE1;
+            posFace = FACE2;
+            ComputeIncidentFace(incidentFace, hB, posB, rotB, frontNormal);
+        }
+        break;
 
-    case FACE_B_X:
-    {
-        frontNormal = -normal;
-        front = glm::dot(posB, frontNormal) + hB.x;
-        sideNormal = rotB[1];
-        float side = glm::dot(posB, sideNormal);
-        negSide = -side + hB.y;
-        posSide = side + hB.y;
-        negFace = FACE3;
-        posFace = FACE4;
-        ComputeIncidentFace(incidentFace, hA, posA, rotA, frontNormal);
-    }
-    break;
+        case FACE_B_X:
+        {
+            frontNormal = -normal;
+            front = glm::dot(posB, frontNormal) + hB.x;
+            sideNormal = rotB[1];
+            float side = glm::dot(posB, sideNormal);
+            negSide = -side + hB.y;
+            posSide = side + hB.y;
+            negFace = FACE3;
+            posFace = FACE4;
+            ComputeIncidentFace(incidentFace, hA, posA, rotA, frontNormal);
+        }
+        break;
 
-    case FACE_B_Y:
-    {
-        frontNormal = -normal;
-        front = glm::dot(posB, frontNormal) + hB.y;
-        sideNormal = rotB[0];
-        float side = glm::dot(posB, sideNormal);
-        negSide = -side + hB.x;
-        posSide = side + hB.x;
-        negFace = FACE5;
-        posFace = FACE6;
-        ComputeIncidentFace(incidentFace, hA, posA, rotA, frontNormal);
-    }
-    break;
+        case FACE_B_Y:
+        {
+            frontNormal = -normal;
+            front = glm::dot(posB, frontNormal) + hB.y;
+            sideNormal = rotB[0];
+            float side = glm::dot(posB, sideNormal);
+            negSide = -side + hB.x;
+            posSide = side + hB.x;
+            negFace = FACE5;
+            posFace = FACE6;
+            ComputeIncidentFace(incidentFace, hA, posA, rotA, frontNormal);
+        }
+        break;
 
-    case FACE_B_Z:
-    {
-        frontNormal = -normal;
-        front = glm::dot(posB, frontNormal) + hB.z;
-        sideNormal = rotB[0];
-        float side = glm::dot(posB, sideNormal);
-        negSide = -side + hB.x;
-        posSide = side + hB.x;
-        negFace = FACE1;
-        posFace = FACE2;
-        ComputeIncidentFace(incidentFace, hA, posA, rotA, frontNormal);
-    }
-    break;
+        case FACE_B_Z:
+        {
+            frontNormal = -normal;
+            front = glm::dot(posB, frontNormal) + hB.z;
+            sideNormal = rotB[0];
+            float side = glm::dot(posB, sideNormal);
+            negSide = -side + hB.x;
+            posSide = side + hB.x;
+            negFace = FACE1;
+            posFace = FACE2;
+            ComputeIncidentFace(incidentFace, hA, posA, rotA, frontNormal);
+        }
+        break;
 
-    default:
-        return 0; // Invalid axis
+        default:
+            return 0; // Invalid axis
     }
 
     // Clip against the planes of the reference face
@@ -391,25 +402,29 @@ int Collide3D(Contact3D* contacts, Body3D* body1, Body3D* body2)
 
     numContacts =
         ClipPolygonToPlane(clipPoints1,
-            incidentFace,
-            4,
-            -sideNormal,
-            negSide,
-            negFace);
+                           incidentFace,
+                           4,
+                           -sideNormal,
+                           negSide,
+                           negFace);
 
     if (numContacts < 2)
+    {
         return 0;
+    }
 
     numContacts =
         ClipPolygonToPlane(clipPoints2,
-            clipPoints1,
-            numContacts,
-            sideNormal,
-            posSide,
-            posFace);
+                           clipPoints1,
+                           numContacts,
+                           sideNormal,
+                           posSide,
+                           posFace);
 
     if (numContacts < 2)
+    {
         return 0;
+    }
 
     // Now clipPoints2 contains the clipping points.
     // Due to roundoff errors or degeneracies in geometry,
@@ -421,7 +436,7 @@ int Collide3D(Contact3D* contacts, Body3D* body1, Body3D* body2)
     {
         float separation =
             glm::dot(frontNormal,
-                clipPoints2[i].v) -
+                     clipPoints2[i].v) -
             front;
 
         if (separation <= 0.0f)
@@ -434,7 +449,9 @@ int Collide3D(Contact3D* contacts, Body3D* body1, Body3D* body2)
 
             // Flip the feature pair if the axis is from box B
             if (axis == FACE_B_X || axis == FACE_B_Y || axis == FACE_B_Z)
+            {
                 Flip(contacts[contactCount].feature);
+            }
 
             ++contactCount;
         }
