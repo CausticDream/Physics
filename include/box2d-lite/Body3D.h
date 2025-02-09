@@ -26,5 +26,5 @@ struct Body3D
 
     float friction;
     float mass, invMass;
-    glm::vec3 I, invI;
+    glm::mat3 I, invI;
 };

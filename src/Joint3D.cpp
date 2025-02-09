@@ -29,27 +29,19 @@ void Joint3D::PreStep(float inv_dt)
     K1[1].y = body1->invMass + body2->invMass;
     K1[2].z = body1->invMass + body2->invMass;
 
-    glm::mat3 K2 = glm::mat3(0.0f);
-    K2[0].x = body1->invI.x * r1.y * r1.y + body1->invI.x * r1.z * r1.z;
-    K2[0].y = -body1->invI.y * r1.x * r1.y;
-    K2[0].z = -body1->invI.z * r1.x * r1.z;
-    K2[1].x = K2[0].y;
-    K2[1].y = body1->invI.y * r1.x * r1.x + body1->invI.y * r1.z * r1.z;
-    K2[1].z = -body1->invI.z * r1.y * r1.z;
-    K2[2].x = K2[0].z;
-    K2[2].y = K2[1].z;
-    K2[2].z = body1->invI.z * r1.x * r1.x + body1->invI.z * r1.y * r1.y;
+    glm::mat3 skewR1 = glm::mat3(
+        0.0f, -r1.z, r1.y,
+        r1.z, 0.0f, -r1.x,
+        -r1.y, r1.x, 0.0f
+    );
+    glm::mat3 K2 = skewR1 * body1->invI * glm::transpose(skewR1);
 
-    glm::mat3 K3 = glm::mat3(0.0f);
-    K3[0].x = body2->invI.x * r2.y * r2.y + body2->invI.x * r2.z * r2.z;
-    K3[0].y = -body2->invI.y * r2.x * r2.y;
-    K3[0].z = -body2->invI.z * r2.x * r2.z;
-    K3[1].x = K3[0].y;
-    K3[1].y = body2->invI.y * r2.x * r2.x + body2->invI.y * r2.z * r2.z;
-    K3[1].z = -body2->invI.z * r2.y * r2.z;
-    K3[2].x = K3[0].z;
-    K3[2].y = K3[1].z;
-    K3[2].z = body2->invI.z * r2.x * r2.x + body2->invI.z * r2.y * r2.y;
+    glm::mat3 skewR2 = glm::mat3(
+        0.0f, -r2.z, r2.y,
+        r2.z, 0.0f, -r2.x,
+        -r2.y, r2.x, 0.0f
+    );
+    glm::mat3 K3 = skewR2 * body2->invI * glm::transpose(skewR2);
 
     glm::mat3 K = K1 + K2 + K3;
     K[0].x += softness;
