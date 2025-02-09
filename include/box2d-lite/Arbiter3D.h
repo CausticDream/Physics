@@ -6,16 +6,14 @@ struct Body3D;
 
 union Feature3DPair
 {
-	struct Planes
+	struct Faces
 	{
-		char inPlane1;
-		char outPlane1;
-		char inPlane2;
-		char outPlane2;
-		char inPlane3;
-		char outPlane3;
-	} e;
-	int64_t value;
+		char inFace1;
+		char outFace1;
+		char inFace2;
+		char outFace2;
+	} f;
+	int value;
 };
 
 struct Contact3D
