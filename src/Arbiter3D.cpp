@@ -91,11 +91,6 @@ void Arbiter3D::PreStep(float inv_dt)
         c->massNormal = 1.0f / kNormal;
 
         glm::vec3 tangent = glm::normalize(glm::cross(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)));
-        if (glm::length(tangent) < 1.0e-4f)
-        {
-            tangent = glm::normalize(glm::cross(c->normal, glm::vec3(0.0f, 1.0f, 0.0f)));
-        }
-
         float rt1 = glm::dot(r1, tangent);
         float rt2 = glm::dot(r2, tangent);
         float kTangent = body1->invMass + body2->invMass;
@@ -163,12 +158,7 @@ void Arbiter3D::ApplyImpulse()
         // Relative velocity at contact
         dv = b2->velocity + glm::cross(b2->angularVelocity, r2) - b1->velocity - glm::cross(b1->angularVelocity, r1);
 
-        glm::vec3 tangent = glm::normalize(glm::cross(glm::cross(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)), c->normal));
-        if (glm::length(tangent) < 1.0e-4f)
-        {
-            tangent = glm::normalize(glm::cross(glm::cross(c->normal, glm::vec3(0.0f, 1.0f, 0.0f)), c->normal));
-        }
-
+        glm::vec3 tangent = glm::normalize(glm::cross(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)));
         float vt = glm::dot(dv, tangent);
         float dPt = c->massTangent * (-vt);
 
