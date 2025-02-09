@@ -7,13 +7,8 @@ void Joint3D::Set(Body3D* b1, Body3D* b2, const glm::vec3& anchor)
 	body1 = b1;
 	body2 = b2;
 
-	glm::mat3 Rot1 = glm::mat3_cast(body1->rotation);
-    glm::mat3 Rot2 = glm::mat3_cast(body2->rotation);
-    glm::mat3 Rot1T = glm::transpose(Rot1);
-    glm::mat3 Rot2T = glm::transpose(Rot2);
-
-	localAnchor1 = Rot1T * (anchor - body1->position);
-	localAnchor2 = Rot2T * (anchor - body2->position);
+	localAnchor1 = glm::conjugate(body1->rotation) * (anchor - body1->position);
+	localAnchor2 = glm::conjugate(body2->rotation) * (anchor - body2->position);
 
 	P = glm::vec3(0.0f, 0.0f, 0.0f);
 
@@ -24,11 +19,8 @@ void Joint3D::Set(Body3D* b1, Body3D* b2, const glm::vec3& anchor)
 void Joint3D::PreStep(float inv_dt)
 {
     // Pre-compute anchors, mass matrix, and bias.
-    glm::mat3 Rot1 = glm::mat3_cast(body1->rotation);
-    glm::mat3 Rot2 = glm::mat3_cast(body2->rotation);
-
-    r1 = Rot1 * localAnchor1;
-    r2 = Rot2 * localAnchor2;
+    r1 = body1->rotation * localAnchor1;
+    r2 = body2->rotation * localAnchor2;
 
     // deltaV = deltaV0 + K * impulse
     // invM = [(1/m1 + 1/m2) * eye(3) - skew(r1) * invI1 * skew(r1) - skew(r2) * invI2 * skew(r2)]
