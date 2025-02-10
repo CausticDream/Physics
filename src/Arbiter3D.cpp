@@ -91,7 +91,7 @@ void Arbiter3D::PreStep(float inv_dt)
         c->massNormal = 1.0f / kNormal;
 
         glm::vec3 tangent;
-        if (glm::abs(glm::dot(c->normal, glm::vec3(1.0f, 0.0f, 0.0f))) > 0.99f)
+        if ((1.0f - glm::abs(glm::dot(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)))) < 1.0e-4f)
         {
             tangent = glm::normalize(glm::cross(c->normal, glm::vec3(0.0f, 1.0f, 0.0f)));
         }
@@ -166,7 +166,7 @@ void Arbiter3D::ApplyImpulse()
         dv = b2->velocity + glm::cross(b2->angularVelocity, c->r2) - b1->velocity - glm::cross(b1->angularVelocity, c->r1);
 
         glm::vec3 tangent;
-        if (glm::abs(glm::dot(c->normal, glm::vec3(1.0f, 0.0f, 0.0f))) > 0.99f)
+        if ((1.0f - glm::abs(glm::dot(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)))) < 1.0e-4f)
         {
             tangent = glm::normalize(glm::cross(c->normal, glm::vec3(0.0f, 1.0f, 0.0f)));
         }
