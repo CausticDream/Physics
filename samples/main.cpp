@@ -142,7 +142,7 @@ static void DrawBody3D(Body3D* body)
 {
     glm::mat3 R = glm::mat3_cast(body->rotation);
     glm::vec3 x = body->position;
-    glm::vec3 h = 0.5f * body->width;
+    glm::vec3 h = 0.5f * body->size;
 
     glm::vec3 v1 = x + R * glm::vec3(-h.x, -h.y, -h.z);
     glm::vec3 v2 = x + R * glm::vec3(h.x, -h.y, -h.z);
@@ -673,7 +673,7 @@ static void InitDemo(int index)
 static void Demo3D1(Body3D* b, Joint3D* j)
 {
     b->Set(glm::vec3(100.0f, 20.0f, 2.0f), FLT_MAX);
-    b->position = glm::vec3(0.0f, -0.5f * b->width.y, 0.0f);
+    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
     world3D.Add(b);
     ++b;
     ++numBodies3D;
@@ -691,7 +691,7 @@ static void Demo3D2(Body3D* b, Joint3D* j)
     Body3D* b1 = b + 0;
     b1->Set(glm::vec3(100.0f, 20.0f, 2.0f), FLT_MAX);
     b1->friction = 0.2f;
-    b1->position = glm::vec3(0.0f, -0.5f * b1->width.y, 0.0f);
+    b1->position = glm::vec3(0.0f, -0.5f * b1->size.y, 0.0f);
     b1->rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     world3D.Add(b1);
 

@@ -6,7 +6,7 @@
 struct Body3D
 {
     Body3D();
-    void Set(const glm::vec3& w, float m);
+    void Set(const glm::vec3& s, float m);
 
     void AddForce(const glm::vec3& f)
     {
@@ -22,7 +22,7 @@ struct Body3D
     glm::vec3 force;
     glm::vec3 torque;
 
-    glm::vec3 width;
+    glm::vec3 size;
 
     float friction;
     float mass, invMass;
