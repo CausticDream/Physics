@@ -17,9 +17,66 @@ Arbiter3D::Arbiter3D(Body3D* b1, Body3D* b2)
 
     numContacts = Collide3D(contacts, body1, body2);
 
-    staticFriction = (body1->staticFriction + body2->staticFriction) * 0.5f;
-    dynamicFriction = (body1->dynamicFriction + body2->dynamicFriction) * 0.5f;
-    restitution = (body1->restitution + body2->restitution) * 0.5f;
+    const CombineMode effectiveFrictionCombineMode = std::max(b1->frictionCombineMode, b2->frictionCombineMode);
+    const CombineMode effectiveRestitutionCombineMode = std::max(b1->restitutionCombineMode, b2->restitutionCombineMode);
+    switch (effectiveFrictionCombineMode)
+    {
+    case CombineMode::Average:
+    {
+        staticFriction = (body1->staticFriction + body2->staticFriction) * 0.5f;
+        dynamicFriction = (body1->dynamicFriction + body2->dynamicFriction) * 0.5f;
+        break;
+    }
+    case CombineMode::Minimum:
+    {
+        staticFriction = std::min(body1->staticFriction, body2->staticFriction);
+        dynamicFriction = std::min(body1->dynamicFriction, body2->dynamicFriction);
+        break;
+    }
+    case CombineMode::Multiply:
+    {
+        staticFriction = body1->staticFriction * body2->staticFriction;
+        dynamicFriction = body1->dynamicFriction * body2->dynamicFriction;
+        break;
+    }
+    case CombineMode::Maximum:
+    {
+        staticFriction = std::max(body1->staticFriction, body2->staticFriction);
+        dynamicFriction = std::max(body1->dynamicFriction, body2->dynamicFriction);
+        break;
+    }
+    default:
+    {
+        assert(false);
+    }
+    }
+    switch (effectiveRestitutionCombineMode)
+    {
+    case CombineMode::Average:
+    {
+        restitution = (body1->restitution + body2->restitution) * 0.5f;
+        break;
+    }
+    case CombineMode::Minimum:
+    {
+        restitution = std::min(body1->restitution, body2->restitution);
+        break;
+    }
+    case CombineMode::Multiply:
+    {
+        restitution = body1->restitution * body2->restitution;
+        break;
+    }
+    case CombineMode::Maximum:
+    {
+        restitution = std::max(body1->restitution, body2->restitution);
+        break;
+    }
+    default:
+    {
+        assert(false);
+    }
+    }
 }
 
 void Arbiter3D::Update(Contact3D* newContacts, int numNewContacts)

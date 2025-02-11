@@ -3,6 +3,14 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+enum class CombineMode
+{
+    Average,
+    Minimum,
+    Multiply,
+    Maximum
+};
+
 struct Body3D
 {
     Body3D();
@@ -27,6 +35,8 @@ struct Body3D
     float staticFriction;
     float dynamicFriction;
     float restitution;
+    CombineMode frictionCombineMode;
+    CombineMode restitutionCombineMode;
 
     float mass, invMass;
     glm::mat3 invI;

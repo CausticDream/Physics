@@ -11,6 +11,8 @@ Body3D::Body3D()
     staticFriction = 0.5f;
     dynamicFriction = 0.5f;
     restitution = 0.0f;
+    frictionCombineMode = CombineMode::Average;
+    restitutionCombineMode = CombineMode::Average;
     mass = FLT_MAX;
     invMass = 0.0f;
 
