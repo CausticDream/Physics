@@ -240,7 +240,6 @@ static void LaunchBomb3D()
     {
         bomb3D = bodies3D + numBodies3D;
         bomb3D->Set(glm::vec3(1.0f, 1.0f, 1.0f), 50.0f);
-        bomb3D->friction = 0.2f;
         world3D.Add(bomb3D);
         ++numBodies3D;
     }
@@ -690,14 +689,12 @@ static void Demo3D2(Body3D* b, Joint3D* j)
 {
     Body3D* b1 = b + 0;
     b1->Set(glm::vec3(100.0f, 20.0f, 2.0f), FLT_MAX);
-    b1->friction = 0.2f;
     b1->position = glm::vec3(0.0f, -0.5f * b1->size.y, 0.0f);
     b1->rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     world3D.Add(b1);
 
     Body3D* b2 = b + 1;
     b2->Set(glm::vec3(1.0f, 1.0f, 1.0f), 100.0f);
-    b2->friction = 0.2f;
     b2->position = glm::vec3(9.0f, 11.0f, 0.0f);
     b2->rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     world3D.Add(b2);
