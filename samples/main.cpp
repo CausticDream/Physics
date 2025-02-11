@@ -758,14 +758,17 @@ static void Keyboard(GLFWwindow* window, int key, int scancode, int action, int 
 
         case GLFW_KEY_A:
             World::accumulateImpulses = !World::accumulateImpulses;
+            World3D::accumulateImpulses = !World3D::accumulateImpulses;
             break;
 
         case GLFW_KEY_P:
             World::positionCorrection = !World::positionCorrection;
+            World3D::positionCorrection = !World3D::positionCorrection;
             break;
 
         case GLFW_KEY_W:
             World::warmStarting = !World::warmStarting;
+            World3D::warmStarting = !World3D::warmStarting;
             break;
 
         case GLFW_KEY_SPACE:
