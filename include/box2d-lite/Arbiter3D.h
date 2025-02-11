@@ -77,8 +77,10 @@ struct Arbiter3D
     Body3D* body1;
     Body3D* body2;
 
-    // Combined friction
-    float friction;
+    // Combined friction and restitution
+    float staticFriction;
+    float dynamicFriction;
+    float restitution;
 };
 
 // This is used by std::set

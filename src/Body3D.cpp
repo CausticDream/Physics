@@ -8,7 +8,9 @@ Body3D::Body3D()
     angularVelocity = glm::vec3(0.0f, 0.0f, 0.0f);
     force = glm::vec3(0.0f, 0.0f, 0.0f);
     torque = glm::vec3(0.0f, 0.0f, 0.0f);
-    friction = 0.2f;
+    staticFriction = 0.5f;
+    dynamicFriction = 0.5f;
+    restitution = 0.5f;
     mass = FLT_MAX;
     invMass = 0.0f;
 
@@ -24,7 +26,9 @@ void Body3D::Set(const glm::vec3& s, float m)
     angularVelocity = glm::vec3(0.0f, 0.0f, 0.0f);
     force = glm::vec3(0.0f, 0.0f, 0.0f);
     torque = glm::vec3(0.0f, 0.0f, 0.0f);
-    friction = 0.2f;
+    staticFriction = 0.5f;
+    dynamicFriction = 0.5f;
+    restitution = 0.5f;
 
     size = s;
     mass = m;

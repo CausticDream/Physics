@@ -24,7 +24,10 @@ struct Body3D
 
     glm::vec3 size;
 
-    float friction;
+    float staticFriction;
+    float dynamicFriction;
+    float restitution;
+
     float mass, invMass;
     glm::mat3 invI;
 };

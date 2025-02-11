@@ -17,7 +17,9 @@ Arbiter3D::Arbiter3D(Body3D* b1, Body3D* b2)
 
     numContacts = Collide3D(contacts, body1, body2);
 
-    friction = sqrtf(body1->friction * body2->friction);
+    staticFriction = (body1->staticFriction + body2->staticFriction) * 0.5f;
+    dynamicFriction = (body1->dynamicFriction + body2->dynamicFriction) * 0.5f;
+    restitution = (body1->restitution + body2->restitution) * 0.5f;
 }
 
 void Arbiter3D::Update(Contact3D* newContacts, int numNewContacts)
@@ -91,7 +93,7 @@ void Arbiter3D::PreStep(float inv_dt)
         c->massNormal = 1.0f / kNormal;
 
         glm::vec3 tangent;
-        if ((1.0f - glm::abs(glm::dot(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)))) < 1.0e-4f)
+        if ((1.0f - std::abs(glm::dot(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)))) < 1.0e-4f)
         {
             tangent = glm::normalize(glm::cross(c->normal, glm::vec3(0.0f, 1.0f, 0.0f)));
         }
@@ -139,7 +141,7 @@ void Arbiter3D::ApplyImpulse()
         // Compute normal impulse
         float vn = glm::dot(dv, c->normal);
 
-        float dPn = c->massNormal * (-vn + c->bias);
+        float dPn = c->massNormal * (-vn * (1.0f - restitution) + c->bias);
 
         if (World3D::accumulateImpulses)
         {
@@ -166,7 +168,7 @@ void Arbiter3D::ApplyImpulse()
         dv = b2->velocity + glm::cross(b2->angularVelocity, c->r2) - b1->velocity - glm::cross(b1->angularVelocity, c->r1);
 
         glm::vec3 tangent;
-        if ((1.0f - glm::abs(glm::dot(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)))) < 1.0e-4f)
+        if ((1.0f - std::abs(glm::dot(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)))) < 1.0e-4f)
         {
             tangent = glm::normalize(glm::cross(c->normal, glm::vec3(0.0f, 1.0f, 0.0f)));
         }
@@ -177,10 +179,13 @@ void Arbiter3D::ApplyImpulse()
         float vt = glm::dot(dv, tangent);
         float dPt = c->massTangent * (-vt);
 
+        constexpr float velocityThreshold = 0.1f;
+        const float effectiveFriction = (std::abs(vt) < velocityThreshold) ? staticFriction : dynamicFriction;
+
         if (World3D::accumulateImpulses)
         {
             // Compute friction impulse
-            float maxPt = friction * c->Pn;
+            float maxPt = effectiveFriction * c->Pn;
 
             // Clamp friction
             float oldTangentImpulse = c->Pt;
@@ -189,7 +194,7 @@ void Arbiter3D::ApplyImpulse()
         }
         else
         {
-            float maxPt = friction * dPn;
+            float maxPt = effectiveFriction * dPn;
             dPt = glm::clamp(dPt, -maxPt, maxPt);
         }
 
