@@ -169,8 +169,8 @@ void Arbiter3D::PreStep(float inv_dt)
 
         glm::vec3 dv = body2->velocity + glm::cross(body2->angularVelocity, r2) - body1->velocity - glm::cross(body1->angularVelocity, r1);
         float vn = glm::dot(dv, c->normal);
-        constexpr float velocityThreshold = 0.4f;
-        if (std::abs(vn) > velocityThreshold)
+        constexpr float velocityThreshold = 1.0f;
+        if (vn < -velocityThreshold)
         {
             c->bias -= restitution * vn;
         }
@@ -241,7 +241,7 @@ void Arbiter3D::ApplyImpulse()
         float vt = glm::dot(dv, tangent);
         float dPt = c->massTangent * (-vt);
 
-        constexpr float velocityThreshold = 0.1f;
+        constexpr float velocityThreshold = 1.0f;
         const float effectiveFriction = (std::abs(vt) < velocityThreshold) ? staticFriction : dynamicFriction;
 
         if (World3D::accumulateImpulses)
