@@ -167,6 +167,14 @@ void Arbiter3D::PreStep(float inv_dt)
 
         c->bias = -k_biasFactor * inv_dt * glm::min(0.0f, c->separation + k_allowedPenetration);
 
+        glm::vec3 dv = body2->velocity + glm::cross(body2->angularVelocity, r2) - body1->velocity - glm::cross(body1->angularVelocity, r1);
+        float vn = glm::dot(dv, c->normal);
+        constexpr float velocityThreshold = 0.4f;
+        if (std::abs(vn) > velocityThreshold)
+        {
+            c->bias -= restitution * vn;
+        }
+
         if (World3D::accumulateImpulses)
         {
             // Apply normal + friction impulse
@@ -198,7 +206,7 @@ void Arbiter3D::ApplyImpulse()
         // Compute normal impulse
         float vn = glm::dot(dv, c->normal);
 
-        float dPn = c->massNormal * (-vn * (1.0f - restitution) + c->bias);
+        float dPn = c->massNormal * (-vn + c->bias);
 
         if (World3D::accumulateImpulses)
         {
