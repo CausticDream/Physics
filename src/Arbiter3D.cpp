@@ -191,17 +191,14 @@ void Arbiter3D::PreStep(float inv_dt)
 
 void Arbiter3D::ApplyImpulse()
 {
-    Body3D* b1 = body1;
-    Body3D* b2 = body2;
-
     for (int i = 0; i < numContacts; ++i)
     {
         Contact3D* c = contacts + i;
-        c->r1 = c->position - b1->position;
-        c->r2 = c->position - b2->position;
+        c->r1 = c->position - body1->position;
+        c->r2 = c->position - body2->position;
 
         // Relative velocity at contact
-        glm::vec3 dv = b2->velocity + glm::cross(b2->angularVelocity, c->r2) - b1->velocity - glm::cross(b1->angularVelocity, c->r1);
+        glm::vec3 dv = body2->velocity + glm::cross(body2->angularVelocity, c->r2) - body1->velocity - glm::cross(body1->angularVelocity, c->r1);
 
         // Compute normal impulse
         float vn = glm::dot(dv, c->normal);
@@ -223,14 +220,14 @@ void Arbiter3D::ApplyImpulse()
         // Apply contact impulse
         glm::vec3 Pn = dPn * c->normal;
 
-        b1->velocity -= b1->invMass * Pn;
-        b1->angularVelocity -= b1->invI * glm::cross(c->r1, Pn);
+        body1->velocity -= body1->invMass * Pn;
+        body1->angularVelocity -= body1->invI * glm::cross(c->r1, Pn);
 
-        b2->velocity += b2->invMass * Pn;
-        b2->angularVelocity += b2->invI * glm::cross(c->r2, Pn);
+        body2->velocity += body2->invMass * Pn;
+        body2->angularVelocity += body2->invI * glm::cross(c->r2, Pn);
 
         // Relative velocity at contact
-        dv = b2->velocity + glm::cross(b2->angularVelocity, c->r2) - b1->velocity - glm::cross(b1->angularVelocity, c->r1);
+        dv = body2->velocity + glm::cross(body2->angularVelocity, c->r2) - body1->velocity - glm::cross(body1->angularVelocity, c->r1);
 
         glm::vec3 tangent;
         if ((1.0f - std::abs(glm::dot(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)))) < 1.0e-4f)
@@ -266,10 +263,10 @@ void Arbiter3D::ApplyImpulse()
         // Apply contact impulse
         glm::vec3 Pt = dPt * tangent;
 
-        b1->velocity -= b1->invMass * Pt;
-        b1->angularVelocity -= b1->invI * glm::cross(c->r1, Pt);
+        body1->velocity -= body1->invMass * Pt;
+        body1->angularVelocity -= body1->invI * glm::cross(c->r1, Pt);
 
-        b2->velocity += b2->invMass * Pt;
-        b2->angularVelocity += b2->invI * glm::cross(c->r2, Pt);
+        body2->velocity += body2->invMass * Pt;
+        body2->angularVelocity += body2->invI * glm::cross(c->r2, Pt);
     }
 }
