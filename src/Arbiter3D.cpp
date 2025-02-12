@@ -132,7 +132,7 @@ void Arbiter3D::Update(Contact3D* newContacts, int numNewContacts)
 void Arbiter3D::PreStep(float inv_dt)
 {
     const float k_allowedPenetration = 0.01f;
-    float k_biasFactor = World3D::positionCorrection ? 0.2f : 0.0f;
+    float k_biasFactor = World3D::positionCorrection ? 0.1f : 0.0f;
 
     for (int i = 0; i < numContacts; ++i)
     {
