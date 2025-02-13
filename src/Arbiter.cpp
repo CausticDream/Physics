@@ -18,7 +18,6 @@ Arbiter::Arbiter(Body* b1, Body* b2)
     numContacts = Collide(contacts, body1, body2);
 
     const CombineMode effectiveFrictionCombineMode = std::max(b1->shape.material.frictionCombineMode, b2->shape.material.frictionCombineMode);
-    const CombineMode effectiveRestitutionCombineMode = std::max(b1->shape.material.restitutionCombineMode, b2->shape.material.restitutionCombineMode);
     switch (effectiveFrictionCombineMode)
     {
     case CombineMode::Average:
@@ -50,6 +49,8 @@ Arbiter::Arbiter(Body* b1, Body* b2)
         assert(false);
     }
     }
+
+    const CombineMode effectiveRestitutionCombineMode = std::max(b1->shape.material.restitutionCombineMode, b2->shape.material.restitutionCombineMode);
     switch (effectiveRestitutionCombineMode)
     {
     case CombineMode::Average:
