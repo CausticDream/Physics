@@ -72,17 +72,15 @@ static void DrawText(int x, int y, const char* string)
 static void DrawBody(Body* body)
 {
     glm::mat3 R = glm::mat3_cast(body->rotation);
-    glm::vec3 x = body->position;
-    glm::vec3 h = 0.5f * body->size;
 
-    glm::vec3 v1 = x + R * glm::vec3(-h.x, -h.y, -h.z);
-    glm::vec3 v2 = x + R * glm::vec3(h.x, -h.y, -h.z);
-    glm::vec3 v3 = x + R * glm::vec3(h.x, h.y, -h.z);
-    glm::vec3 v4 = x + R * glm::vec3(-h.x, h.y, -h.z);
-    glm::vec3 v5 = x + R * glm::vec3(-h.x, -h.y, h.z);
-    glm::vec3 v6 = x + R * glm::vec3(h.x, -h.y, h.z);
-    glm::vec3 v7 = x + R * glm::vec3(h.x, h.y, h.z);
-    glm::vec3 v8 = x + R * glm::vec3(-h.x, h.y, h.z);
+    glm::vec3 v1 = body->position + R * glm::vec3(-body->shape.geometry.halfSize.x, -body->shape.geometry.halfSize.y, -body->shape.geometry.halfSize.z);
+    glm::vec3 v2 = body->position + R * glm::vec3(body->shape.geometry.halfSize.x, -body->shape.geometry.halfSize.y, -body->shape.geometry.halfSize.z);
+    glm::vec3 v3 = body->position + R * glm::vec3(body->shape.geometry.halfSize.x, body->shape.geometry.halfSize.y, -body->shape.geometry.halfSize.z);
+    glm::vec3 v4 = body->position + R * glm::vec3(-body->shape.geometry.halfSize.x, body->shape.geometry.halfSize.y, -body->shape.geometry.halfSize.z);
+    glm::vec3 v5 = body->position + R * glm::vec3(-body->shape.geometry.halfSize.x, -body->shape.geometry.halfSize.y, body->shape.geometry.halfSize.z);
+    glm::vec3 v6 = body->position + R * glm::vec3(body->shape.geometry.halfSize.x, -body->shape.geometry.halfSize.y, body->shape.geometry.halfSize.z);
+    glm::vec3 v7 = body->position + R * glm::vec3(body->shape.geometry.halfSize.x, body->shape.geometry.halfSize.y, body->shape.geometry.halfSize.z);
+    glm::vec3 v8 = body->position + R * glm::vec3(-body->shape.geometry.halfSize.x, body->shape.geometry.halfSize.y, body->shape.geometry.halfSize.z);
 
     if (body == bomb)
     {
@@ -153,7 +151,7 @@ static void LaunchBomb()
     if (!bomb)
     {
         bomb = bodies + numBodies;
-        bomb->Set(glm::vec3(1.0f, 1.0f, 1.0f), 50.0f);
+        bomb->Set(glm::vec3(0.5f, 0.5f, 0.5f), 50.0f);
         world.Add(bomb);
         ++numBodies;
     }
@@ -167,13 +165,13 @@ static void LaunchBomb()
 // Single box
 static void Demo1(Body* b, Joint* j)
 {
-    b->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
-    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
+    b->Set(glm::vec3(50.0f, 10.0f, 10.0f), FLT_MAX);
+    b->position = glm::vec3(0.0f, -b->shape.geometry.halfSize.y, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
-    b->Set(glm::vec3(1.0f, 1.0f, 1.0f), 200.0f);
+    b->Set(glm::vec3(0.5f, 0.5f, 0.5f), 200.0f);
     b->position = glm::vec3(0.0f, 4.0f, 0.0f);
     world.Add(b);
     ++b;
@@ -184,13 +182,13 @@ static void Demo1(Body* b, Joint* j)
 static void Demo2(Body* b, Joint* j)
 {
     Body* b1 = b + 0;
-    b1->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
-    b1->position = glm::vec3(0.0f, -0.5f * b1->size.y, 0.0f);
+    b1->Set(glm::vec3(50.0f, 10.0f, 10.0f), FLT_MAX);
+    b1->position = glm::vec3(0.0f, -b1->shape.geometry.halfSize.y, 0.0f);
     b1->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b1);
 
     Body* b2 = b + 1;
-    b2->Set(glm::vec3(1.0f, 1.0f, 1.0f), 100.0f);
+    b2->Set(glm::vec3(0.5f, 0.5f, 0.5f), 100.0f);
     b2->position = glm::vec3(9.0f, 11.0f, 0.0f);
     b2->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b2);
@@ -206,39 +204,39 @@ static void Demo2(Body* b, Joint* j)
 // Varying friction coefficients
 static void Demo3(Body* b, Joint* j)
 {
-    b->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
-    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
+    b->Set(glm::vec3(50.0f, 10.0f, 10.0f), FLT_MAX);
+    b->position = glm::vec3(0.0f, -b->shape.geometry.halfSize.y, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
-    b->Set(glm::vec3(13.0f, 0.25f, 0.25f), FLT_MAX);
+    b->Set(glm::vec3(6.5f, 0.125f, 0.125f), FLT_MAX);
     b->position = glm::vec3(-2.0f, 11.0f, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, -0.25f));
     world.Add(b);
     ++b;
     ++numBodies;
 
-    b->Set(glm::vec3(0.25f, 1.0f, 1.0f), FLT_MAX);
+    b->Set(glm::vec3(0.125f, 0.5f, 0.5f), FLT_MAX);
     b->position = glm::vec3(5.25f, 9.5f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
-    b->Set(glm::vec3(13.0f, 0.25f, 0.25f), FLT_MAX);
+    b->Set(glm::vec3(6.5f, 0.125f, 0.125f), FLT_MAX);
     b->position = glm::vec3(2.0f, 7.0f, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.25f));
     world.Add(b);
     ++b;
     ++numBodies;
 
-    b->Set(glm::vec3(0.25f, 1.0f, 1.0f), FLT_MAX);
+    b->Set(glm::vec3(0.125f, 0.5f, 0.5f), FLT_MAX);
     b->position = glm::vec3(-5.25f, 5.5f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
-    b->Set(glm::vec3(13.0f, 0.25f, 0.25f), FLT_MAX);
+    b->Set(glm::vec3(6.5f, 0.125f, 0.125f), FLT_MAX);
     b->position = glm::vec3(-2.0f, 3.0f, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, -0.25f));
     world.Add(b);
@@ -248,9 +246,9 @@ static void Demo3(Body* b, Joint* j)
     float friction[5] = {0.75f, 0.5f, 0.35f, 0.1f, 0.0f};
     for (int i = 0; i < 5; ++i)
     {
-        b->Set(glm::vec3(0.5f, 0.5f, 0.5f), 25.0f);
-        b->material.staticFriction = friction[i];
-        b->material.dynamicFriction = friction[i];
+        b->Set(glm::vec3(0.25f, 0.25f, 0.25f), 25.0f);
+        b->shape.material.staticFriction = friction[i];
+        b->shape.material.dynamicFriction = friction[i];
         b->position = glm::vec3(-7.5f + 2.0f * i, 14.0f, 0.0f);
         world.Add(b);
         ++b;
@@ -261,8 +259,8 @@ static void Demo3(Body* b, Joint* j)
 // A vertical stack
 static void Demo4(Body* b, Joint* j)
 {
-    b->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
-    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
+    b->Set(glm::vec3(50.0f, 10.0f, 10.0f), FLT_MAX);
+    b->position = glm::vec3(0.0f, -b->shape.geometry.halfSize.y, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
     ++b;
@@ -270,7 +268,7 @@ static void Demo4(Body* b, Joint* j)
 
     for (int i = 0; i < 10; ++i)
     {
-        b->Set(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
+        b->Set(glm::vec3(0.5f, 0.5f, 0.5f), 1.0f);
         float x = glm::linearRand(-0.1f, 0.1f);
         b->position = glm::vec3(x, 0.51f + 1.05f * i, 0.0f);
         world.Add(b);
@@ -282,8 +280,8 @@ static void Demo4(Body* b, Joint* j)
 // A pyramid
 static void Demo5(Body* b, Joint* j)
 {
-    b->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
-    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
+    b->Set(glm::vec3(50.0f, 10.0f, 10.0f), FLT_MAX);
+    b->position = glm::vec3(0.0f, -b->shape.geometry.halfSize.y, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
     ++b;
@@ -298,7 +296,7 @@ static void Demo5(Body* b, Joint* j)
 
         for (int j = i; j < 12; ++j)
         {
-            b->Set(glm::vec3(1.0f, 1.0f, 1.0f), 10.0f);
+            b->Set(glm::vec3(0.5f, 0.5f, 0.5f), 10.0f);
             b->position = y;
             world.Add(b);
             ++b;
@@ -315,27 +313,27 @@ static void Demo5(Body* b, Joint* j)
 static void Demo6(Body* b, Joint* j)
 {
     Body* b1 = b + 0;
-    b1->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
-    b1->position = glm::vec3(0.0f, -0.5f * b1->size.y, 0.0f);
+    b1->Set(glm::vec3(50.0f, 10.0f, 10.0f), FLT_MAX);
+    b1->position = glm::vec3(0.0f, -b1->shape.geometry.halfSize.y, 0.0f);
     world.Add(b1);
 
     Body* b2 = b + 1;
-    b2->Set(glm::vec3(12.0f, 0.25f, 0.25f), 100.0f);
+    b2->Set(glm::vec3(6.0f, 0.125f, 0.125f), 100.0f);
     b2->position = glm::vec3(0.0f, 1.0f, 0.0f);
     world.Add(b2);
 
     Body* b3 = b + 2;
-    b3->Set(glm::vec3(0.5f, 0.5f, 0.5f), 25.0f);
+    b3->Set(glm::vec3(0.25f, 0.25f, 0.25f), 25.0f);
     b3->position = glm::vec3(-5.0f, 2.0f, 0.0f);
     world.Add(b3);
 
     Body* b4 = b + 3;
-    b4->Set(glm::vec3(0.5f, 0.5f, 0.5f), 25.0f);
+    b4->Set(glm::vec3(0.25f, 0.25f, 0.25f), 25.0f);
     b4->position = glm::vec3(-5.5f, 2.0f, 0.0f);
     world.Add(b4);
 
     Body* b5 = b + 4;
-    b5->Set(glm::vec3(1.0f, 1.0f, 1.0f), 100.0f);
+    b5->Set(glm::vec3(0.5f, 0.5f, 0.5f), 100.0f);
     b5->position = glm::vec3(5.5f, 15.0f, 0.0f);
     world.Add(b5);
 
@@ -350,8 +348,8 @@ static void Demo6(Body* b, Joint* j)
 // A suspension bridge
 static void Demo7(Body* b, Joint* j)
 {
-    b->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
-    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
+    b->Set(glm::vec3(50.0f, 10.0f, 10.0f), FLT_MAX);
+    b->position = glm::vec3(0.0f, -b->shape.geometry.halfSize.y, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
     ++b;
@@ -362,7 +360,7 @@ static void Demo7(Body* b, Joint* j)
 
     for (int i = 0; i < numPlanks; ++i)
     {
-        b->Set(glm::vec3(1.0f, 0.25f, 0.25f), mass);
+        b->Set(glm::vec3(0.5f, 0.125f, 0.125f), mass);
         b->position = glm::vec3(-8.5f + 1.25f * i, 5.0f, 0.0f);
         world.Add(b);
         ++b;
@@ -409,13 +407,13 @@ static void Demo7(Body* b, Joint* j)
 static void Demo8(Body* b, Joint* j)
 {
     Body* b1 = b;
-    b->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
-    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
+    b->Set(glm::vec3(50.0f, 10.0f, 10.0f), FLT_MAX);
+    b->position = glm::vec3(0.0f, -b->shape.geometry.halfSize.y, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
-    b->Set(glm::vec3(12.0f, 0.5f, 0.5f), FLT_MAX);
+    b->Set(glm::vec3(6.0f, 0.25f, 0.25f), FLT_MAX);
     b->position = glm::vec3(-1.5f, 10.0f, 0.0f);
     world.Add(b);
     ++b;
@@ -423,16 +421,16 @@ static void Demo8(Body* b, Joint* j)
 
     for (int i = 0; i < 10; ++i)
     {
-        b->Set(glm::vec3(0.2f, 2.0f, 2.0f), 10.0f);
+        b->Set(glm::vec3(0.1f, 1.0f, 1.0f), 10.0f);
         b->position = glm::vec3(-6.0f + 1.0f * i, 11.125f, 0.0f);
-        b->material.staticFriction = 0.1f;
-        b->material.dynamicFriction = 0.1f;
+        b->shape.material.staticFriction = 0.1f;
+        b->shape.material.dynamicFriction = 0.1f;
         world.Add(b);
         ++b;
         ++numBodies;
     }
 
-    b->Set(glm::vec3(14.0f, 0.5f, 0.5f), FLT_MAX);
+    b->Set(glm::vec3(7.0f, 0.25f, 0.25f), FLT_MAX);
     b->position = glm::vec3(1.0f, 6.0f, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.3f));
     world.Add(b);
@@ -440,14 +438,14 @@ static void Demo8(Body* b, Joint* j)
     ++numBodies;
 
     Body* b2 = b;
-    b->Set(glm::vec3(0.5f, 3.0f, 3.0f), FLT_MAX);
+    b->Set(glm::vec3(0.25f, 1.5f, 1.5f), FLT_MAX);
     b->position = glm::vec3(-7.0f, 4.0f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
     Body* b3 = b;
-    b->Set(glm::vec3(12.0f, 0.25f, 0.25f), 20.0f);
+    b->Set(glm::vec3(6.0f, 0.125f, 0.125f), 20.0f);
     b->position = glm::vec3(-0.9f, 1.0f, 0.0f);
     world.Add(b);
     ++b;
@@ -459,7 +457,7 @@ static void Demo8(Body* b, Joint* j)
     ++numJoints;
 
     Body* b4 = b;
-    b->Set(glm::vec3(0.5f, 0.5f, 0.5f), 10.0f);
+    b->Set(glm::vec3(0.25f, 0.25f, 0.25f), 10.0f);
     b->position = glm::vec3(-10.0f, 15.0f, 0.0f);
     world.Add(b);
     ++b;
@@ -471,10 +469,10 @@ static void Demo8(Body* b, Joint* j)
     ++numJoints;
 
     Body* b5 = b;
-    b->Set(glm::vec3(2.0f, 2.0f, 2.0f), 20.0f);
+    b->Set(glm::vec3(1.0f, 1.0f, 1.0f), 20.0f);
     b->position = glm::vec3(6.0f, 2.5f, 0.0f);
-    b->material.staticFriction = 0.1f;
-    b->material.dynamicFriction = 0.1f;
+    b->shape.material.staticFriction = 0.1f;
+    b->shape.material.dynamicFriction = 0.1f;
     world.Add(b);
     ++b;
     ++numBodies;
@@ -485,7 +483,7 @@ static void Demo8(Body* b, Joint* j)
     ++numJoints;
 
     Body* b6 = b;
-    b->Set(glm::vec3(2.0f, 0.2f, 0.2f), 10.0f);
+    b->Set(glm::vec3(1.0f, 0.1f, 0.1f), 10.0f);
     b->position = glm::vec3(6.0f, 3.6f, 0.0f);
     world.Add(b);
     ++b;
@@ -500,8 +498,8 @@ static void Demo8(Body* b, Joint* j)
 // A multi-pendulum
 static void Demo9(Body* b, Joint* j)
 {
-    b->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
-    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
+    b->Set(glm::vec3(50.0f, 10.0f, 10.0f), FLT_MAX);
+    b->position = glm::vec3(0.0f, -b->shape.geometry.halfSize.y, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
 
@@ -533,7 +531,7 @@ static void Demo9(Body* b, Joint* j)
     for (int i = 0; i < 15; ++i)
     {
         glm::vec3 x(0.5f + i, y, 0.0f);
-        b->Set(glm::vec3(0.75f, 0.25f, 0.75f), mass);
+        b->Set(glm::vec3(0.375f, 0.125f, 0.375f), mass);
         b->position = x;
         b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
         world.Add(b);
@@ -567,9 +565,9 @@ static void InitDemo(int index)
 {
     for (int i = 0; i < numBodies; ++i)
     {
-        bodies[i].material.staticFriction = 0.5f;
-        bodies[i].material.dynamicFriction = 0.5f;
-        bodies[i].material.restitution = 0.0f;
+        bodies[i].shape.material.staticFriction = 0.5f;
+        bodies[i].shape.material.dynamicFriction = 0.5f;
+        bodies[i].shape.material.restitution = 0.0f;
     }
 
     world.Clear();

@@ -154,8 +154,8 @@ static void ComputeIncidentFace(ClipVertex c[4], const glm::vec3& h, const glm::
 
 int Collide(Contact* contacts, Body* bodyA, Body* bodyB)
 {
-    glm::vec3 hA = 0.5f * bodyA->size;
-    glm::vec3 hB = 0.5f * bodyB->size;
+    glm::vec3 hA = bodyA->shape.geometry.halfSize;
+    glm::vec3 hB = bodyB->shape.geometry.halfSize;
     glm::vec3 posA = bodyA->position;
     glm::vec3 posB = bodyB->position;
     glm::mat3 RotA = glm::mat3_cast(bodyA->rotation);

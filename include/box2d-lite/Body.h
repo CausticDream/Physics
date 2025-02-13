@@ -3,6 +3,37 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+struct Geometry
+{
+    Geometry();
+    glm::mat3 invI;
+};
+
+struct GeometryBox : Geometry
+{
+    GeometryBox();
+    void Set(const glm::vec3& hs, float m);
+
+    glm::vec3 halfSize;
+};
+
+struct GeometrySphere : Geometry
+{
+    GeometrySphere();
+    void Set(float r, float m);
+
+    float radius;
+};
+
+struct GeometryCapsule : Geometry
+{
+    GeometryCapsule();
+    void Set(float r, float hh, float m);
+
+    float radius;
+    float halfHeight;
+};
+
 enum class CombineMode
 {
     Average,
@@ -13,14 +44,7 @@ enum class CombineMode
 
 struct Material
 {
-    Material()
-    : staticFriction(0.5f)
-    , dynamicFriction(0.5f)
-    , restitution(0.0f)
-    , frictionCombineMode(CombineMode::Average)
-    , restitutionCombineMode(CombineMode::Average)
-    {
-    }
+    Material();
 
     float staticFriction;
     float dynamicFriction;
@@ -29,29 +53,25 @@ struct Material
     CombineMode restitutionCombineMode;
 };
 
+struct Shape
+{
+    GeometryBox geometry;
+    Material material;
+};
+
 struct Body
 {
     Body();
     void Set(const glm::vec3& s, float m);
-
-    void AddForce(const glm::vec3& f)
-    {
-        force += f;
-    }
+    void AddForce(const glm::vec3& f);
 
     glm::vec3 position;
     glm::quat rotation;
-
     glm::vec3 velocity;
     glm::vec3 angularVelocity;
-
     glm::vec3 force;
     glm::vec3 torque;
-
     float mass;
     float invMass;
-
-    glm::vec3 size;
-    Material material;
-    glm::mat3 invI;
+    Shape shape;
 };
