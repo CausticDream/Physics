@@ -17,32 +17,32 @@ Arbiter3D::Arbiter3D(Body3D* b1, Body3D* b2)
 
     numContacts = Collide3D(contacts, body1, body2);
 
-    const CombineMode effectiveFrictionCombineMode = std::max(b1->frictionCombineMode, b2->frictionCombineMode);
-    const CombineMode effectiveRestitutionCombineMode = std::max(b1->restitutionCombineMode, b2->restitutionCombineMode);
+    const CombineMode effectiveFrictionCombineMode = std::max(b1->material.frictionCombineMode, b2->material.frictionCombineMode);
+    const CombineMode effectiveRestitutionCombineMode = std::max(b1->material.restitutionCombineMode, b2->material.restitutionCombineMode);
     switch (effectiveFrictionCombineMode)
     {
     case CombineMode::Average:
     {
-        staticFriction = (body1->staticFriction + body2->staticFriction) * 0.5f;
-        dynamicFriction = (body1->dynamicFriction + body2->dynamicFriction) * 0.5f;
+        staticFriction = (body1->material.staticFriction + body2->material.staticFriction) * 0.5f;
+        dynamicFriction = (body1->material.dynamicFriction + body2->material.dynamicFriction) * 0.5f;
         break;
     }
     case CombineMode::Minimum:
     {
-        staticFriction = std::min(body1->staticFriction, body2->staticFriction);
-        dynamicFriction = std::min(body1->dynamicFriction, body2->dynamicFriction);
+        staticFriction = std::min(body1->material.staticFriction, body2->material.staticFriction);
+        dynamicFriction = std::min(body1->material.dynamicFriction, body2->material.dynamicFriction);
         break;
     }
     case CombineMode::Multiply:
     {
-        staticFriction = body1->staticFriction * body2->staticFriction;
-        dynamicFriction = body1->dynamicFriction * body2->dynamicFriction;
+        staticFriction = body1->material.staticFriction * body2->material.staticFriction;
+        dynamicFriction = body1->material.dynamicFriction * body2->material.dynamicFriction;
         break;
     }
     case CombineMode::Maximum:
     {
-        staticFriction = std::max(body1->staticFriction, body2->staticFriction);
-        dynamicFriction = std::max(body1->dynamicFriction, body2->dynamicFriction);
+        staticFriction = std::max(body1->material.staticFriction, body2->material.staticFriction);
+        dynamicFriction = std::max(body1->material.dynamicFriction, body2->material.dynamicFriction);
         break;
     }
     default:
@@ -54,22 +54,22 @@ Arbiter3D::Arbiter3D(Body3D* b1, Body3D* b2)
     {
     case CombineMode::Average:
     {
-        restitution = (body1->restitution + body2->restitution) * 0.5f;
+        restitution = (body1->material.restitution + body2->material.restitution) * 0.5f;
         break;
     }
     case CombineMode::Minimum:
     {
-        restitution = std::min(body1->restitution, body2->restitution);
+        restitution = std::min(body1->material.restitution, body2->material.restitution);
         break;
     }
     case CombineMode::Multiply:
     {
-        restitution = body1->restitution * body2->restitution;
+        restitution = body1->material.restitution * body2->material.restitution;
         break;
     }
     case CombineMode::Maximum:
     {
-        restitution = std::max(body1->restitution, body2->restitution);
+        restitution = std::max(body1->material.restitution, body2->material.restitution);
         break;
     }
     default:

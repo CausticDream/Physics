@@ -11,6 +11,24 @@ enum class CombineMode
     Maximum
 };
 
+struct Material
+{
+    Material()
+    : staticFriction(0.5f)
+    , dynamicFriction(0.5f)
+    , restitution(0.0f)
+    , frictionCombineMode(CombineMode::Average)
+    , restitutionCombineMode(CombineMode::Average)
+    {
+    }
+
+    float staticFriction;
+    float dynamicFriction;
+    float restitution;
+    CombineMode frictionCombineMode;
+    CombineMode restitutionCombineMode;
+};
+
 struct Body3D
 {
     Body3D();
@@ -30,14 +48,10 @@ struct Body3D
     glm::vec3 force;
     glm::vec3 torque;
 
+    float mass;
+    float invMass;
+
     glm::vec3 size;
-
-    float staticFriction;
-    float dynamicFriction;
-    float restitution;
-    CombineMode frictionCombineMode;
-    CombineMode restitutionCombineMode;
-
-    float mass, invMass;
+    Material material;
     glm::mat3 invI;
 };
