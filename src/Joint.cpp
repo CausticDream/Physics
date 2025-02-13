@@ -31,14 +31,14 @@ void Joint::PreStep(float inv_dt)
         r1.z, 0.0f, -r1.x,
         -r1.y, r1.x, 0.0f
     );
-    glm::mat3 K2 = skewR1 * body1->shape.geometry.invI * glm::transpose(skewR1);
+    glm::mat3 K2 = skewR1 * body1->invI * glm::transpose(skewR1);
 
     glm::mat3 skewR2 = glm::mat3(
         0.0f, -r2.z, r2.y,
         r2.z, 0.0f, -r2.x,
         -r2.y, r2.x, 0.0f
     );
-    glm::mat3 K3 = skewR2 * body2->shape.geometry.invI * glm::transpose(skewR2);
+    glm::mat3 K3 = skewR2 * body2->invI * glm::transpose(skewR2);
 
     glm::mat3 K = K1 + K2 + K3;
     K[0].x += softness;
@@ -64,10 +64,10 @@ void Joint::PreStep(float inv_dt)
     {
         // Apply accumulated impulse.
         body1->velocity -= body1->invMass * P;
-        body1->angularVelocity -= body1->shape.geometry.invI * glm::cross(r1, P);
+        body1->angularVelocity -= body1->invI * glm::cross(r1, P);
 
         body2->velocity += body2->invMass * P;
-        body2->angularVelocity += body2->shape.geometry.invI * glm::cross(r2, P);
+        body2->angularVelocity += body2->invI * glm::cross(r2, P);
     }
     else
     {
@@ -81,10 +81,10 @@ void Joint::ApplyImpulse()
     glm::vec3 impulse = M * (bias - dv - softness * P);
 
     body1->velocity -= body1->invMass * impulse;
-    body1->angularVelocity -= body1->shape.geometry.invI * glm::cross(r1, impulse);
+    body1->angularVelocity -= body1->invI * glm::cross(r1, impulse);
 
     body2->velocity += body2->invMass * impulse;
-    body2->angularVelocity += body2->shape.geometry.invI * glm::cross(r2, impulse);
+    body2->angularVelocity += body2->invI * glm::cross(r2, impulse);
 
     P += impulse;
 }

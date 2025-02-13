@@ -1,10 +1,5 @@
 #include "box2d-lite/Body.h"
 
-Geometry::Geometry()
-{
-    invI = glm::mat3(0.0f);
-}
-
 GeometryBox::GeometryBox()
 {
     halfSize = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -13,24 +8,22 @@ GeometryBox::GeometryBox()
 void GeometryBox::Set(const glm::vec3& hs, float m)
 {
     halfSize = hs;
+}
 
+glm::vec3 GeometryBox::ComputeI(float m) const
+{
     if ((m > 0.0f) && (m < FLT_MAX))
     {
-        glm::vec3 s = 2.0f * hs;
+        glm::vec3 s = 2.0f * halfSize;
         constexpr float f = 1.0f / 12.0f;
-        glm::vec3 I = glm::vec3(
+        return glm::vec3(
             m * (s.y * s.y + s.z * s.z) * f,
             m * (s.x * s.x + s.z * s.z) * f,
             m * (s.x * s.x + s.y * s.y) * f);
-
-        invI = glm::mat3(
-            glm::vec3(1.0f / I.x, 0.0f, 0.0f),
-            glm::vec3(0.0f, 1.0f / I.y, 0.0f),
-            glm::vec3(0.0f, 0.0f, 1.0f / I.z));
     }
     else
     {
-        invI = glm::mat3(0.0f);
+        return glm::vec3(0.0f, 0.0f, 0.0f);
     }
 }
 
@@ -42,18 +35,18 @@ GeometrySphere::GeometrySphere()
 void GeometrySphere::Set(float r, float m)
 {
     radius = r;
+}
 
+glm::vec3 GeometrySphere::ComputeI(float m) const
+{
     if ((m > 0.0f) && (m < FLT_MAX))
     {
-        float v = 1.0f / ((2.0f / 5.0f) * m * r * r);
-        invI = glm::mat3(
-            glm::vec3(v, 0.0f, 0.0f),
-            glm::vec3(0.0f, v, 0.0f),
-            glm::vec3(0.0f, 0.0f, v));
+        float v = 1.0f / ((2.0f / 5.0f) * m * radius * radius);
+        return glm::vec3(v, v, v);
     }
     else
     {
-        invI = glm::mat3(0.0f);
+        return glm::vec3(0.0f, 0.0f, 0.0f);
     }
 }
 
@@ -67,24 +60,26 @@ void GeometryCapsule::Set(float r, float hh, float m)
 {
     radius = r;
     halfHeight = hh;
+}
 
+glm::vec3 GeometryCapsule::ComputeI(float m) const
+{
     if ((m > 0.0f) && (m < FLT_MAX))
     {
-        float volumeCylinder = glm::pi<float>() * r * r * (2.0f * hh);
-        float volumeSphere = (4.0f / 3.0f) * glm::pi<float>() * r * r * r;
+        float volumeCylinder = glm::pi<float>() * radius * radius * (2.0f * halfHeight);
+        float volumeSphere = (4.0f / 3.0f) * glm::pi<float>() * radius * radius * radius;
         float totalVolume = volumeCylinder + volumeSphere;
         float massCylinder = m * (volumeCylinder / totalVolume);
         float massSphere = m - massCylinder;
-        float Iy = (1.0f / 12.0f) * massCylinder * (3.0f * r * r + 4.0f * hh * hh) + (2.0f / 5.0f) * massSphere * r * r;
-        float Ixz = (1.0f / 4.0f) * massCylinder * r * r + (1.0f / 12.0f) * massCylinder * (4.0f * hh * hh) + (2.0f / 5.0f) * massSphere * r * r + massSphere * hh * hh;
-        invI = glm::mat3(
-            glm::vec3(1.0f / Ixz, 0.0f, 0.0f),
-            glm::vec3(0.0f, 1.0f / Iy, 0.0f),
-            glm::vec3(0.0f, 0.0f, 1.0f / Ixz));
+        float Ixz = (1.0f / 4.0f) * massCylinder * radius * radius + (1.0f / 12.0f) * massCylinder * (4.0f * halfHeight * halfHeight) + (2.0f / 5.0f) * massSphere * radius * radius + massSphere * halfHeight * halfHeight;
+        return glm::vec3(
+            Ixz,
+            (1.0f / 12.0f) * massCylinder * (3.0f * radius * radius + 4.0f * halfHeight * halfHeight) + (2.0f / 5.0f) * massSphere * radius * radius,
+            Ixz);
     }
     else
     {
-        invI = glm::mat3(0.0f);
+        return glm::vec3(0.0f, 0.0f, 0.0f);
     }
 }
 
@@ -107,6 +102,7 @@ Body::Body()
     torque = glm::vec3(0.0f, 0.0f, 0.0f);
     mass = FLT_MAX;
     invMass = 0.0f;
+    invI = glm::mat3(0.0f);
 }
 
 void Body::Set(const glm::vec3& s, float m)
@@ -118,15 +114,21 @@ void Body::Set(const glm::vec3& s, float m)
     force = glm::vec3(0.0f, 0.0f, 0.0f);
     torque = glm::vec3(0.0f, 0.0f, 0.0f);
     mass = m;
+    shape.geometry.Set(s, m);
     if ((mass > 0.0f) && (mass < FLT_MAX))
     {
         invMass = 1.0f / mass;
+        glm::vec3 I = shape.geometry.ComputeI(m);
+        invI = glm::mat3(
+            glm::vec3((I.x > 0.0f) ? 1.0f / I.x : 0.0f, 0.0f, 0.0f),
+            glm::vec3(0.0f, (I.y > 0.0f) ? 1.0f / I.y : 0.0f, 0.0f),
+            glm::vec3(0.0f, 0.0f, (I.z > 0.0f) ? 1.0f / I.z : 0.0f));
     }
     else
     {
         invMass = 0.0f;
+        invI = glm::mat3(0.0f);
     }
-    shape.geometry.Set(s, m);
 }
 
 void Body::AddForce(const glm::vec3& f)

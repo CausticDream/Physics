@@ -87,7 +87,7 @@ void World::Step(float dt)
         }
 
         b->velocity += dt * (gravity + b->invMass * b->force);
-        b->angularVelocity += dt * (b->shape.geometry.invI * b->torque);
+        b->angularVelocity += dt * (b->invI * b->torque);
     }
 
     // Perform pre-steps.
