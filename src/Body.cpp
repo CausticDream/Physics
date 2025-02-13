@@ -67,15 +67,21 @@ glm::vec3 GeometryCapsule::ComputeI(float m) const
     if ((m > 0.0f) && (m < FLT_MAX))
     {
         float volumeCylinder = glm::pi<float>() * radius * radius * (2.0f * halfHeight);
-        float volumeSphere = (4.0f / 3.0f) * glm::pi<float>() * radius * radius * radius;
-        float totalVolume = volumeCylinder + volumeSphere;
+        float volumeHemispheres = (4.0f / 3.0f) * glm::pi<float>() * radius * radius * radius;
+        float totalVolume = volumeCylinder + volumeHemispheres;
+
         float massCylinder = m * (volumeCylinder / totalVolume);
-        float massSphere = m - massCylinder;
-        float Ixz = (1.0f / 4.0f) * massCylinder * radius * radius + (1.0f / 12.0f) * massCylinder * (4.0f * halfHeight * halfHeight) + (2.0f / 5.0f) * massSphere * radius * radius + massSphere * halfHeight * halfHeight;
-        return glm::vec3(
-            Ixz,
-            (1.0f / 12.0f) * massCylinder * (3.0f * radius * radius + 4.0f * halfHeight * halfHeight) + (2.0f / 5.0f) * massSphere * radius * radius,
-            Ixz);
+        float massHemisphere = 0.5f * (m - massCylinder);
+
+        float IcTransverse = (1.0f / 12.0f) * massCylinder * (3.0f * radius * radius + 4.0f * halfHeight * halfHeight);
+        float IcLongitudinal = 0.5f * massCylinder * radius * radius;
+
+        float Ih = (2.0f / 5.0f) * massHemisphere * radius * radius;
+        float IhOffset = massHemisphere * (halfHeight + (3.0f / 8.0f) * radius) * (halfHeight + (3.0f / 8.0f) * radius);
+
+        float Ixz = IcTransverse + 2.0f * (Ih + IhOffset);
+        float Iy = IcLongitudinal + 2.0f * Ih;
+        return glm::vec3(Ixz, Iy, Ixz);
     }
     else
     {
