@@ -24,10 +24,7 @@ void Joint::PreStep(float inv_dt)
 
     // deltaV = deltaV0 + K * impulse
     // invM = [(1/m1 + 1/m2) * eye(3) - skew(r1) * invI1 * skew(r1)^T - skew(r2) * invI2 * skew(r2)^T]
-    glm::mat3 K1 = glm::mat3(0.0f);
-    K1[0].x = body1->invMass + body2->invMass;
-    K1[1].y = body1->invMass + body2->invMass;
-    K1[2].z = body1->invMass + body2->invMass;
+    glm::mat3 K1 = glm::mat3(body1->invMass + body2->invMass);
 
     glm::mat3 skewR1 = glm::mat3(
         0.0f, -r1.z, r1.y,
