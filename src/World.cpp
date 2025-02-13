@@ -1,14 +1,3 @@
-/*
- * Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies.
- * Erin Catto makes no representations about the suitability
- * of this software for any purpose.
- * It is provided "as is" without express or implied warranty.
- */
-
 #include "box2d-lite/World.h"
 #include "box2d-lite/Body.h"
 #include "box2d-lite/Joint.h"
@@ -98,7 +87,7 @@ void World::Step(float dt)
         }
 
         b->velocity += dt * (gravity + b->invMass * b->force);
-        b->angularVelocity += dt * b->invI * b->torque;
+        b->angularVelocity += dt * (b->invI * b->torque);
     }
 
     // Perform pre-steps.
@@ -132,9 +121,9 @@ void World::Step(float dt)
         Body* b = bodies[i];
 
         b->position += dt * b->velocity;
-        b->rotation += dt * b->angularVelocity;
+        b->rotation = glm::normalize(glm::quat(dt * b->angularVelocity) * b->rotation);
 
-        b->force.Set(0.0f, 0.0f);
-        b->torque = 0.0f;
+        b->force = glm::vec3(0.0f, 0.0f, 0.0f);
+        b->torque = glm::vec3(0.0f, 0.0f, 0.0f);
     }
 }

@@ -1,30 +1,18 @@
-/*
- * Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies.
- * Erin Catto makes no representations about the suitability
- * of this software for any purpose.
- * It is provided "as is" without express or implied warranty.
- */
+#pragma once
 
-#ifndef ARBITER_H
-#define ARBITER_H
-
-#include "MathUtils.h"
+#include <glm/glm.hpp>
 
 struct Body;
 
 union FeaturePair
 {
-    struct Edges
+    struct Faces
     {
-        char inEdge1;
-        char outEdge1;
-        char inEdge2;
-        char outEdge2;
-    } e;
+        char inFace1;
+        char outFace1;
+        char inFace2;
+        char outFace2;
+    } f;
     int value;
 };
 
@@ -37,9 +25,9 @@ struct Contact
     {
     }
 
-    Vec2 position;
-    Vec2 normal;
-    Vec2 r1, r2;
+    glm::vec3 position;
+    glm::vec3 normal;
+    glm::vec3 r1, r2;
     float separation;
     float Pn; // accumulated normal impulse
     float Pt; // accumulated tangent impulse
@@ -73,7 +61,7 @@ struct Arbiter
 {
     enum
     {
-        MAX_POINTS = 2
+        MAX_POINTS = 4
     };
 
     Arbiter(Body* b1, Body* b2);
@@ -89,8 +77,10 @@ struct Arbiter
     Body* body1;
     Body* body2;
 
-    // Combined friction
-    float friction;
+    // Combined friction and restitution
+    float staticFriction;
+    float dynamicFriction;
+    float restitution;
 };
 
 // This is used by std::set
@@ -110,5 +100,3 @@ inline bool operator<(const ArbiterKey& a1, const ArbiterKey& a2)
 }
 
 int Collide(Contact* contacts, Body* body1, Body* body2);
-
-#endif

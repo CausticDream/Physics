@@ -1,43 +1,57 @@
-/*
- * Copyright (c) 2006-2007 Erin Catto http://www.gphysics.com
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies.
- * Erin Catto makes no representations about the suitability
- * of this software for any purpose.
- * It is provided "as is" without express or implied warranty.
- */
+#pragma once
 
-#ifndef BODY_H
-#define BODY_H
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
-#include "MathUtils.h"
+enum class CombineMode
+{
+    Average,
+    Minimum,
+    Multiply,
+    Maximum
+};
+
+struct Material
+{
+    Material()
+    : staticFriction(0.5f)
+    , dynamicFriction(0.5f)
+    , restitution(0.0f)
+    , frictionCombineMode(CombineMode::Average)
+    , restitutionCombineMode(CombineMode::Average)
+    {
+    }
+
+    float staticFriction;
+    float dynamicFriction;
+    float restitution;
+    CombineMode frictionCombineMode;
+    CombineMode restitutionCombineMode;
+};
 
 struct Body
 {
     Body();
-    void Set(const Vec2& w, float m);
+    void Set(const glm::vec3& s, float m);
 
-    void AddForce(const Vec2& f)
+    void AddForce(const glm::vec3& f)
     {
         force += f;
     }
 
-    Vec2 position;
-    float rotation;
+    glm::vec3 position;
+    glm::quat rotation;
 
-    Vec2 velocity;
-    float angularVelocity;
+    glm::vec3 velocity;
+    glm::vec3 angularVelocity;
 
-    Vec2 force;
-    float torque;
+    glm::vec3 force;
+    glm::vec3 torque;
 
-    Vec2 width;
+    float mass;
+    float invMass;
 
-    float friction;
-    float mass, invMass;
-    float I, invI;
+    glm::vec3 size;
+    Material material;
+    glm::mat3 invI;
 };
-
-#endif

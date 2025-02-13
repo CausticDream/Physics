@@ -23,18 +23,14 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/random.hpp>
 
 #include "box2d-lite/Body.h"
 #include "box2d-lite/Joint.h"
 #include "box2d-lite/World.h"
 
-#include "box2d-lite/Body3D.h"
-#include "box2d-lite/Joint3D.h"
-#include "box2d-lite/World3D.h"
-
 namespace
 {
-    bool demo3D = true;
     GLFWwindow* mainWindow = NULL;
 
     int width = 1920;
@@ -44,7 +40,6 @@ namespace
     int demoIndex = 0;
     float timeStep = 1.0f / 60.0f;
 
-    // 2D
     Body bodies[200];
     Joint joints[100];
 
@@ -53,22 +48,9 @@ namespace
     int numBodies = 0;
     int numJoints = 0;
 
-    Vec2 gravity(0.0f, -9.81f);
+    glm::vec3 gravity(0.0f, -9.81f, 0.0f);
     int iterations = 10;
     World world(gravity, iterations);
-
-    // 3D
-    Body3D bodies3D[200];
-    Joint3D joints3D[100];
-
-    Body3D* bomb3D = NULL;
-
-    int numBodies3D = 0;
-    int numJoints3D = 0;
-
-    glm::vec3 gravity3D(0.0f, -9.81f, 0.0f);
-    int iterations3D = 10;
-    World3D world3D(gravity3D, iterations3D);
 } // namespace
 
 static void glfwErrorCallback(int error, const char* description)
@@ -89,57 +71,6 @@ static void DrawText(int x, int y, const char* string)
 
 static void DrawBody(Body* body)
 {
-    Mat22 R(body->rotation);
-    Vec2 x = body->position;
-    Vec2 h = 0.5f * body->width;
-
-    Vec2 v1 = x + R * Vec2(-h.x, -h.y);
-    Vec2 v2 = x + R * Vec2(h.x, -h.y);
-    Vec2 v3 = x + R * Vec2(h.x, h.y);
-    Vec2 v4 = x + R * Vec2(-h.x, h.y);
-
-    if (body == bomb)
-    {
-        glColor3f(0.4f, 0.9f, 0.4f);
-    }
-    else
-    {
-        glColor3f(0.8f, 0.8f, 0.9f);
-    }
-
-    glBegin(GL_LINE_LOOP);
-    glVertex2f(v1.x, v1.y);
-    glVertex2f(v2.x, v2.y);
-    glVertex2f(v3.x, v3.y);
-    glVertex2f(v4.x, v4.y);
-    glEnd();
-}
-
-static void DrawJoint(Joint* joint)
-{
-    Body* b1 = joint->body1;
-    Body* b2 = joint->body2;
-
-    Mat22 R1(b1->rotation);
-    Mat22 R2(b2->rotation);
-
-    Vec2 x1 = b1->position;
-    Vec2 p1 = x1 + R1 * joint->localAnchor1;
-
-    Vec2 x2 = b2->position;
-    Vec2 p2 = x2 + R2 * joint->localAnchor2;
-
-    glColor3f(0.5f, 0.5f, 0.8f);
-    glBegin(GL_LINES);
-    glVertex2f(x1.x, x1.y);
-    glVertex2f(p1.x, p1.y);
-    glVertex2f(x2.x, x2.y);
-    glVertex2f(p2.x, p2.y);
-    glEnd();
-}
-
-static void DrawBody3D(Body3D* body)
-{
     glm::mat3 R = glm::mat3_cast(body->rotation);
     glm::vec3 x = body->position;
     glm::vec3 h = 0.5f * body->size;
@@ -153,7 +84,7 @@ static void DrawBody3D(Body3D* body)
     glm::vec3 v7 = x + R * glm::vec3(h.x, h.y, h.z);
     glm::vec3 v8 = x + R * glm::vec3(-h.x, h.y, h.z);
 
-    if (body == bomb3D)
+    if (body == bomb)
     {
         glColor3f(0.4f, 0.9f, 0.4f);
     }
@@ -197,10 +128,10 @@ static void DrawBody3D(Body3D* body)
     glEnd();
 }
 
-static void DrawJoint3D(Joint3D* joint)
+static void DrawJoint(Joint* joint)
 {
-    Body3D* b1 = joint->body1;
-    Body3D* b2 = joint->body2;
+    Body* b1 = joint->body1;
+    Body* b2 = joint->body2;
 
     glm::vec3 x1 = b1->position;
     glm::vec3 p1 = x1 + b1->rotation * joint->localAnchor1;
@@ -222,45 +153,28 @@ static void LaunchBomb()
     if (!bomb)
     {
         bomb = bodies + numBodies;
-        bomb->Set(Vec2(1.0f, 1.0f), 50.0f);
-        bomb->friction = 0.2f;
+        bomb->Set(glm::vec3(1.0f, 1.0f, 1.0f), 50.0f);
         world.Add(bomb);
         ++numBodies;
     }
 
-    bomb->position.Set(Random(-15.0f, 15.0f), 15.0f);
-    bomb->rotation = Random(-1.5f, 1.5f);
+    bomb->position = glm::vec3(glm::linearRand(-15.0f, 15.0f), 15.0f, 0.0f);
+    bomb->rotation = glm::quat(glm::vec3(0.0f, 0.0f, glm::linearRand(-1.5f, 1.5f)));
     bomb->velocity = -1.5f * bomb->position;
-    bomb->angularVelocity = Random(-20.0f, 20.0f);
-}
-
-static void LaunchBomb3D()
-{
-    if (!bomb3D)
-    {
-        bomb3D = bodies3D + numBodies3D;
-        bomb3D->Set(glm::vec3(1.0f, 1.0f, 1.0f), 50.0f);
-        world3D.Add(bomb3D);
-        ++numBodies3D;
-    }
-
-    bomb3D->position = glm::vec3(Random(-15.0f, 15.0f), 15.0f, 0.0f);
-    bomb3D->rotation = glm::quat(glm::vec3(0.0f, 0.0f, Random(-1.5f, 1.5f)));
-    bomb3D->velocity = -1.5f * bomb3D->position;
-    bomb3D->angularVelocity = glm::vec3(0.0f, 0.0f, Random(-20.0f, 20.0f));
+    bomb->angularVelocity = glm::vec3(0.0f, 0.0f, glm::linearRand(-20.0f, 20.0f));
 }
 
 // Single box
 static void Demo1(Body* b, Joint* j)
 {
-    b->Set(Vec2(100.0f, 20.0f), FLT_MAX);
-    b->position.Set(0.0f, -0.5f * b->width.y);
+    b->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
+    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
-    b->Set(Vec2(1.0f, 1.0f), 200.0f);
-    b->position.Set(0.0f, 4.0f);
+    b->Set(glm::vec3(1.0f, 1.0f, 1.0f), 200.0f);
+    b->position = glm::vec3(0.0f, 4.0f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
@@ -270,22 +184,20 @@ static void Demo1(Body* b, Joint* j)
 static void Demo2(Body* b, Joint* j)
 {
     Body* b1 = b + 0;
-    b1->Set(Vec2(100.0f, 20.0f), FLT_MAX);
-    b1->friction = 0.2f;
-    b1->position.Set(0.0f, -0.5f * b1->width.y);
-    b1->rotation = 0.0f;
+    b1->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
+    b1->position = glm::vec3(0.0f, -0.5f * b1->size.y, 0.0f);
+    b1->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b1);
 
     Body* b2 = b + 1;
-    b2->Set(Vec2(1.0f, 1.0f), 100.0f);
-    b2->friction = 0.2f;
-    b2->position.Set(9.0f, 11.0f);
-    b2->rotation = 0.0f;
+    b2->Set(glm::vec3(1.0f, 1.0f, 1.0f), 100.0f);
+    b2->position = glm::vec3(9.0f, 11.0f, 0.0f);
+    b2->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b2);
 
     numBodies += 2;
 
-    j->Set(b1, b2, Vec2(0.0f, 11.0f));
+    j->Set(b1, b2, glm::vec3(0.0f, 11.0f, 0.0f));
     world.Add(j);
 
     numJoints += 1;
@@ -294,41 +206,41 @@ static void Demo2(Body* b, Joint* j)
 // Varying friction coefficients
 static void Demo3(Body* b, Joint* j)
 {
-    b->Set(Vec2(100.0f, 20.0f), FLT_MAX);
-    b->position.Set(0.0f, -0.5f * b->width.y);
+    b->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
+    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
-    b->Set(Vec2(13.0f, 0.25f), FLT_MAX);
-    b->position.Set(-2.0f, 11.0f);
-    b->rotation = -0.25f;
+    b->Set(glm::vec3(13.0f, 0.25f, 0.25f), FLT_MAX);
+    b->position = glm::vec3(-2.0f, 11.0f, 0.0f);
+    b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, -0.25f));
     world.Add(b);
     ++b;
     ++numBodies;
 
-    b->Set(Vec2(0.25f, 1.0f), FLT_MAX);
-    b->position.Set(5.25f, 9.5f);
+    b->Set(glm::vec3(0.25f, 1.0f, 1.0f), FLT_MAX);
+    b->position = glm::vec3(5.25f, 9.5f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
-    b->Set(Vec2(13.0f, 0.25f), FLT_MAX);
-    b->position.Set(2.0f, 7.0f);
-    b->rotation = 0.25f;
+    b->Set(glm::vec3(13.0f, 0.25f, 0.25f), FLT_MAX);
+    b->position = glm::vec3(2.0f, 7.0f, 0.0f);
+    b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.25f));
     world.Add(b);
     ++b;
     ++numBodies;
 
-    b->Set(Vec2(0.25f, 1.0f), FLT_MAX);
-    b->position.Set(-5.25f, 5.5f);
+    b->Set(glm::vec3(0.25f, 1.0f, 1.0f), FLT_MAX);
+    b->position = glm::vec3(-5.25f, 5.5f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
-    b->Set(Vec2(13.0f, 0.25f), FLT_MAX);
-    b->position.Set(-2.0f, 3.0f);
-    b->rotation = -0.25f;
+    b->Set(glm::vec3(13.0f, 0.25f, 0.25f), FLT_MAX);
+    b->position = glm::vec3(-2.0f, 3.0f, 0.0f);
+    b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, -0.25f));
     world.Add(b);
     ++b;
     ++numBodies;
@@ -336,9 +248,10 @@ static void Demo3(Body* b, Joint* j)
     float friction[5] = {0.75f, 0.5f, 0.35f, 0.1f, 0.0f};
     for (int i = 0; i < 5; ++i)
     {
-        b->Set(Vec2(0.5f, 0.5f), 25.0f);
-        b->friction = friction[i];
-        b->position.Set(-7.5f + 2.0f * i, 14.0f);
+        b->Set(glm::vec3(0.5f, 0.5f, 0.5f), 25.0f);
+        b->material.staticFriction = friction[i];
+        b->material.dynamicFriction = friction[i];
+        b->position = glm::vec3(-7.5f + 2.0f * i, 14.0f, 0.0f);
         world.Add(b);
         ++b;
         ++numBodies;
@@ -348,20 +261,18 @@ static void Demo3(Body* b, Joint* j)
 // A vertical stack
 static void Demo4(Body* b, Joint* j)
 {
-    b->Set(Vec2(100.0f, 20.0f), FLT_MAX);
-    b->friction = 0.2f;
-    b->position.Set(0.0f, -0.5f * b->width.y);
-    b->rotation = 0.0f;
+    b->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
+    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
+    b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
     ++b;
     ++numBodies;
 
     for (int i = 0; i < 10; ++i)
     {
-        b->Set(Vec2(1.0f, 1.0f), 1.0f);
-        b->friction = 0.2f;
-        float x = Random(-0.1f, 0.1f);
-        b->position.Set(x, 0.51f + 1.05f * i);
+        b->Set(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
+        float x = glm::linearRand(-0.1f, 0.1f);
+        b->position = glm::vec3(x, 0.51f + 1.05f * i, 0.0f);
         world.Add(b);
         ++b;
         ++numBodies;
@@ -371,16 +282,15 @@ static void Demo4(Body* b, Joint* j)
 // A pyramid
 static void Demo5(Body* b, Joint* j)
 {
-    b->Set(Vec2(100.0f, 20.0f), FLT_MAX);
-    b->friction = 0.2f;
-    b->position.Set(0.0f, -0.5f * b->width.y);
-    b->rotation = 0.0f;
+    b->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
+    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
+    b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
     ++b;
     ++numBodies;
 
-    Vec2 x(-6.0f, 0.75f);
-    Vec2 y;
+    glm::vec3 x(-6.0f, 0.75f, 0.0f);
+    glm::vec3 y;
 
     for (int i = 0; i < 12; ++i)
     {
@@ -388,18 +298,16 @@ static void Demo5(Body* b, Joint* j)
 
         for (int j = i; j < 12; ++j)
         {
-            b->Set(Vec2(1.0f, 1.0f), 10.0f);
-            b->friction = 0.2f;
+            b->Set(glm::vec3(1.0f, 1.0f, 1.0f), 10.0f);
             b->position = y;
             world.Add(b);
             ++b;
             ++numBodies;
 
-            y += Vec2(1.125f, 0.0f);
+            y += glm::vec3(1.125f, 0.0f, 0.0f);
         }
 
-        // x += Vec2(0.5625f, 1.125f);
-        x += Vec2(0.5625f, 2.0f);
+        x += glm::vec3(0.5625f, 2.0f, 0.0f);
     }
 }
 
@@ -407,33 +315,33 @@ static void Demo5(Body* b, Joint* j)
 static void Demo6(Body* b, Joint* j)
 {
     Body* b1 = b + 0;
-    b1->Set(Vec2(100.0f, 20.0f), FLT_MAX);
-    b1->position.Set(0.0f, -0.5f * b1->width.y);
+    b1->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
+    b1->position = glm::vec3(0.0f, -0.5f * b1->size.y, 0.0f);
     world.Add(b1);
 
     Body* b2 = b + 1;
-    b2->Set(Vec2(12.0f, 0.25f), 100.0f);
-    b2->position.Set(0.0f, 1.0f);
+    b2->Set(glm::vec3(12.0f, 0.25f, 0.25f), 100.0f);
+    b2->position = glm::vec3(0.0f, 1.0f, 0.0f);
     world.Add(b2);
 
     Body* b3 = b + 2;
-    b3->Set(Vec2(0.5f, 0.5f), 25.0f);
-    b3->position.Set(-5.0f, 2.0f);
+    b3->Set(glm::vec3(0.5f, 0.5f, 0.5f), 25.0f);
+    b3->position = glm::vec3(-5.0f, 2.0f, 0.0f);
     world.Add(b3);
 
     Body* b4 = b + 3;
-    b4->Set(Vec2(0.5f, 0.5f), 25.0f);
-    b4->position.Set(-5.5f, 2.0f);
+    b4->Set(glm::vec3(0.5f, 0.5f, 0.5f), 25.0f);
+    b4->position = glm::vec3(-5.5f, 2.0f, 0.0f);
     world.Add(b4);
 
     Body* b5 = b + 4;
-    b5->Set(Vec2(1.0f, 1.0f), 100.0f);
-    b5->position.Set(5.5f, 15.0f);
+    b5->Set(glm::vec3(1.0f, 1.0f, 1.0f), 100.0f);
+    b5->position = glm::vec3(5.5f, 15.0f, 0.0f);
     world.Add(b5);
 
     numBodies += 5;
 
-    j->Set(b1, b2, Vec2(0.0f, 1.0f));
+    j->Set(b1, b2, glm::vec3(0.0f, 1.0f, 0.0f));
     world.Add(j);
 
     numJoints += 1;
@@ -442,10 +350,9 @@ static void Demo6(Body* b, Joint* j)
 // A suspension bridge
 static void Demo7(Body* b, Joint* j)
 {
-    b->Set(Vec2(100.0f, 20.0f), FLT_MAX);
-    b->friction = 0.2f;
-    b->position.Set(0.0f, -0.5f * b->width.y);
-    b->rotation = 0.0f;
+    b->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
+    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
+    b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
     ++b;
     ++numBodies;
@@ -455,9 +362,8 @@ static void Demo7(Body* b, Joint* j)
 
     for (int i = 0; i < numPlanks; ++i)
     {
-        b->Set(Vec2(1.0f, 0.25f), mass);
-        b->friction = 0.2f;
-        b->position.Set(-8.5f + 1.25f * i, 5.0f);
+        b->Set(glm::vec3(1.0f, 0.25f, 0.25f), mass);
+        b->position = glm::vec3(-8.5f + 1.25f * i, 5.0f, 0.0f);
         world.Add(b);
         ++b;
         ++numBodies;
@@ -468,7 +374,7 @@ static void Demo7(Body* b, Joint* j)
     float dampingRatio = 0.7f;
 
     // frequency in radians
-    float omega = 2.0f * k_pi * frequencyHz;
+    float omega = 2.0f * glm::pi<float>() * frequencyHz;
 
     // damping coefficient
     float d = 2.0f * mass * dampingRatio * omega;
@@ -482,7 +388,7 @@ static void Demo7(Body* b, Joint* j)
 
     for (int i = 0; i < numPlanks; ++i)
     {
-        j->Set(bodies + i, bodies + i + 1, Vec2(-9.125f + 1.25f * i, 5.0f));
+        j->Set(bodies + i, bodies + i + 1, glm::vec3(-9.125f + 1.25f * i, 5.0f, 0.0f));
         j->softness = softness;
         j->biasFactor = biasFactor;
 
@@ -491,7 +397,7 @@ static void Demo7(Body* b, Joint* j)
         ++numJoints;
     }
 
-    j->Set(bodies + numPlanks, bodies, Vec2(-9.125f + 1.25f * numPlanks, 5.0f));
+    j->Set(bodies + numPlanks, bodies, glm::vec3(-9.125f + 1.25f * numPlanks, 5.0f, 0.0f));
     j->softness = softness;
     j->biasFactor = biasFactor;
     world.Add(j);
@@ -503,87 +409,89 @@ static void Demo7(Body* b, Joint* j)
 static void Demo8(Body* b, Joint* j)
 {
     Body* b1 = b;
-    b->Set(Vec2(100.0f, 20.0f), FLT_MAX);
-    b->position.Set(0.0f, -0.5f * b->width.y);
+    b->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
+    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
-    b->Set(Vec2(12.0f, 0.5f), FLT_MAX);
-    b->position.Set(-1.5f, 10.0f);
+    b->Set(glm::vec3(12.0f, 0.5f, 0.5f), FLT_MAX);
+    b->position = glm::vec3(-1.5f, 10.0f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
     for (int i = 0; i < 10; ++i)
     {
-        b->Set(Vec2(0.2f, 2.0f), 10.0f);
-        b->position.Set(-6.0f + 1.0f * i, 11.125f);
-        b->friction = 0.1f;
+        b->Set(glm::vec3(0.2f, 2.0f, 2.0f), 10.0f);
+        b->position = glm::vec3(-6.0f + 1.0f * i, 11.125f, 0.0f);
+        b->material.staticFriction = 0.1f;
+        b->material.dynamicFriction = 0.1f;
         world.Add(b);
         ++b;
         ++numBodies;
     }
 
-    b->Set(Vec2(14.0f, 0.5f), FLT_MAX);
-    b->position.Set(1.0f, 6.0f);
-    b->rotation = 0.3f;
+    b->Set(glm::vec3(14.0f, 0.5f, 0.5f), FLT_MAX);
+    b->position = glm::vec3(1.0f, 6.0f, 0.0f);
+    b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.3f));
     world.Add(b);
     ++b;
     ++numBodies;
 
     Body* b2 = b;
-    b->Set(Vec2(0.5f, 3.0f), FLT_MAX);
-    b->position.Set(-7.0f, 4.0f);
+    b->Set(glm::vec3(0.5f, 3.0f, 3.0f), FLT_MAX);
+    b->position = glm::vec3(-7.0f, 4.0f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
     Body* b3 = b;
-    b->Set(Vec2(12.0f, 0.25f), 20.0f);
-    b->position.Set(-0.9f, 1.0f);
+    b->Set(glm::vec3(12.0f, 0.25f, 0.25f), 20.0f);
+    b->position = glm::vec3(-0.9f, 1.0f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
-    j->Set(b1, b3, Vec2(-2.0f, 1.0f));
+    j->Set(b1, b3, glm::vec3(-2.0f, 1.0f, 0.0f));
     world.Add(j);
     ++j;
     ++numJoints;
 
     Body* b4 = b;
-    b->Set(Vec2(0.5f, 0.5f), 10.0f);
-    b->position.Set(-10.0f, 15.0f);
+    b->Set(glm::vec3(0.5f, 0.5f, 0.5f), 10.0f);
+    b->position = glm::vec3(-10.0f, 15.0f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
-    j->Set(b2, b4, Vec2(-7.0f, 15.0f));
+    j->Set(b2, b4, glm::vec3(-7.0f, 15.0f, 0.0f));
     world.Add(j);
     ++j;
     ++numJoints;
 
     Body* b5 = b;
-    b->Set(Vec2(2.0f, 2.0f), 20.0f);
-    b->position.Set(6.0f, 2.5f);
-    b->friction = 0.1f;
+    b->Set(glm::vec3(2.0f, 2.0f, 2.0f), 20.0f);
+    b->position = glm::vec3(6.0f, 2.5f, 0.0f);
+    b->material.staticFriction = 0.1f;
+    b->material.dynamicFriction = 0.1f;
     world.Add(b);
     ++b;
     ++numBodies;
 
-    j->Set(b1, b5, Vec2(6.0f, 2.6f));
+    j->Set(b1, b5, glm::vec3(6.0f, 2.6f, 0.0f));
     world.Add(j);
     ++j;
     ++numJoints;
 
     Body* b6 = b;
-    b->Set(Vec2(2.0f, 0.2f), 10.0f);
-    b->position.Set(6.0f, 3.6f);
+    b->Set(glm::vec3(2.0f, 0.2f, 0.2f), 10.0f);
+    b->position = glm::vec3(6.0f, 3.6f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
-    j->Set(b5, b6, Vec2(7.0f, 3.5f));
+    j->Set(b5, b6, glm::vec3(7.0f, 3.5f, 0.0f));
     world.Add(j);
     ++j;
     ++numJoints;
@@ -592,10 +500,9 @@ static void Demo8(Body* b, Joint* j)
 // A multi-pendulum
 static void Demo9(Body* b, Joint* j)
 {
-    b->Set(Vec2(100.0f, 20.0f), FLT_MAX);
-    b->friction = 0.2f;
-    b->position.Set(0.0f, -0.5f * b->width.y);
-    b->rotation = 0.0f;
+    b->Set(glm::vec3(100.0f, 20.0f, 20.0f), FLT_MAX);
+    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
+    b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
 
     Body* b1 = b;
@@ -609,7 +516,7 @@ static void Demo9(Body* b, Joint* j)
     float dampingRatio = 0.7f;
 
     // frequency in radians
-    float omega = 2.0f * k_pi * frequencyHz;
+    float omega = 2.0f * glm::pi<float>() * frequencyHz;
 
     // damping coefficient
     float d = 2.0f * mass * dampingRatio * omega;
@@ -625,14 +532,13 @@ static void Demo9(Body* b, Joint* j)
 
     for (int i = 0; i < 15; ++i)
     {
-        Vec2 x(0.5f + i, y);
-        b->Set(Vec2(0.75f, 0.25f), mass);
-        b->friction = 0.2f;
+        glm::vec3 x(0.5f + i, y, 0.0f);
+        b->Set(glm::vec3(0.75f, 0.25f, 0.75f), mass);
         b->position = x;
-        b->rotation = 0.0f;
+        b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
         world.Add(b);
 
-        j->Set(b1, b, Vec2(float(i), y));
+        j->Set(b1, b, glm::vec3(float(i), y, 0.0f));
         j->softness = softness;
         j->biasFactor = biasFactor;
         world.Add(j);
@@ -659,6 +565,13 @@ const char* demoStrings[] = {
 
 static void InitDemo(int index)
 {
+    for (int i = 0; i < numBodies; ++i)
+    {
+        bodies[i].material.staticFriction = 0.5f;
+        bodies[i].material.dynamicFriction = 0.5f;
+        bodies[i].material.restitution = 0.0f;
+    }
+
     world.Clear();
     numBodies = 0;
     numJoints = 0;
@@ -666,61 +579,6 @@ static void InitDemo(int index)
 
     demoIndex = index;
     demos[index](bodies, joints);
-}
-
-// Single box3D
-static void Demo3D1(Body3D* b, Joint3D* j)
-{
-    b->Set(glm::vec3(100.0f, 20.0f, 2.0f), FLT_MAX);
-    b->position = glm::vec3(0.0f, -0.5f * b->size.y, 0.0f);
-    world3D.Add(b);
-    ++b;
-    ++numBodies3D;
-
-    b->Set(glm::vec3(1.0f, 1.0f, 1.0f), 200.0f);
-    b->position = glm::vec3(0.0f, 4.0f, 0.0f);
-    world3D.Add(b);
-    ++b;
-    ++numBodies3D;
-}
-
-// A simple pendulum
-static void Demo3D2(Body3D* b, Joint3D* j)
-{
-    Body3D* b1 = b + 0;
-    b1->Set(glm::vec3(100.0f, 20.0f, 2.0f), FLT_MAX);
-    b1->position = glm::vec3(0.0f, -0.5f * b1->size.y, 0.0f);
-    b1->rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-    world3D.Add(b1);
-
-    Body3D* b2 = b + 1;
-    b2->Set(glm::vec3(1.0f, 1.0f, 1.0f), 100.0f);
-    b2->position = glm::vec3(9.0f, 11.0f, 0.0f);
-    b2->rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-    world3D.Add(b2);
-
-    numBodies3D += 2;
-
-    j->Set(b1, b2, glm::vec3(0.0f, 11.0f, 0.0f));
-    world3D.Add(j);
-
-    numJoints3D += 1;
-}
-
-void (*demos3D[])(Body3D* b, Joint3D* j) = {Demo3D1, Demo3D2};
-const char* demoStrings3D[] = {
-    "Demo 1: A Single Box",
-    "Demo 2: Simple Pendulum"};
-
-static void InitDemo3D(int index)
-{
-    world3D.Clear();
-    numBodies3D = 0;
-    numJoints3D = 0;
-    bomb3D = NULL;
-
-    demoIndex = index;
-    demos3D[index](bodies3D, joints3D);
 }
 
 static void Keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -746,40 +604,23 @@ static void Keyboard(GLFWwindow* window, int key, int scancode, int action, int 
         case '7':
         case '8':
         case '9':
-            if (demo3D)
-            {
-                InitDemo3D(glm::clamp(0, 1, key - GLFW_KEY_1));
-            }
-            else
-            {
-                InitDemo(key - GLFW_KEY_1);
-            }
+            InitDemo(key - GLFW_KEY_1);
             break;
 
         case GLFW_KEY_A:
             World::accumulateImpulses = !World::accumulateImpulses;
-            World3D::accumulateImpulses = !World3D::accumulateImpulses;
             break;
 
         case GLFW_KEY_P:
             World::positionCorrection = !World::positionCorrection;
-            World3D::positionCorrection = !World3D::positionCorrection;
             break;
 
         case GLFW_KEY_W:
             World::warmStarting = !World::warmStarting;
-            World3D::warmStarting = !World3D::warmStarting;
             break;
 
         case GLFW_KEY_SPACE:
-            if (demo3D)
-            {
-                LaunchBomb3D();
-            }
-            else
-            {
-                LaunchBomb();
-            }
+            LaunchBomb();
             break;
     }
 }
@@ -791,35 +632,15 @@ static void Reshape(GLFWwindow*, int w, int h)
 
     glViewport(0, 0, width, height);
 
-    if (demo3D)
-    {
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
 
-        glm::mat4 projection = glm::perspective(
-            glm::radians(60.0f),
-            float(width) / float(height),
-            0.1f,
-            100.0f);
-        glLoadMatrixf(glm::value_ptr(projection));
-    }
-    else
-    {
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-
-        float aspect = float(width) / float(height);
-        if (width >= height)
-        {
-            // aspect >= 1, set the height from -1 to 1, with larger width
-            glOrtho(-zoom * aspect, zoom * aspect, -zoom + pan_y, zoom + pan_y, -1.0, 1.0);
-        }
-        else
-        {
-            // aspect < 1, set the width to -1 to 1, with larger height
-            glOrtho(-zoom, zoom, -zoom / aspect + pan_y, zoom / aspect + pan_y, -1.0, 1.0);
-        }
-    }
+    glm::mat4 projection = glm::perspective(
+        glm::radians(60.0f),
+        float(width) / float(height),
+        0.1f,
+        100.0f);
+    glLoadMatrixf(glm::value_ptr(projection));
 }
 
 int main(int, char**)
@@ -869,40 +690,13 @@ int main(int, char**)
 
     glViewport(0, 0, width, height);
 
-    if (demo3D)
-    {
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
 
-        glm::mat4 projection = glm::perspective(glm::radians(60.0f), float(width) / float(height), 0.1f, 100.0f);
-        glLoadMatrixf(glm::value_ptr(projection));
-    }
-    else
-    {
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
+    glm::mat4 projection = glm::perspective(glm::radians(60.0f), float(width) / float(height), 0.1f, 100.0f);
+    glLoadMatrixf(glm::value_ptr(projection));
 
-        float aspect = float(width) / float(height);
-        if (width >= height)
-        {
-            // aspect >= 1, set the height from -1 to 1, with larger width
-            glOrtho(-zoom * aspect, zoom * aspect, -zoom + pan_y, zoom + pan_y, -1.0, 1.0);
-        }
-        else
-        {
-            // aspect < 1, set the width to -1 to 1, with larger height
-            glOrtho(-zoom, zoom, -zoom / aspect + pan_y, zoom / aspect + pan_y, -1.0, 1.0);
-        }
-    }
-
-    if (demo3D)
-    {
-        InitDemo3D(0);
-    }
-    else
-    {
-        InitDemo(0);
-    }
+    InitDemo(0);
 
     while (!glfwWindowShouldClose(mainWindow))
     {
@@ -917,16 +711,8 @@ int main(int, char**)
         ImGui::Begin("Overlay", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar);
         ImGui::End();
 
-        if (demo3D)
-        {
-            DrawText(5, 5, demoStrings3D[demoIndex]);
-            DrawText(5, 35, "Keys: 1-2 Demos, Space to Launch the Bomb");
-        }
-        else
-        {
-            DrawText(5, 5, demoStrings[demoIndex]);
-            DrawText(5, 35, "Keys: 1-9 Demos, Space to Launch the Bomb");
-        }
+        DrawText(5, 5, demoStrings[demoIndex]);
+        DrawText(5, 35, "Keys: 1-9 Demos, Space to Launch the Bomb");
 
         char buffer[64];
         sprintf(buffer, "(A)ccumulation %s", World::accumulateImpulses ? "ON" : "OFF");
@@ -938,20 +724,11 @@ int main(int, char**)
         sprintf(buffer, "(W)arm Starting %s", World::warmStarting ? "ON" : "OFF");
         DrawText(5, 125, buffer);
 
-        if (demo3D)
-        {
-            glMatrixMode(GL_MODELVIEW);
-            glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 20.0f, 50.0f), glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            glLoadMatrixf(glm::value_ptr(view));
-        }
-        else
-        {
-            glMatrixMode(GL_MODELVIEW);
-            glLoadIdentity();
-        }
+        glMatrixMode(GL_MODELVIEW);
+        glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 20.0f, 50.0f), glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        glLoadMatrixf(glm::value_ptr(view));
 
         world.Step(timeStep);
-        world3D.Step(timeStep);
 
         for (int i = 0; i < numBodies; ++i)
         {
@@ -963,16 +740,6 @@ int main(int, char**)
             DrawJoint(joints + i);
         }
 
-        for (int i = 0; i < numBodies3D; ++i)
-        {
-            DrawBody3D(bodies3D + i);
-        }
-
-        for (int i = 0; i < numJoints3D; ++i)
-        {
-            DrawJoint3D(joints3D + i);
-        }
-
         glPointSize(4.0f);
         glColor3f(1.0f, 0.0f, 0.0f);
         glBegin(GL_POINTS);
@@ -981,17 +748,6 @@ int main(int, char**)
         for (iter = world.arbiters.begin(); iter != world.arbiters.end(); ++iter)
         {
             const Arbiter& arbiter = iter->second;
-            for (int i = 0; i < arbiter.numContacts; ++i)
-            {
-                Vec2 p = arbiter.contacts[i].position;
-                glVertex2f(p.x, p.y);
-            }
-        }
-
-        std::map<Arbiter3DKey, Arbiter3D>::const_iterator iter3D;
-        for (iter3D = world3D.arbiters.begin(); iter3D != world3D.arbiters.end(); ++iter3D)
-        {
-            const Arbiter3D& arbiter = iter3D->second;
             for (int i = 0; i < arbiter.numContacts; ++i)
             {
                 glm::vec3 p = arbiter.contacts[i].position;

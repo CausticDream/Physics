@@ -1,99 +1,64 @@
-/*
- * Copyright (c) 2006-2007 Erin Catto http://www.gphysics.com
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies.
- * Erin Catto makes no representations about the suitability
- * of this software for any purpose.
- * It is provided "as is" without express or implied warranty.
- */
-
 #include "box2d-lite/Arbiter.h"
 #include "box2d-lite/Body.h"
-
-// Box vertex and edge numbering:
-//
-//        ^ y
-//        |
-//        e1
-//   v2 ------ v1
-//    |        |
-// e2 |        | e4  --> x
-//    |        |
-//   v3 ------ v4
-//        e3
 
 enum Axis
 {
     FACE_A_X,
     FACE_A_Y,
+    FACE_A_Z,
     FACE_B_X,
-    FACE_B_Y
+    FACE_B_Y,
+    FACE_B_Z
 };
 
-enum EdgeNumbers
+enum FaceNumbers
 {
-    NO_EDGE = 0,
-    EDGE1,
-    EDGE2,
-    EDGE3,
-    EDGE4
+    NO_FACE = 0,
+    FACE1,
+    FACE2,
+    FACE3,
+    FACE4,
+    FACE5,
+    FACE6
 };
 
 struct ClipVertex
 {
-    ClipVertex()
-    {
-        fp.value = 0;
-    }
-    Vec2 v;
+    ClipVertex() { fp.value = 0; }
+    glm::vec3 v;
     FeaturePair fp;
 };
 
 void Flip(FeaturePair& fp)
 {
-    Swap(fp.e.inEdge1, fp.e.inEdge2);
-    Swap(fp.e.outEdge1, fp.e.outEdge2);
+    std::swap(fp.f.inFace1, fp.f.inFace2);
+    std::swap(fp.f.outFace1, fp.f.outFace2);
 }
 
-int ClipSegmentToLine(ClipVertex vOut[2], ClipVertex vIn[2],
-                      const Vec2& normal, float offset, char clipEdge)
+int ClipSegmentToLine(ClipVertex vOut[2], ClipVertex vIn[2], const glm::vec3& normal, float offset, char clipFace)
 {
-    // Start with no output points
     int numOut = 0;
+    float distance0 = glm::dot(normal, vIn[0].v) - offset;
+    float distance1 = glm::dot(normal, vIn[1].v) - offset;
 
-    // Calculate the distance of end points to the line
-    float distance0 = Dot(normal, vIn[0].v) - offset;
-    float distance1 = Dot(normal, vIn[1].v) - offset;
+    if (distance0 <= 0.0f) vOut[numOut++] = vIn[0];
+    if (distance1 <= 0.0f) vOut[numOut++] = vIn[1];
 
-    // If the points are behind the plane
-    if (distance0 <= 0.0f)
-    {
-        vOut[numOut++] = vIn[0];
-    }
-    if (distance1 <= 0.0f)
-    {
-        vOut[numOut++] = vIn[1];
-    }
-
-    // If the points are on different sides of the plane
     if (distance0 * distance1 < 0.0f)
     {
-        // Find intersection point of edge and plane
         float interp = distance0 / (distance0 - distance1);
         vOut[numOut].v = vIn[0].v + interp * (vIn[1].v - vIn[0].v);
         if (distance0 > 0.0f)
         {
             vOut[numOut].fp = vIn[0].fp;
-            vOut[numOut].fp.e.inEdge1 = clipEdge;
-            vOut[numOut].fp.e.inEdge2 = NO_EDGE;
+            vOut[numOut].fp.f.inFace1 = clipFace;
+            vOut[numOut].fp.f.inFace2 = NO_FACE;
         }
         else
         {
             vOut[numOut].fp = vIn[1].fp;
-            vOut[numOut].fp.e.outEdge1 = clipEdge;
-            vOut[numOut].fp.e.outEdge2 = NO_EDGE;
+            vOut[numOut].fp.f.outFace1 = clipFace;
+            vOut[numOut].fp.f.outFace2 = NO_FACE;
         }
         ++numOut;
     }
@@ -101,112 +66,127 @@ int ClipSegmentToLine(ClipVertex vOut[2], ClipVertex vIn[2],
     return numOut;
 }
 
-static void ComputeIncidentEdge(ClipVertex c[2], const Vec2& h, const Vec2& pos,
-                                const Mat22& Rot, const Vec2& normal)
+static void ComputeIncidentFace(ClipVertex c[4], const glm::vec3& h, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& normal)
 {
-    // The normal is from the reference box. Convert it
-    // to the incident boxe's frame and flip sign.
-    Mat22 RotT = Rot.Transpose();
-    Vec2 n = -(RotT * normal);
-    Vec2 nAbs = Abs(n);
+    glm::mat3 rotMat = glm::mat3_cast(rot);
+    glm::vec3 n = -glm::inverse(rotMat) * normal;
+    glm::vec3 nAbs = glm::abs(n);
 
-    if (nAbs.x > nAbs.y)
+    if (nAbs.x > nAbs.y && nAbs.x > nAbs.z)
     {
-        if (Sign(n.x) > 0.0f)
+        if (n.x > 0.0f)
         {
-            c[0].v.Set(h.x, -h.y);
-            c[0].fp.e.inEdge2 = EDGE3;
-            c[0].fp.e.outEdge2 = EDGE4;
-
-            c[1].v.Set(h.x, h.y);
-            c[1].fp.e.inEdge2 = EDGE4;
-            c[1].fp.e.outEdge2 = EDGE1;
+            c[0].v = glm::vec3(h.x, -h.y, -h.z);
+            c[1].v = glm::vec3(h.x, -h.y, h.z);
+            c[2].v = glm::vec3(h.x, h.y, h.z);
+            c[3].v = glm::vec3(h.x, h.y, -h.z);
+            c[0].fp.f.inFace2 = FACE1;
+            c[1].fp.f.inFace2 = FACE1;
+            c[2].fp.f.inFace2 = FACE1;
+            c[3].fp.f.inFace2 = FACE1;
         }
         else
         {
-            c[0].v.Set(-h.x, h.y);
-            c[0].fp.e.inEdge2 = EDGE1;
-            c[0].fp.e.outEdge2 = EDGE2;
-
-            c[1].v.Set(-h.x, -h.y);
-            c[1].fp.e.inEdge2 = EDGE2;
-            c[1].fp.e.outEdge2 = EDGE3;
+            c[0].v = glm::vec3(-h.x, -h.y, h.z);
+            c[1].v = glm::vec3(-h.x, -h.y, -h.z);
+            c[2].v = glm::vec3(-h.x, h.y, -h.z);
+            c[3].v = glm::vec3(-h.x, h.y, h.z);
+            c[0].fp.f.inFace2 = FACE2;
+            c[1].fp.f.inFace2 = FACE2;
+            c[2].fp.f.inFace2 = FACE2;
+            c[3].fp.f.inFace2 = FACE2;
+        }
+    }
+    else if (nAbs.y > nAbs.z)
+    {
+        if (n.y > 0.0f)
+        {
+            c[0].v = glm::vec3(-h.x, h.y, -h.z);
+            c[1].v = glm::vec3(h.x, h.y, -h.z);
+            c[2].v = glm::vec3(h.x, h.y, h.z);
+            c[3].v = glm::vec3(-h.x, h.y, h.z);
+            c[0].fp.f.inFace2 = FACE3;
+            c[1].fp.f.inFace2 = FACE3;
+            c[2].fp.f.inFace2 = FACE3;
+            c[3].fp.f.inFace2 = FACE3;
+        }
+        else
+        {
+            c[0].v = glm::vec3(-h.x, -h.y, h.z);
+            c[1].v = glm::vec3(h.x, -h.y, h.z);
+            c[2].v = glm::vec3(h.x, -h.y, -h.z);
+            c[3].v = glm::vec3(-h.x, -h.y, -h.z);
+            c[0].fp.f.inFace2 = FACE4;
+            c[1].fp.f.inFace2 = FACE4;
+            c[2].fp.f.inFace2 = FACE4;
+            c[3].fp.f.inFace2 = FACE4;
         }
     }
     else
     {
-        if (Sign(n.y) > 0.0f)
+        if (n.z > 0.0f)
         {
-            c[0].v.Set(h.x, h.y);
-            c[0].fp.e.inEdge2 = EDGE4;
-            c[0].fp.e.outEdge2 = EDGE1;
-
-            c[1].v.Set(-h.x, h.y);
-            c[1].fp.e.inEdge2 = EDGE1;
-            c[1].fp.e.outEdge2 = EDGE2;
+            c[0].v = glm::vec3(-h.x, -h.y, h.z);
+            c[1].v = glm::vec3(h.x, -h.y, h.z);
+            c[2].v = glm::vec3(h.x, h.y, h.z);
+            c[3].v = glm::vec3(-h.x, h.y, h.z);
+            c[0].fp.f.inFace2 = FACE5;
+            c[1].fp.f.inFace2 = FACE5;
+            c[2].fp.f.inFace2 = FACE5;
+            c[3].fp.f.inFace2 = FACE5;
         }
         else
         {
-            c[0].v.Set(-h.x, -h.y);
-            c[0].fp.e.inEdge2 = EDGE2;
-            c[0].fp.e.outEdge2 = EDGE3;
-
-            c[1].v.Set(h.x, -h.y);
-            c[1].fp.e.inEdge2 = EDGE3;
-            c[1].fp.e.outEdge2 = EDGE4;
+            c[0].v = glm::vec3(h.x, -h.y, -h.z);
+            c[1].v = glm::vec3(-h.x, -h.y, -h.z);
+            c[2].v = glm::vec3(-h.x, h.y, -h.z);
+            c[3].v = glm::vec3(h.x, h.y, -h.z);
+            c[0].fp.f.inFace2 = FACE6;
+            c[1].fp.f.inFace2 = FACE6;
+            c[2].fp.f.inFace2 = FACE6;
+            c[3].fp.f.inFace2 = FACE6;
         }
     }
 
-    c[0].v = pos + Rot * c[0].v;
-    c[1].v = pos + Rot * c[1].v;
+    for (int i = 0; i < 4; ++i)
+        c[i].v = pos + glm::mat3_cast(rot) * c[i].v;
 }
 
-// The normal points from A to B
 int Collide(Contact* contacts, Body* bodyA, Body* bodyB)
 {
-    // Setup
-    Vec2 hA = 0.5f * bodyA->width;
-    Vec2 hB = 0.5f * bodyB->width;
+    glm::vec3 hA = 0.5f * bodyA->size;
+    glm::vec3 hB = 0.5f * bodyB->size;
+    glm::vec3 posA = bodyA->position;
+    glm::vec3 posB = bodyB->position;
+    glm::mat3 RotA = glm::mat3_cast(bodyA->rotation);
+    glm::mat3 RotB = glm::mat3_cast(bodyB->rotation);
+    glm::mat3 RotAT = glm::transpose(RotA);
+    glm::mat3 RotBT = glm::transpose(RotB);
+    glm::vec3 dp = posB - posA;
+    glm::vec3 dA = RotAT * dp;
+    glm::vec3 dB = RotBT * dp;
+    glm::mat3 C = RotAT * RotB;
+    glm::mat3 absC(
+        glm::vec3(std::abs(C[0][0]), std::abs(C[0][1]), std::abs(C[0][2])),
+        glm::vec3(std::abs(C[1][0]), std::abs(C[1][1]), std::abs(C[1][2])),
+        glm::vec3(std::abs(C[2][0]), std::abs(C[2][1]), std::abs(C[2][2])));
+    glm::mat3 absCT = glm::transpose(absC);
 
-    Vec2 posA = bodyA->position;
-    Vec2 posB = bodyB->position;
-
-    Mat22 RotA(bodyA->rotation), RotB(bodyB->rotation);
-
-    Mat22 RotAT = RotA.Transpose();
-    Mat22 RotBT = RotB.Transpose();
-
-    Vec2 dp = posB - posA;
-    Vec2 dA = RotAT * dp;
-    Vec2 dB = RotBT * dp;
-
-    Mat22 C = RotAT * RotB;
-    Mat22 absC = Abs(C);
-    Mat22 absCT = absC.Transpose();
-
-    // Box A faces
-    Vec2 faceA = Abs(dA) - hA - absC * hB;
-    if (faceA.x > 0.0f || faceA.y > 0.0f)
-    {
+    glm::vec3 faceA = glm::abs(dA) - hA - absC * hB;
+    if (faceA.x > 0.0f || faceA.y > 0.0f || faceA.z > 0.0f)
         return 0;
-    }
 
-    // Box B faces
-    Vec2 faceB = Abs(dB) - absCT * hA - hB;
-    if (faceB.x > 0.0f || faceB.y > 0.0f)
-    {
+    glm::vec3 faceB = glm::abs(dB) - absCT * hA - hB;
+    if (faceB.x > 0.0f || faceB.y > 0.0f || faceB.z > 0.0f)
         return 0;
-    }
 
-    // Find best axis
     Axis axis;
     float separation;
-    Vec2 normal;
+    glm::vec3 normal;
 
-    // Box A faces
     axis = FACE_A_X;
     separation = faceA.x;
-    normal = dA.x > 0.0f ? RotA.col1 : -RotA.col1;
+    normal = dA.x > 0.0f ? RotA[0] : -RotA[0];
 
     const float relativeTol = 0.95f;
     const float absoluteTol = 0.01f;
@@ -215,120 +195,162 @@ int Collide(Contact* contacts, Body* bodyA, Body* bodyB)
     {
         axis = FACE_A_Y;
         separation = faceA.y;
-        normal = dA.y > 0.0f ? RotA.col2 : -RotA.col2;
+        normal = dA.y > 0.0f ? RotA[1] : -RotA[1];
     }
 
-    // Box B faces
+    if (faceA.z > relativeTol * separation + absoluteTol * hA.z)
+    {
+        axis = FACE_A_Z;
+        separation = faceA.z;
+        normal = dA.z > 0.0f ? RotA[2] : -RotA[2];
+    }
+
     if (faceB.x > relativeTol * separation + absoluteTol * hB.x)
     {
         axis = FACE_B_X;
         separation = faceB.x;
-        normal = dB.x > 0.0f ? RotB.col1 : -RotB.col1;
+        normal = dB.x > 0.0f ? RotB[0] : -RotB[0];
     }
 
     if (faceB.y > relativeTol * separation + absoluteTol * hB.y)
     {
         axis = FACE_B_Y;
         separation = faceB.y;
-        normal = dB.y > 0.0f ? RotB.col2 : -RotB.col2;
+        normal = dB.y > 0.0f ? RotB[1] : -RotB[1];
     }
 
-    // Setup clipping plane data based on the separating axis
-    Vec2 frontNormal, sideNormal;
-    ClipVertex incidentEdge[2];
-    float front, negSide, posSide;
-    char negEdge, posEdge;
+    if (faceB.z > relativeTol * separation + absoluteTol * hB.z)
+    {
+        axis = FACE_B_Z;
+        separation = faceB.z;
+        normal = dB.z > 0.0f ? RotB[2] : -RotB[2];
+    }
 
-    // Compute the clipping lines and the line segment to be clipped.
+    glm::vec3 frontNormal, sideNormal1, sideNormal2;
+    ClipVertex incidentFace[4];
+    float front, side1, side2;
+    char sideFace1, sideFace2;
+
     switch (axis)
     {
-        case FACE_A_X:
-        {
-            frontNormal = normal;
-            front = Dot(posA, frontNormal) + hA.x;
-            sideNormal = RotA.col2;
-            float side = Dot(posA, sideNormal);
-            negSide = -side + hA.y;
-            posSide = side + hA.y;
-            negEdge = EDGE3;
-            posEdge = EDGE1;
-            ComputeIncidentEdge(incidentEdge, hB, posB, RotB, frontNormal);
-        }
+    case FACE_A_X:
+    {
+        frontNormal = normal;
+        front = glm::dot(posA, frontNormal) + hA.x;
+        sideNormal1 = RotA[1];
+        sideNormal2 = RotA[2];
+        side1 = glm::dot(posA, sideNormal1);
+        side2 = glm::dot(posA, sideNormal2);
+        sideFace1 = FACE3;
+        sideFace2 = FACE5;
+        ComputeIncidentFace(incidentFace, hB, posB, bodyB->rotation, frontNormal);
         break;
-
-        case FACE_A_Y:
-        {
-            frontNormal = normal;
-            front = Dot(posA, frontNormal) + hA.y;
-            sideNormal = RotA.col1;
-            float side = Dot(posA, sideNormal);
-            negSide = -side + hA.x;
-            posSide = side + hA.x;
-            negEdge = EDGE2;
-            posEdge = EDGE4;
-            ComputeIncidentEdge(incidentEdge, hB, posB, RotB, frontNormal);
-        }
+    }
+    case FACE_A_Y:
+    {
+        frontNormal = normal;
+        front = glm::dot(posA, frontNormal) + hA.y;
+        sideNormal1 = RotA[0];
+        sideNormal2 = RotA[2];
+        side1 = glm::dot(posA, sideNormal1);
+        side2 = glm::dot(posA, sideNormal2);
+        sideFace1 = FACE1;
+        sideFace2 = FACE5;
+        ComputeIncidentFace(incidentFace, hB, posB, bodyB->rotation, frontNormal);
         break;
-
-        case FACE_B_X:
-        {
-            frontNormal = -normal;
-            front = Dot(posB, frontNormal) + hB.x;
-            sideNormal = RotB.col2;
-            float side = Dot(posB, sideNormal);
-            negSide = -side + hB.y;
-            posSide = side + hB.y;
-            negEdge = EDGE3;
-            posEdge = EDGE1;
-            ComputeIncidentEdge(incidentEdge, hA, posA, RotA, frontNormal);
-        }
+    }
+    case FACE_A_Z:
+    {
+        frontNormal = normal;
+        front = glm::dot(posA, frontNormal) + hA.z;
+        sideNormal1 = RotA[0];
+        sideNormal2 = RotA[1];
+        side1 = glm::dot(posA, sideNormal1);
+        side2 = glm::dot(posA, sideNormal2);
+        sideFace1 = FACE1;
+        sideFace2 = FACE3;
+        ComputeIncidentFace(incidentFace, hB, posB, bodyB->rotation, frontNormal);
         break;
-
-        case FACE_B_Y:
-        {
-            frontNormal = -normal;
-            front = Dot(posB, frontNormal) + hB.y;
-            sideNormal = RotB.col1;
-            float side = Dot(posB, sideNormal);
-            negSide = -side + hB.x;
-            posSide = side + hB.x;
-            negEdge = EDGE2;
-            posEdge = EDGE4;
-            ComputeIncidentEdge(incidentEdge, hA, posA, RotA, frontNormal);
-        }
+    }
+    case FACE_B_X:
+    {
+        frontNormal = -normal;
+        front = glm::dot(posB, frontNormal) + hB.x;
+        sideNormal1 = RotB[1];
+        sideNormal2 = RotB[2];
+        side1 = glm::dot(posB, sideNormal1);
+        side2 = glm::dot(posB, sideNormal2);
+        sideFace1 = FACE3;
+        sideFace2 = FACE5;
+        ComputeIncidentFace(incidentFace, hA, posA, bodyA->rotation, frontNormal);
         break;
+    }
+    case FACE_B_Y:
+    {
+        frontNormal = -normal;
+        front = glm::dot(posB, frontNormal) + hB.y;
+        sideNormal1 = RotB[0];
+        sideNormal2 = RotB[2];
+        side1 = glm::dot(posB, sideNormal1);
+        side2 = glm::dot(posB, sideNormal2);
+        sideFace1 = FACE1;
+        sideFace2 = FACE5;
+        ComputeIncidentFace(incidentFace, hA, posA, bodyA->rotation, frontNormal);
+        break;
+    }
+    case FACE_B_Z:
+    {
+        frontNormal = -normal;
+        front = glm::dot(posB, frontNormal) + hB.z;
+        sideNormal1 = RotB[0];
+        sideNormal2 = RotB[1];
+        side1 = glm::dot(posB, sideNormal1);
+        side2 = glm::dot(posB, sideNormal2);
+        sideFace1 = FACE1;
+        sideFace2 = FACE3;
+        ComputeIncidentFace(incidentFace, hA, posA, bodyA->rotation, frontNormal);
+        break;
+    }
     }
 
     // clip other face with 5 box planes (1 face plane, 4 edge planes)
 
-    ClipVertex clipPoints1[2];
-    ClipVertex clipPoints2[2];
+    ClipVertex clipPoints1[4];
+    ClipVertex clipPoints2[4];
     int np;
 
     // Clip to box side 1
-    np = ClipSegmentToLine(clipPoints1, incidentEdge, -sideNormal, negSide, negEdge);
-
+    np = ClipSegmentToLine(&clipPoints1[0], &incidentFace[0], -sideNormal1, -side1 + hA.y, sideFace1);
+    np = ClipSegmentToLine(&clipPoints1[np], &incidentFace[2], -sideNormal1, -side1 + hA.y, sideFace1);
     if (np < 2)
-    {
         return 0;
-    }
 
     // Clip to negative box side 1
-    np = ClipSegmentToLine(clipPoints2, clipPoints1, sideNormal, posSide, posEdge);
+    np = ClipSegmentToLine(&clipPoints2[0], &clipPoints1[0], sideNormal1, side1 + hA.y, sideFace1);
+    np = ClipSegmentToLine(&clipPoints2[np], &clipPoints1[2], sideNormal1, side1 + hA.y, sideFace1);
+    if (np < 2)
+        return 0;
+
+    // Clip to box side 2
+    np = ClipSegmentToLine(&clipPoints1[0], &clipPoints2[0], -sideNormal2, -side2 + hA.z, sideFace2);
+    np = ClipSegmentToLine(&clipPoints1[np], &clipPoints2[2], -sideNormal2, -side2 + hA.z, sideFace2);
 
     if (np < 2)
-    {
         return 0;
-    }
+
+    // Clip to negative box side 2
+    np = ClipSegmentToLine(&clipPoints2[0], &clipPoints1[0], sideNormal2, side2 + hA.z, sideFace2);
+    np = ClipSegmentToLine(&clipPoints2[np], &clipPoints1[2], sideNormal2, side2 + hA.z, sideFace2);
+    if (np < 2)
+        return 0;
 
     // Now clipPoints2 contains the clipping points.
     // Due to roundoff, it is possible that clipping removes all points.
 
     int numContacts = 0;
-    for (int i = 0; i < 2; ++i)
+    for (int i = 0; i < 4; ++i)
     {
-        float separation = Dot(frontNormal, clipPoints2[i].v) - front;
-
+        float separation = glm::dot(frontNormal, clipPoints2[i].v) - front;
         if (separation <= 0)
         {
             contacts[numContacts].separation = separation;
@@ -336,10 +358,11 @@ int Collide(Contact* contacts, Body* bodyA, Body* bodyB)
             // slide contact point onto reference face (easy to cull)
             contacts[numContacts].position = clipPoints2[i].v - separation * frontNormal;
             contacts[numContacts].feature = clipPoints2[i].fp;
-            if (axis == FACE_B_X || axis == FACE_B_Y)
+            if (axis == FACE_B_X || axis == FACE_B_Y || axis == FACE_B_Z)
             {
                 Flip(contacts[numContacts].feature);
             }
+
             ++numContacts;
         }
     }

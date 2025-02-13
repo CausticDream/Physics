@@ -1,14 +1,3 @@
-/*
- * Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies.
- * Erin Catto makes no representations about the suitability
- * of this software for any purpose.
- * It is provided "as is" without express or implied warranty.
- */
-
 #include "box2d-lite/Arbiter.h"
 #include "box2d-lite/Body.h"
 #include "box2d-lite/World.h"
@@ -28,12 +17,71 @@ Arbiter::Arbiter(Body* b1, Body* b2)
 
     numContacts = Collide(contacts, body1, body2);
 
-    friction = sqrtf(body1->friction * body2->friction);
+    const CombineMode effectiveFrictionCombineMode = std::max(b1->material.frictionCombineMode, b2->material.frictionCombineMode);
+    const CombineMode effectiveRestitutionCombineMode = std::max(b1->material.restitutionCombineMode, b2->material.restitutionCombineMode);
+    switch (effectiveFrictionCombineMode)
+    {
+    case CombineMode::Average:
+    {
+        staticFriction = (body1->material.staticFriction + body2->material.staticFriction) * 0.5f;
+        dynamicFriction = (body1->material.dynamicFriction + body2->material.dynamicFriction) * 0.5f;
+        break;
+    }
+    case CombineMode::Minimum:
+    {
+        staticFriction = std::min(body1->material.staticFriction, body2->material.staticFriction);
+        dynamicFriction = std::min(body1->material.dynamicFriction, body2->material.dynamicFriction);
+        break;
+    }
+    case CombineMode::Multiply:
+    {
+        staticFriction = body1->material.staticFriction * body2->material.staticFriction;
+        dynamicFriction = body1->material.dynamicFriction * body2->material.dynamicFriction;
+        break;
+    }
+    case CombineMode::Maximum:
+    {
+        staticFriction = std::max(body1->material.staticFriction, body2->material.staticFriction);
+        dynamicFriction = std::max(body1->material.dynamicFriction, body2->material.dynamicFriction);
+        break;
+    }
+    default:
+    {
+        assert(false);
+    }
+    }
+    switch (effectiveRestitutionCombineMode)
+    {
+    case CombineMode::Average:
+    {
+        restitution = (body1->material.restitution + body2->material.restitution) * 0.5f;
+        break;
+    }
+    case CombineMode::Minimum:
+    {
+        restitution = std::min(body1->material.restitution, body2->material.restitution);
+        break;
+    }
+    case CombineMode::Multiply:
+    {
+        restitution = body1->material.restitution * body2->material.restitution;
+        break;
+    }
+    case CombineMode::Maximum:
+    {
+        restitution = std::max(body1->material.restitution, body2->material.restitution);
+        break;
+    }
+    default:
+    {
+        assert(false);
+    }
+    }
 }
 
 void Arbiter::Update(Contact* newContacts, int numNewContacts)
 {
-    Contact mergedContacts[2];
+    Contact mergedContacts[MAX_POINTS];
 
     for (int i = 0; i < numNewContacts; ++i)
     {
@@ -84,61 +132,76 @@ void Arbiter::Update(Contact* newContacts, int numNewContacts)
 void Arbiter::PreStep(float inv_dt)
 {
     const float k_allowedPenetration = 0.01f;
-    float k_biasFactor = World::positionCorrection ? 0.2f : 0.0f;
+    float k_biasFactor = World::positionCorrection ? 0.1f : 0.0f;
 
     for (int i = 0; i < numContacts; ++i)
     {
         Contact* c = contacts + i;
 
-        Vec2 r1 = c->position - body1->position;
-        Vec2 r2 = c->position - body2->position;
+        glm::vec3 r1 = c->position - body1->position;
+        glm::vec3 r2 = c->position - body2->position;
 
         // Precompute normal mass, tangent mass, and bias.
-        float rn1 = Dot(r1, c->normal);
-        float rn2 = Dot(r2, c->normal);
+        glm::vec3 rn1 = glm::cross(r1, c->normal);
+        glm::vec3 rn2 = glm::cross(r2, c->normal);
         float kNormal = body1->invMass + body2->invMass;
-        kNormal += body1->invI * (Dot(r1, r1) - rn1 * rn1) + body2->invI * (Dot(r2, r2) - rn2 * rn2);
+        kNormal += glm::dot(rn1, body1->invI * rn1);
+        kNormal += glm::dot(rn2, body2->invI * rn2);
         c->massNormal = 1.0f / kNormal;
 
-        Vec2 tangent = Cross(c->normal, 1.0f);
-        float rt1 = Dot(r1, tangent);
-        float rt2 = Dot(r2, tangent);
+        glm::vec3 tangent;
+        if ((1.0f - std::abs(glm::dot(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)))) < 1.0e-4f)
+        {
+            tangent = glm::normalize(glm::cross(c->normal, glm::vec3(0.0f, 1.0f, 0.0f)));
+        }
+        else
+        {
+            tangent = glm::normalize(glm::cross(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)));
+        }
+        glm::vec3 rt1 = glm::cross(r1, tangent);
+        glm::vec3 rt2 = glm::cross(r2, tangent);
         float kTangent = body1->invMass + body2->invMass;
-        kTangent += body1->invI * (Dot(r1, r1) - rt1 * rt1) + body2->invI * (Dot(r2, r2) - rt2 * rt2);
+        kTangent += glm::dot(rt1, body1->invI * rt1);
+        kTangent += glm::dot(rt2, body2->invI * rt2);
         c->massTangent = 1.0f / kTangent;
 
-        c->bias = -k_biasFactor * inv_dt * Min(0.0f, c->separation + k_allowedPenetration);
+        c->bias = -k_biasFactor * inv_dt * glm::min(0.0f, c->separation + k_allowedPenetration);
+
+        glm::vec3 dv = body2->velocity + glm::cross(body2->angularVelocity, r2) - body1->velocity - glm::cross(body1->angularVelocity, r1);
+        float vn = glm::dot(dv, c->normal);
+        constexpr float velocityThreshold = 1.0f;
+        if (vn < -velocityThreshold)
+        {
+            c->bias -= restitution * vn;
+        }
 
         if (World::accumulateImpulses)
         {
             // Apply normal + friction impulse
-            Vec2 P = c->Pn * c->normal + c->Pt * tangent;
+            glm::vec3 P = c->Pn * c->normal + c->Pt * tangent;
 
             body1->velocity -= body1->invMass * P;
-            body1->angularVelocity -= body1->invI * Cross(r1, P);
+            body1->angularVelocity -= body1->invI * glm::cross(r1, P);
 
             body2->velocity += body2->invMass * P;
-            body2->angularVelocity += body2->invI * Cross(r2, P);
+            body2->angularVelocity += body2->invI * glm::cross(r2, P);
         }
     }
 }
 
 void Arbiter::ApplyImpulse()
 {
-    Body* b1 = body1;
-    Body* b2 = body2;
-
     for (int i = 0; i < numContacts; ++i)
     {
         Contact* c = contacts + i;
-        c->r1 = c->position - b1->position;
-        c->r2 = c->position - b2->position;
+        c->r1 = c->position - body1->position;
+        c->r2 = c->position - body2->position;
 
         // Relative velocity at contact
-        Vec2 dv = b2->velocity + Cross(b2->angularVelocity, c->r2) - b1->velocity - Cross(b1->angularVelocity, c->r1);
+        glm::vec3 dv = body2->velocity + glm::cross(body2->angularVelocity, c->r2) - body1->velocity - glm::cross(body1->angularVelocity, c->r1);
 
         // Compute normal impulse
-        float vn = Dot(dv, c->normal);
+        float vn = glm::dot(dv, c->normal);
 
         float dPn = c->massNormal * (-vn + c->bias);
 
@@ -146,53 +209,64 @@ void Arbiter::ApplyImpulse()
         {
             // Clamp the accumulated impulse
             float Pn0 = c->Pn;
-            c->Pn = Max(Pn0 + dPn, 0.0f);
+            c->Pn = glm::max(Pn0 + dPn, 0.0f);
             dPn = c->Pn - Pn0;
         }
         else
         {
-            dPn = Max(dPn, 0.0f);
+            dPn = glm::max(dPn, 0.0f);
         }
 
         // Apply contact impulse
-        Vec2 Pn = dPn * c->normal;
+        glm::vec3 Pn = dPn * c->normal;
 
-        b1->velocity -= b1->invMass * Pn;
-        b1->angularVelocity -= b1->invI * Cross(c->r1, Pn);
+        body1->velocity -= body1->invMass * Pn;
+        body1->angularVelocity -= body1->invI * glm::cross(c->r1, Pn);
 
-        b2->velocity += b2->invMass * Pn;
-        b2->angularVelocity += b2->invI * Cross(c->r2, Pn);
+        body2->velocity += body2->invMass * Pn;
+        body2->angularVelocity += body2->invI * glm::cross(c->r2, Pn);
 
         // Relative velocity at contact
-        dv = b2->velocity + Cross(b2->angularVelocity, c->r2) - b1->velocity - Cross(b1->angularVelocity, c->r1);
+        dv = body2->velocity + glm::cross(body2->angularVelocity, c->r2) - body1->velocity - glm::cross(body1->angularVelocity, c->r1);
 
-        Vec2 tangent = Cross(c->normal, 1.0f);
-        float vt = Dot(dv, tangent);
+        glm::vec3 tangent;
+        if ((1.0f - std::abs(glm::dot(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)))) < 1.0e-4f)
+        {
+            tangent = glm::normalize(glm::cross(c->normal, glm::vec3(0.0f, 1.0f, 0.0f)));
+        }
+        else
+        {
+            tangent = glm::normalize(glm::cross(c->normal, glm::vec3(1.0f, 0.0f, 0.0f)));
+        }
+        float vt = glm::dot(dv, tangent);
         float dPt = c->massTangent * (-vt);
+
+        constexpr float velocityThreshold = 1.0f;
+        const float effectiveFriction = (std::abs(vt) < velocityThreshold) ? staticFriction : dynamicFriction;
 
         if (World::accumulateImpulses)
         {
             // Compute friction impulse
-            float maxPt = friction * c->Pn;
+            float maxPt = effectiveFriction * c->Pn;
 
             // Clamp friction
             float oldTangentImpulse = c->Pt;
-            c->Pt = Clamp(oldTangentImpulse + dPt, -maxPt, maxPt);
+            c->Pt = glm::clamp(oldTangentImpulse + dPt, -maxPt, maxPt);
             dPt = c->Pt - oldTangentImpulse;
         }
         else
         {
-            float maxPt = friction * dPn;
-            dPt = Clamp(dPt, -maxPt, maxPt);
+            float maxPt = effectiveFriction * dPn;
+            dPt = glm::clamp(dPt, -maxPt, maxPt);
         }
 
         // Apply contact impulse
-        Vec2 Pt = dPt * tangent;
+        glm::vec3 Pt = dPt * tangent;
 
-        b1->velocity -= b1->invMass * Pt;
-        b1->angularVelocity -= b1->invI * Cross(c->r1, Pt);
+        body1->velocity -= body1->invMass * Pt;
+        body1->angularVelocity -= body1->invI * glm::cross(c->r1, Pt);
 
-        b2->velocity += b2->invMass * Pt;
-        b2->angularVelocity += b2->invI * Cross(c->r2, Pt);
+        body2->velocity += body2->invMass * Pt;
+        body2->angularVelocity += body2->invI * glm::cross(c->r2, Pt);
     }
 }
