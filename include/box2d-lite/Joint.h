@@ -24,7 +24,7 @@ struct Joint
     glm::vec3 localAnchor1, localAnchor2;
     glm::vec3 r1, r2;
     glm::vec3 bias;
-    glm::vec3 P; // accumulated impulse
+    glm::vec3 P;
     Body* body1;
     Body* body2;
     float biasFactor;

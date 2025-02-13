@@ -29,9 +29,9 @@ struct Contact
     glm::vec3 normal;
     glm::vec3 r1, r2;
     float separation;
-    float Pn; // accumulated normal impulse
-    float Pt; // accumulated tangent impulse
-    float Pnb; // accumulated normal impulse for position bias
+    float Pn;
+    float Pt;
+    float Pnb;
     float massNormal, massTangent;
     float bias;
     FeaturePair feature;
@@ -77,13 +77,11 @@ struct Arbiter
     Body* body1;
     Body* body2;
 
-    // Combined friction and restitution
     float staticFriction;
     float dynamicFriction;
     float restitution;
 };
 
-// This is used by std::set
 inline bool operator<(const ArbiterKey& a1, const ArbiterKey& a2)
 {
     if (a1.body1 < a2.body1)

@@ -178,7 +178,7 @@ void Arbiter::PreStep(float inv_dt)
 
         if (World::accumulateImpulses)
         {
-            // Apply normal + friction impulse
+            // Apply normal + friction impulse.
             glm::vec3 P = c->Pn * c->normal + c->Pt * tangent;
 
             body1->velocity -= body1->invMass * P;
@@ -198,10 +198,10 @@ void Arbiter::ApplyImpulse()
         c->r1 = c->position - body1->position;
         c->r2 = c->position - body2->position;
 
-        // Relative velocity at contact
+        // Relative velocity at contact.
         glm::vec3 dv = body2->velocity + glm::cross(body2->angularVelocity, c->r2) - body1->velocity - glm::cross(body1->angularVelocity, c->r1);
 
-        // Compute normal impulse
+        // Compute normal impulse.
         float vn = glm::dot(dv, c->normal);
 
         float dPn = c->massNormal * (-vn + c->bias);
@@ -218,7 +218,7 @@ void Arbiter::ApplyImpulse()
             dPn = glm::max(dPn, 0.0f);
         }
 
-        // Apply contact impulse
+        // Apply contact impulse.
         glm::vec3 Pn = dPn * c->normal;
 
         body1->velocity -= body1->invMass * Pn;
@@ -227,7 +227,7 @@ void Arbiter::ApplyImpulse()
         body2->velocity += body2->invMass * Pn;
         body2->angularVelocity += body2->invI * glm::cross(c->r2, Pn);
 
-        // Relative velocity at contact
+        // Relative velocity at contact.
         dv = body2->velocity + glm::cross(body2->angularVelocity, c->r2) - body1->velocity - glm::cross(body1->angularVelocity, c->r1);
 
         glm::vec3 tangent;
@@ -247,10 +247,10 @@ void Arbiter::ApplyImpulse()
 
         if (World::accumulateImpulses)
         {
-            // Compute friction impulse
+            // Compute friction impulse.
             float maxPt = effectiveFriction * c->Pn;
 
-            // Clamp friction
+            // Clamp friction.
             float oldTangentImpulse = c->Pt;
             c->Pt = glm::clamp(oldTangentImpulse + dPt, -maxPt, maxPt);
             dPt = c->Pt - oldTangentImpulse;
@@ -261,7 +261,7 @@ void Arbiter::ApplyImpulse()
             dPt = glm::clamp(dPt, -maxPt, maxPt);
         }
 
-        // Apply contact impulse
+        // Apply contact impulse.
         glm::vec3 Pt = dPt * tangent;
 
         body1->velocity -= body1->invMass * Pt;

@@ -32,7 +32,6 @@ void World::Clear()
 
 void World::BroadPhase()
 {
-    // O(n^2) broad-phase
     for (int i = 0; i < (int)bodies.size(); ++i)
     {
         Body* bi = bodies[i];
@@ -101,7 +100,7 @@ void World::Step(float dt)
         joints[i]->PreStep(inv_dt);
     }
 
-    // Perform iterations
+    // Perform iterations.
     for (int i = 0; i < iterations; ++i)
     {
         for (ArbIter arb = arbiters.begin(); arb != arbiters.end(); ++arb)
@@ -115,7 +114,7 @@ void World::Step(float dt)
         }
     }
 
-    // Integrate Velocities
+    // Integrate Velocities.
     for (int i = 0; i < (int)bodies.size(); ++i)
     {
         Body* b = bodies[i];
