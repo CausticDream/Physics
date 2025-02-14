@@ -95,7 +95,7 @@ void Arbiter::Update(Contact* newContacts, int numNewContacts)
         for (int j = 0; j < numContacts; ++j)
         {
             Contact* cOld = contacts + j;
-            if (cNew->feature.value == cOld->feature.value)
+            if (cNew->feature == cOld->feature)
             {
                 k = j;
                 break;

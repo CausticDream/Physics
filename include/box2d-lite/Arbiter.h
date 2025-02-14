@@ -3,18 +3,6 @@
 #include <glm/glm.hpp>
 #include <box2d-lite/Body.h>
 
-union FeaturePair
-{
-    struct Faces
-    {
-        char inFace1;
-        char outFace1;
-        char inFace2;
-        char outFace2;
-    } f;
-    int value;
-};
-
 struct Contact
 {
     Contact()
@@ -33,7 +21,7 @@ struct Contact
     float Pnb;
     float massNormal, massTangent;
     float bias;
-    FeaturePair feature;
+    int feature;
 };
 
 struct ArbiterKey
