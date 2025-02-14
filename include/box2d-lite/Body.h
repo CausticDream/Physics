@@ -2,62 +2,9 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <vector>
 
-enum class GeometryType
-{
-    Box,
-    Sphere,
-    Capsule
-};
-
-struct Geometry
-{
-    virtual glm::vec3 ComputeI(float m) const = 0;
-    virtual GeometryType GetType() const = 0;
-};
-
-struct GeometryBox : Geometry
-{
-    GeometryBox();
-    void Set(const glm::vec3& hs, float m);
-    glm::vec3 ComputeI(float m) const override;
-
-    GeometryType GetType() const override
-    {
-        return GeometryType::Box;
-    }
-
-    glm::vec3 halfSize;
-};
-
-struct GeometrySphere : Geometry
-{
-    GeometrySphere();
-    void Set(float r, float m);
-    glm::vec3 ComputeI(float m) const override;
-
-    GeometryType GetType() const override
-    {
-        return GeometryType::Sphere;
-    }
-
-    float radius;
-};
-
-struct GeometryCapsule : Geometry
-{
-    GeometryCapsule();
-    void Set(float r, float hh, float m);
-    glm::vec3 ComputeI(float m) const override;
-
-    GeometryType GetType() const override
-    {
-        return GeometryType::Capsule;
-    }
-
-    float radius;
-    float halfHeight;
-};
+struct Body;
 
 enum class CombineMode
 {
@@ -78,17 +25,64 @@ struct Material
     CombineMode restitutionCombineMode;
 };
 
+enum class ShapeType
+{
+    Box,
+    Sphere,
+    Capsule
+};
+
 struct Shape
 {
-    GeometryBox geometry;
-    Material material;
+    ~Shape();
+
+    Body* owner;
+    Material* material;
+
+    ShapeType GetType() const
+    {
+        return type;
+    }
+
+protected:
+    Shape(ShapeType type);
+
+    ShapeType type;
+};
+
+struct ShapeBox : Shape
+{
+    ShapeBox();
+    void Set(const glm::vec3& hs);
+
+    glm::vec3 halfSize;
+};
+
+struct ShapeSphere : Shape
+{
+    ShapeSphere();
+    void Set(float r);
+
+    float radius;
+};
+
+struct ShapeCapsule : Shape
+{
+    ShapeCapsule();
+    void Set(float r, float hh);
+
+    float radius;
+    float halfHeight;
 };
 
 struct Body
 {
     Body();
-    void Set(const glm::vec3& s, float m);
+    ~Body();
+    void Set(float m);
     void AddForce(const glm::vec3& f);
+    void AddShape(Shape* shape);
+    void UpdateInvI();
 
     glm::vec3 position;
     glm::quat rotation;
@@ -98,6 +92,6 @@ struct Body
     glm::vec3 torque;
     float mass;
     float invMass;
-    Shape shape;
+    std::vector<Shape*> shapes;
     glm::mat3 invI;
 };

@@ -152,14 +152,14 @@ static void ComputeIncidentFace(ClipVertex c[4], const glm::vec3& h, const glm::
         c[i].v = pos + glm::mat3_cast(rot) * c[i].v;
 }
 
-int Collide(Contact* contacts, Body* bodyA, Body* bodyB)
+int CollideBoxBox(Contact* contacts, Body* body1, ShapeBox* shape1, Body* body2, ShapeBox* shape2)
 {
-    glm::vec3 hA = bodyA->shape.geometry.halfSize;
-    glm::vec3 hB = bodyB->shape.geometry.halfSize;
-    glm::vec3 posA = bodyA->position;
-    glm::vec3 posB = bodyB->position;
-    glm::mat3 RotA = glm::mat3_cast(bodyA->rotation);
-    glm::mat3 RotB = glm::mat3_cast(bodyB->rotation);
+    glm::vec3 hA = shape1->halfSize;
+    glm::vec3 hB = shape2->halfSize;
+    glm::vec3 posA = body1->position;
+    glm::vec3 posB = body2->position;
+    glm::mat3 RotA = glm::mat3_cast(body1->rotation);
+    glm::mat3 RotB = glm::mat3_cast(body2->rotation);
     glm::mat3 RotAT = glm::transpose(RotA);
     glm::mat3 RotBT = glm::transpose(RotB);
     glm::vec3 dp = posB - posA;
@@ -243,7 +243,7 @@ int Collide(Contact* contacts, Body* bodyA, Body* bodyB)
         side2 = glm::dot(posA, sideNormal2);
         sideFace1 = FACE3;
         sideFace2 = FACE5;
-        ComputeIncidentFace(incidentFace, hB, posB, bodyB->rotation, frontNormal);
+        ComputeIncidentFace(incidentFace, hB, posB, body2->rotation, frontNormal);
         break;
     }
     case FACE_A_Y:
@@ -256,7 +256,7 @@ int Collide(Contact* contacts, Body* bodyA, Body* bodyB)
         side2 = glm::dot(posA, sideNormal2);
         sideFace1 = FACE1;
         sideFace2 = FACE5;
-        ComputeIncidentFace(incidentFace, hB, posB, bodyB->rotation, frontNormal);
+        ComputeIncidentFace(incidentFace, hB, posB, body2->rotation, frontNormal);
         break;
     }
     case FACE_A_Z:
@@ -269,7 +269,7 @@ int Collide(Contact* contacts, Body* bodyA, Body* bodyB)
         side2 = glm::dot(posA, sideNormal2);
         sideFace1 = FACE1;
         sideFace2 = FACE3;
-        ComputeIncidentFace(incidentFace, hB, posB, bodyB->rotation, frontNormal);
+        ComputeIncidentFace(incidentFace, hB, posB, body2->rotation, frontNormal);
         break;
     }
     case FACE_B_X:
@@ -282,7 +282,7 @@ int Collide(Contact* contacts, Body* bodyA, Body* bodyB)
         side2 = glm::dot(posB, sideNormal2);
         sideFace1 = FACE3;
         sideFace2 = FACE5;
-        ComputeIncidentFace(incidentFace, hA, posA, bodyA->rotation, frontNormal);
+        ComputeIncidentFace(incidentFace, hA, posA, body1->rotation, frontNormal);
         break;
     }
     case FACE_B_Y:
@@ -295,7 +295,7 @@ int Collide(Contact* contacts, Body* bodyA, Body* bodyB)
         side2 = glm::dot(posB, sideNormal2);
         sideFace1 = FACE1;
         sideFace2 = FACE5;
-        ComputeIncidentFace(incidentFace, hA, posA, bodyA->rotation, frontNormal);
+        ComputeIncidentFace(incidentFace, hA, posA, body1->rotation, frontNormal);
         break;
     }
     case FACE_B_Z:
@@ -308,7 +308,7 @@ int Collide(Contact* contacts, Body* bodyA, Body* bodyB)
         side2 = glm::dot(posB, sideNormal2);
         sideFace1 = FACE1;
         sideFace2 = FACE3;
-        ComputeIncidentFace(incidentFace, hA, posA, bodyA->rotation, frontNormal);
+        ComputeIncidentFace(incidentFace, hA, posA, body1->rotation, frontNormal);
         break;
     }
     }

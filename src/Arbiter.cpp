@@ -2,46 +2,50 @@
 #include "box2d-lite/Body.h"
 #include "box2d-lite/World.h"
 
-Arbiter::Arbiter(Body* b1, Body* b2)
+Arbiter::Arbiter(Shape* s1, Shape* s2)
 {
-    if (b1 < b2)
+    Shape* shape1;
+    Shape* shape2;
+    if (s1 < s2)
     {
-        body1 = b1;
-        body2 = b2;
+        shape1 = s1;
+        shape2 = s2;
     }
     else
     {
-        body1 = b2;
-        body2 = b1;
+        shape1 = s2;
+        shape2 = s1;
     }
+    body1 = shape1->owner;
+    body2 = shape2->owner;
 
-    numContacts = Collide(contacts, body1, body2);
+    numContacts = CollideBoxBox(contacts, body1, static_cast<ShapeBox*>(shape1), body2, static_cast<ShapeBox*>(shape2));
 
-    const CombineMode effectiveFrictionCombineMode = std::max(b1->shape.material.frictionCombineMode, b2->shape.material.frictionCombineMode);
+    const CombineMode effectiveFrictionCombineMode = std::max(shape1->material->frictionCombineMode, shape2->material->frictionCombineMode);
     switch (effectiveFrictionCombineMode)
     {
     case CombineMode::Average:
     {
-        staticFriction = (body1->shape.material.staticFriction + body2->shape.material.staticFriction) * 0.5f;
-        dynamicFriction = (body1->shape.material.dynamicFriction + body2->shape.material.dynamicFriction) * 0.5f;
+        staticFriction = (shape1->material->staticFriction + shape2->material->staticFriction) * 0.5f;
+        dynamicFriction = (shape1->material->dynamicFriction + shape2->material->dynamicFriction) * 0.5f;
         break;
     }
     case CombineMode::Minimum:
     {
-        staticFriction = std::min(body1->shape.material.staticFriction, body2->shape.material.staticFriction);
-        dynamicFriction = std::min(body1->shape.material.dynamicFriction, body2->shape.material.dynamicFriction);
+        staticFriction = std::min(shape1->material->staticFriction, shape2->material->staticFriction);
+        dynamicFriction = std::min(shape1->material->dynamicFriction, shape2->material->dynamicFriction);
         break;
     }
     case CombineMode::Multiply:
     {
-        staticFriction = body1->shape.material.staticFriction * body2->shape.material.staticFriction;
-        dynamicFriction = body1->shape.material.dynamicFriction * body2->shape.material.dynamicFriction;
+        staticFriction = shape1->material->staticFriction * shape2->material->staticFriction;
+        dynamicFriction = shape1->material->dynamicFriction * shape2->material->dynamicFriction;
         break;
     }
     case CombineMode::Maximum:
     {
-        staticFriction = std::max(body1->shape.material.staticFriction, body2->shape.material.staticFriction);
-        dynamicFriction = std::max(body1->shape.material.dynamicFriction, body2->shape.material.dynamicFriction);
+        staticFriction = std::max(shape1->material->staticFriction, shape2->material->staticFriction);
+        dynamicFriction = std::max(shape1->material->dynamicFriction, shape2->material->dynamicFriction);
         break;
     }
     default:
@@ -50,27 +54,27 @@ Arbiter::Arbiter(Body* b1, Body* b2)
     }
     }
 
-    const CombineMode effectiveRestitutionCombineMode = std::max(b1->shape.material.restitutionCombineMode, b2->shape.material.restitutionCombineMode);
+    const CombineMode effectiveRestitutionCombineMode = std::max(shape1->material->restitutionCombineMode, shape2->material->restitutionCombineMode);
     switch (effectiveRestitutionCombineMode)
     {
     case CombineMode::Average:
     {
-        restitution = (body1->shape.material.restitution + body2->shape.material.restitution) * 0.5f;
+        restitution = (shape1->material->restitution + shape2->material->restitution) * 0.5f;
         break;
     }
     case CombineMode::Minimum:
     {
-        restitution = std::min(body1->shape.material.restitution, body2->shape.material.restitution);
+        restitution = std::min(shape1->material->restitution, shape2->material->restitution);
         break;
     }
     case CombineMode::Multiply:
     {
-        restitution = body1->shape.material.restitution * body2->shape.material.restitution;
+        restitution = shape1->material->restitution * shape2->material->restitution;
         break;
     }
     case CombineMode::Maximum:
     {
-        restitution = std::max(body1->shape.material.restitution, body2->shape.material.restitution);
+        restitution = std::max(shape1->material->restitution, shape2->material->restitution);
         break;
     }
     default:

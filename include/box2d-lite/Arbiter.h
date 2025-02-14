@@ -3,6 +3,8 @@
 #include <glm/glm.hpp>
 
 struct Body;
+struct Shape;
+struct ShapeBox;
 
 union FeaturePair
 {
@@ -39,22 +41,22 @@ struct Contact
 
 struct ArbiterKey
 {
-    ArbiterKey(Body* b1, Body* b2)
+    ArbiterKey(Shape* s1, Shape* s2)
     {
-        if (b1 < b2)
+        if (s1 < s2)
         {
-            body1 = b1;
-            body2 = b2;
+            shape1 = s1;
+            shape2 = s2;
         }
         else
         {
-            body1 = b2;
-            body2 = b1;
+            shape1 = s2;
+            shape2 = s2;
         }
     }
 
-    Body* body1;
-    Body* body2;
+    Shape* shape1;
+    Shape* shape2;
 };
 
 struct Arbiter
@@ -64,7 +66,7 @@ struct Arbiter
         MAX_POINTS = 4
     };
 
-    Arbiter(Body* b1, Body* b2);
+    Arbiter(Shape* s1, Shape* s2);
 
     void Update(Contact* contacts, int numContacts);
 
@@ -84,12 +86,12 @@ struct Arbiter
 
 inline bool operator<(const ArbiterKey& a1, const ArbiterKey& a2)
 {
-    if (a1.body1 < a2.body1)
+    if (a1.shape1 < a2.shape1)
     {
         return true;
     }
 
-    if (a1.body1 == a2.body1 && a1.body2 < a2.body2)
+    if (a1.shape1 == a2.shape1 && a1.shape2 < a2.shape2)
     {
         return true;
     }
@@ -97,4 +99,4 @@ inline bool operator<(const ArbiterKey& a1, const ArbiterKey& a2)
     return false;
 }
 
-int Collide(Contact* contacts, Body* body1, Body* body2);
+int CollideBoxBox(Contact* contacts, Body* body1, ShapeBox* shape1, Body* body2, ShapeBox* shape2);

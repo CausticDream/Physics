@@ -36,33 +36,39 @@ void World::BroadPhase()
     {
         Body* bi = bodies[i];
 
-        for (int j = i + 1; j < (int)bodies.size(); ++j)
+        for (size_t s1 = 0; s1 < bi->shapes.size(); ++s1)
         {
-            Body* bj = bodies[j];
-
-            if (bi->invMass == 0.0f && bj->invMass == 0.0f)
+            for (int j = i + 1; j < (int)bodies.size(); ++j)
             {
-                continue;
-            }
+                Body* bj = bodies[j];
 
-            Arbiter newArb(bi, bj);
-            ArbiterKey key(bi, bj);
-
-            if (newArb.numContacts > 0)
-            {
-                ArbIter iter = arbiters.find(key);
-                if (iter == arbiters.end())
+                if (bi->invMass == 0.0f && bj->invMass == 0.0f)
                 {
-                    arbiters.insert(ArbPair(key, newArb));
+                    continue;
                 }
-                else
+
+                for (size_t s2 = 0; s2 < bj->shapes.size(); ++s2)
                 {
-                    iter->second.Update(newArb.contacts, newArb.numContacts);
+                    Arbiter newArb(bi->shapes[s1], bj->shapes[s2]);
+                    ArbiterKey key(bi->shapes[s1], bj->shapes[s2]);
+
+                    if (newArb.numContacts > 0)
+                    {
+                        ArbIter iter = arbiters.find(key);
+                        if (iter == arbiters.end())
+                        {
+                            arbiters.insert(ArbPair(key, newArb));
+                        }
+                        else
+                        {
+                            iter->second.Update(newArb.contacts, newArb.numContacts);
+                        }
+                    }
+                    else
+                    {
+                        arbiters.erase(key);
+                    }
                 }
-            }
-            else
-            {
-                arbiters.erase(key);
             }
         }
     }
