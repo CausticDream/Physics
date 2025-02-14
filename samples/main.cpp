@@ -803,10 +803,9 @@ int main(int, char**)
         glColor3f(1.0f, 0.0f, 0.0f);
         glBegin(GL_POINTS);
 
-        std::map<ArbiterKey, Arbiter>::const_iterator iter;
-        for (iter = world.arbiters.begin(); iter != world.arbiters.end(); ++iter)
+        for (const auto& iter : world.arbiters)
         {
-            const Arbiter& arbiter = iter->second;
+            const Arbiter& arbiter = iter.second;
             for (int i = 0; i < arbiter.numContacts; ++i)
             {
                 glm::vec3 p = arbiter.contacts[i].position;

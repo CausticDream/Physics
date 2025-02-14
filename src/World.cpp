@@ -2,13 +2,6 @@
 #include "box2d-lite/Body.h"
 #include "box2d-lite/Joint.h"
 
-using std::map;
-using std::pair;
-using std::vector;
-
-typedef map<ArbiterKey, Arbiter>::iterator ArbIter;
-typedef pair<ArbiterKey, Arbiter> ArbPair;
-
 bool World::accumulateImpulses = true;
 bool World::warmStarting = true;
 bool World::positionCorrection = true;
@@ -54,10 +47,10 @@ void World::BroadPhase()
 
                     if (newArb.numContacts > 0)
                     {
-                        ArbIter iter = arbiters.find(key);
+                        const auto iter = arbiters.find(key);
                         if (iter == arbiters.end())
                         {
-                            arbiters.insert(ArbPair(key, newArb));
+                            arbiters.insert({key, newArb});
                         }
                         else
                         {
@@ -96,9 +89,9 @@ void World::Step(float dt)
     }
 
     // Perform pre-steps.
-    for (ArbIter arb = arbiters.begin(); arb != arbiters.end(); ++arb)
+    for (auto& arb : arbiters)
     {
-        arb->second.PreStep(inv_dt);
+        arb.second.PreStep(inv_dt);
     }
 
     for (int i = 0; i < (int)joints.size(); ++i)
@@ -109,9 +102,9 @@ void World::Step(float dt)
     // Perform iterations.
     for (int i = 0; i < iterations; ++i)
     {
-        for (ArbIter arb = arbiters.begin(); arb != arbiters.end(); ++arb)
+        for (auto& arb : arbiters)
         {
-            arb->second.ApplyImpulse();
+            arb.second.ApplyImpulse();
         }
 
         for (int j = 0; j < (int)joints.size(); ++j)
