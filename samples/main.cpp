@@ -611,8 +611,8 @@ static void InitDemo(int index)
         body->angularVelocity = glm::vec3(0.0f, 0.0f, 0.0f);
         body->force = glm::vec3(0.0f, 0.0f, 0.0f);
         body->torque = glm::vec3(0.0f, 0.0f, 0.0f);
-        static_cast<ShapeBox*>(body->shapes[0])->material->staticFriction = 0.5f;
-        static_cast<ShapeBox*>(body->shapes[0])->material->dynamicFriction = 0.5f;
+        static_cast<ShapeBox*>(body->shapes[0])->material->staticFriction = 0.2f;
+        static_cast<ShapeBox*>(body->shapes[0])->material->dynamicFriction = 0.2f;
         static_cast<ShapeBox*>(body->shapes[0])->material->restitution = 0.0f;
     }
 
@@ -745,6 +745,9 @@ int main(int, char**)
         Body* body = bodies + i;
         ShapeBox* shapeBox = new ShapeBox;
         shapeBox->material = new Material;
+        shapeBox->material->staticFriction = 0.2f;
+        shapeBox->material->dynamicFriction = 0.2f;
+        shapeBox->material->restitution = 0.0f;
         body->AddShape(shapeBox);
     }
 
