@@ -144,14 +144,8 @@ Body::~Body()
     }
 }
 
-void Body::Set(float m)
+void Body::SetMass(float m)
 {
-    position = glm::vec3(0.0f, 0.0f, 0.0f);
-    rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-    velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-    angularVelocity = glm::vec3(0.0f, 0.0f, 0.0f);
-    force = glm::vec3(0.0f, 0.0f, 0.0f);
-    torque = glm::vec3(0.0f, 0.0f, 0.0f);
     mass = m;
     if ((mass > 0.0f) && (mass < FLT_MAX))
     {

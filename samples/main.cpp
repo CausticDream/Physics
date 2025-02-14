@@ -157,7 +157,7 @@ static void LaunchBomb()
     {
         bomb = bodies + numBodies;
         static_cast<ShapeBox*>(bomb->shapes[0])->Set(glm::vec3(0.5f, 0.5f, 0.5f));
-        bomb->Set(50.0f);
+        bomb->SetMass(50.0f);
         world.Add(bomb);
         ++numBodies;
     }
@@ -172,14 +172,14 @@ static void LaunchBomb()
 static void Demo1(Body* b, Joint* j)
 {
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b->shapes[0])->halfSize.y, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(0.5f, 0.5f, 0.5f));
-    b->Set(200.0f);
+    b->SetMass(200.0f);
     b->position = glm::vec3(0.0f, 4.0f, 0.0f);
     world.Add(b);
     ++b;
@@ -191,14 +191,14 @@ static void Demo2(Body* b, Joint* j)
 {
     Body* b1 = b + 0;
     static_cast<ShapeBox*>(b1->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b1->Set(FLT_MAX);
+    b1->SetMass(FLT_MAX);
     b1->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b1->shapes[0])->halfSize.y, 0.0f);
     b1->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b1);
 
     Body* b2 = b + 1;
     static_cast<ShapeBox*>(b2->shapes[0])->Set(glm::vec3(0.5f, 0.5f, 0.5f));
-    b2->Set(100.0f);
+    b2->SetMass(100.0f);
     b2->position = glm::vec3(9.0f, 11.0f, 0.0f);
     b2->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b2);
@@ -215,14 +215,14 @@ static void Demo2(Body* b, Joint* j)
 static void Demo3(Body* b, Joint* j)
 {
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b->shapes[0])->halfSize.y, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(6.5f, 0.125f, 0.125f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(-2.0f, 11.0f, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, -0.25f));
     world.Add(b);
@@ -230,14 +230,14 @@ static void Demo3(Body* b, Joint* j)
     ++numBodies;
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(0.125f, 0.5f, 0.5f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(5.25f, 9.5f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(6.5f, 0.125f, 0.125f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(2.0f, 7.0f, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.25f));
     world.Add(b);
@@ -245,14 +245,14 @@ static void Demo3(Body* b, Joint* j)
     ++numBodies;
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(0.125f, 0.5f, 0.5f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(-5.25f, 5.5f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(6.5f, 0.125f, 0.125f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(-2.0f, 3.0f, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, -0.25f));
     world.Add(b);
@@ -263,7 +263,7 @@ static void Demo3(Body* b, Joint* j)
     for (int i = 0; i < 5; ++i)
     {
         static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(0.25f, 0.25f, 0.25f));
-        b->Set(25.0f);
+        b->SetMass(25.0f);
         b->shapes[0]->material->staticFriction = friction[i];
         b->shapes[0]->material->dynamicFriction = friction[i];
         b->position = glm::vec3(-7.5f + 2.0f * i, 14.0f, 0.0f);
@@ -277,7 +277,7 @@ static void Demo3(Body* b, Joint* j)
 static void Demo4(Body* b, Joint* j)
 {
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b->shapes[0])->halfSize.y, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
@@ -287,7 +287,7 @@ static void Demo4(Body* b, Joint* j)
     for (int i = 0; i < 10; ++i)
     {
         static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(0.5f, 0.5f, 0.5f));
-        b->Set(1.0f);
+        b->SetMass(1.0f);
         float x = glm::linearRand(-0.1f, 0.1f);
         b->position = glm::vec3(x, 0.51f + 1.05f * i, 0.0f);
         world.Add(b);
@@ -300,7 +300,7 @@ static void Demo4(Body* b, Joint* j)
 static void Demo5(Body* b, Joint* j)
 {
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b->shapes[0])->halfSize.y, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
@@ -317,7 +317,7 @@ static void Demo5(Body* b, Joint* j)
         for (int j = i; j < 12; ++j)
         {
             static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(0.5f, 0.5f, 0.5f));
-            b->Set(10.0f);
+            b->SetMass(10.0f);
             b->position = y;
             world.Add(b);
             ++b;
@@ -335,31 +335,31 @@ static void Demo6(Body* b, Joint* j)
 {
     Body* b1 = b + 0;
     static_cast<ShapeBox*>(b1->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b1->Set(FLT_MAX);
+    b1->SetMass(FLT_MAX);
     b1->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b1->shapes[0])->halfSize.y, 0.0f);
     world.Add(b1);
 
     Body* b2 = b + 1;
     static_cast<ShapeBox*>(b2->shapes[0])->Set(glm::vec3(6.0f, 0.125f, 0.125f));
-    b2->Set(100.0f);
+    b2->SetMass(100.0f);
     b2->position = glm::vec3(0.0f, 1.0f, 0.0f);
     world.Add(b2);
 
     Body* b3 = b + 2;
     static_cast<ShapeBox*>(b3->shapes[0])->Set(glm::vec3(0.25f, 0.25f, 0.25f));
-    b3->Set(25.0f);
+    b3->SetMass(25.0f);
     b3->position = glm::vec3(-5.0f, 2.0f, 0.0f);
     world.Add(b3);
 
     Body* b4 = b + 3;
     static_cast<ShapeBox*>(b4->shapes[0])->Set(glm::vec3(0.25f, 0.25f, 0.25f));
-    b4->Set(25.0f);
+    b4->SetMass(25.0f);
     b4->position = glm::vec3(-5.5f, 2.0f, 0.0f);
     world.Add(b4);
 
     Body* b5 = b + 4;
     static_cast<ShapeBox*>(b5->shapes[0])->Set(glm::vec3(0.5f, 0.5f, 0.5f));
-    b5->Set(100.0f);
+    b5->SetMass(100.0f);
     b5->position = glm::vec3(5.5f, 15.0f, 0.0f);
     world.Add(b5);
 
@@ -375,7 +375,7 @@ static void Demo6(Body* b, Joint* j)
 static void Demo7(Body* b, Joint* j)
 {
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b->shapes[0])->halfSize.y, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
@@ -388,7 +388,7 @@ static void Demo7(Body* b, Joint* j)
     for (int i = 0; i < numPlanks; ++i)
     {
         static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(0.5f, 0.125f, 0.125f));
-        b->Set(mass);
+        b->SetMass(mass);
         b->position = glm::vec3(-8.5f + 1.25f * i, 5.0f, 0.0f);
         world.Add(b);
         ++b;
@@ -436,14 +436,14 @@ static void Demo8(Body* b, Joint* j)
 {
     Body* b1 = b;
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b->shapes[0])->halfSize.y, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(6.0f, 0.25f, 0.25f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(-1.5f, 10.0f, 0.0f);
     world.Add(b);
     ++b;
@@ -452,7 +452,7 @@ static void Demo8(Body* b, Joint* j)
     for (int i = 0; i < 10; ++i)
     {
         static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(0.1f, 1.0f, 1.0f));
-        b->Set(10.0f);
+        b->SetMass(10.0f);
         b->position = glm::vec3(-6.0f + 1.0f * i, 11.125f, 0.0f);
         b->shapes[0]->material->staticFriction = 0.1f;
         b->shapes[0]->material->dynamicFriction = 0.1f;
@@ -462,7 +462,7 @@ static void Demo8(Body* b, Joint* j)
     }
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(7.0f, 0.25f, 0.25f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(1.0f, 6.0f, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.3f));
     world.Add(b);
@@ -471,7 +471,7 @@ static void Demo8(Body* b, Joint* j)
 
     Body* b2 = b;
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(0.25f, 1.5f, 1.5f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(-7.0f, 4.0f, 0.0f);
     world.Add(b);
     ++b;
@@ -479,7 +479,7 @@ static void Demo8(Body* b, Joint* j)
 
     Body* b3 = b;
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(6.0f, 0.125f, 0.125f));
-    b->Set(20.0f);
+    b->SetMass(20.0f);
     b->position = glm::vec3(-0.9f, 1.0f, 0.0f);
     world.Add(b);
     ++b;
@@ -492,7 +492,7 @@ static void Demo8(Body* b, Joint* j)
 
     Body* b4 = b;
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(0.25f, 0.25f, 0.25f));
-    b->Set(10.0f);
+    b->SetMass(10.0f);
     b->position = glm::vec3(-10.0f, 15.0f, 0.0f);
     world.Add(b);
     ++b;
@@ -505,7 +505,7 @@ static void Demo8(Body* b, Joint* j)
 
     Body* b5 = b;
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(1.0f, 1.0f, 1.0f));
-    b->Set(20.0f);
+    b->SetMass(20.0f);
     b->position = glm::vec3(6.0f, 2.5f, 0.0f);
     b->shapes[0]->material->staticFriction = 0.1f;
     b->shapes[0]->material->dynamicFriction = 0.1f;
@@ -520,7 +520,7 @@ static void Demo8(Body* b, Joint* j)
 
     Body* b6 = b;
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(1.0f, 0.1f, 0.1f));
-    b->Set(10.0f);
+    b->SetMass(10.0f);
     b->position = glm::vec3(6.0f, 3.6f, 0.0f);
     world.Add(b);
     ++b;
@@ -536,7 +536,7 @@ static void Demo8(Body* b, Joint* j)
 static void Demo9(Body* b, Joint* j)
 {
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b->Set(FLT_MAX);
+    b->SetMass(FLT_MAX);
     b->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b->shapes[0])->halfSize.y, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
@@ -570,7 +570,7 @@ static void Demo9(Body* b, Joint* j)
     {
         glm::vec3 x(0.5f + i, y, 0.0f);
         static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(0.375f, 0.125f, 0.375f));
-        b->Set(mass);
+        b->SetMass(mass);
         b->position = x;
         b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
         world.Add(b);
@@ -605,6 +605,12 @@ static void InitDemo(int index)
     for (int i = 0; i < numBodies; ++i)
     {
         Body* body = bodies + i;
+        body->position = glm::vec3(0.0f, 0.0f, 0.0f);
+        body->rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+        body->velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+        body->angularVelocity = glm::vec3(0.0f, 0.0f, 0.0f);
+        body->force = glm::vec3(0.0f, 0.0f, 0.0f);
+        body->torque = glm::vec3(0.0f, 0.0f, 0.0f);
         static_cast<ShapeBox*>(body->shapes[0])->material->staticFriction = 0.5f;
         static_cast<ShapeBox*>(body->shapes[0])->material->dynamicFriction = 0.5f;
         static_cast<ShapeBox*>(body->shapes[0])->material->restitution = 0.0f;
