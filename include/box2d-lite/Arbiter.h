@@ -48,7 +48,7 @@ struct ArbiterKey
         else
         {
             shape1 = s2;
-            shape2 = s2;
+            shape2 = s1;
         }
     }
 
