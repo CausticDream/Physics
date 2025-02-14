@@ -6,7 +6,7 @@ Arbiter::Arbiter(Shape* s1, Shape* s2)
 {
     Shape* shape1;
     Shape* shape2;
-    if (s1 < s2)
+    if (s1->GetUniqueID() < s2->GetUniqueID())
     {
         shape1 = s1;
         shape2 = s2;

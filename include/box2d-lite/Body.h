@@ -39,6 +39,11 @@ struct Shape
     Body* owner;
     Material* material;
 
+    uint32_t GetUniqueID() const
+    {
+        return uniqueID;
+    }
+
     ShapeType GetType() const
     {
         return type;
@@ -47,6 +52,7 @@ struct Shape
 protected:
     Shape(ShapeType type);
 
+    uint32_t uniqueID;
     ShapeType type;
 };
 

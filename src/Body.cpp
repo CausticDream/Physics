@@ -1,4 +1,7 @@
 #include "box2d-lite/Body.h"
+#include <atomic>
+
+std::atomic<uint32_t> g_counter;
 
 Material::Material()
 : staticFriction(0.5f)
@@ -19,6 +22,7 @@ Shape::~Shape()
 
 Shape::Shape(ShapeType t)
 {
+    uniqueID = g_counter++;
     owner = nullptr;
     type = t;
 }

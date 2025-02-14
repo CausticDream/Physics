@@ -1,10 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-
-struct Body;
-struct Shape;
-struct ShapeBox;
+#include <box2d-lite/Body.h>
 
 union FeaturePair
 {
@@ -43,7 +40,7 @@ struct ArbiterKey
 {
     ArbiterKey(Shape* s1, Shape* s2)
     {
-        if (s1 < s2)
+        if (s1->GetUniqueID() < s2->GetUniqueID())
         {
             shape1 = s1;
             shape2 = s2;
@@ -86,12 +83,12 @@ struct Arbiter
 
 inline bool operator<(const ArbiterKey& a1, const ArbiterKey& a2)
 {
-    if (a1.shape1 < a2.shape1)
+    if (a1.shape1->GetUniqueID() < a2.shape1->GetUniqueID())
     {
         return true;
     }
 
-    if (a1.shape1 == a2.shape1 && a1.shape2 < a2.shape2)
+    if ((a1.shape1->GetUniqueID() == a2.shape1->GetUniqueID()) && (a1.shape2->GetUniqueID() < a2.shape2->GetUniqueID()))
     {
         return true;
     }
