@@ -260,18 +260,11 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
         glm::vec3 closestPoint2;
         ComputeClosestPointsOnEdges(edge1Start, edge1End, edge2Start, edge2End, closestPoint1, closestPoint2);
 
-        CollisionInfo& collisionInfo1 = collisionInfos[*count];
-        collisionInfo1.position = closestPoint1;
-        collisionInfo1.normal = collisionNormal;
-        collisionInfo1.separation = minSeparation;
-        collisionInfo1.feature = static_cast<int>(edge1Index * 10 + edge2Index * 100);
-        ++(*count);
-
-        CollisionInfo& collisionInfo2 = collisionInfos[*count];
-        collisionInfo2.position = closestPoint2;
-        collisionInfo2.normal = collisionNormal;
-        collisionInfo2.separation = minSeparation;
-        collisionInfo2.feature = static_cast<int>(edge1Index * 10 + edge2Index * 100 + 1);
+        CollisionInfo& collisionInfo = collisionInfos[*count];
+        collisionInfo.position = (closestPoint1 + closestPoint2) * 0.5f;
+        collisionInfo.normal = collisionNormal;
+        collisionInfo.separation = minSeparation;
+        collisionInfo.feature = static_cast<int>(edge1Index * 10 + edge2Index * 100);
         ++(*count);
     }
 }
