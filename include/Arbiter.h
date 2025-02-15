@@ -1,28 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <Body.h>
-
-struct Contact
-{
-    Contact()
-    : Pn(0.0f)
-    , Pt(0.0f)
-    , Pnb(0.0f)
-    {
-    }
-
-    glm::vec3 position;
-    glm::vec3 normal;
-    glm::vec3 r1, r2;
-    float separation;
-    float Pn;
-    float Pt;
-    float Pnb;
-    float massNormal, massTangent;
-    float bias;
-    int feature;
-};
+#include <Collide.h>
 
 struct ArbiterKey
 {
@@ -63,20 +41,15 @@ namespace std
 
 struct Arbiter
 {
-    enum
-    {
-        MAX_POINTS = 4
-    };
-
     Arbiter(Shape* s1, Shape* s2);
 
-    void Update(Contact* contacts, int numContacts);
+    void Update(Contact* contacts, size_t numContacts);
 
     void PreStep(float inv_dt);
     void ApplyImpulse();
 
-    Contact contacts[MAX_POINTS];
-    int numContacts;
+    Contact contacts[MAX_CONTACT_POINTS];
+    size_t numContacts;
 
     Body* body1;
     Body* body2;
@@ -85,6 +58,3 @@ struct Arbiter
     float dynamicFriction;
     float restitution;
 };
-
-size_t CollideBoxBox(Contact* contacts, Body* body1, ShapeBox* shape1, Body* body2, ShapeBox* shape2);
-size_t CollideSphereSphere(Contact* contacts, Body* body1, ShapeSphere* shape1, Body* body2, ShapeSphere* shape2);

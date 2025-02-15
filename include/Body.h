@@ -25,11 +25,12 @@ struct Material
     CombineMode restitutionCombineMode;
 };
 
-enum class ShapeType
+enum class ShapeType : size_t
 {
     Box,
     Sphere,
-    Capsule
+    Capsule,
+    Count
 };
 
 struct Shape

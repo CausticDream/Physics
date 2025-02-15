@@ -1,5 +1,4 @@
-#include "Arbiter.h"
-#include "Body.h"
+#include "Collide.h"
 
 struct OBB
 {
@@ -269,14 +268,17 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
     }
 }
 
-size_t CollideBoxBox(Contact* contacts, Body* body1, ShapeBox* shape1, Body* body2, ShapeBox* shape2)
+size_t CollideBoxBox(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape* shape2)
 {
-    OBB obb1 = OBB(body1->position, shape1->halfSize, glm::mat3_cast(body1->rotation));
-    OBB obb2 = OBB(body2->position, shape2->halfSize, glm::mat3_cast(body2->rotation));
+    ShapeBox* shapeBox1 = static_cast<ShapeBox*>(shape1);
+    ShapeBox* shapeBox2 = static_cast<ShapeBox*>(shape2);
 
-    CollisionInfo collisionInfos[Arbiter::MAX_POINTS];
+    OBB obb1 = OBB(body1->position, shapeBox1->halfSize, glm::mat3_cast(body1->rotation));
+    OBB obb2 = OBB(body2->position, shapeBox2->halfSize, glm::mat3_cast(body2->rotation));
+
+    CollisionInfo collisionInfos[MAX_CONTACT_POINTS];
     size_t count;
-    SeparatingAxisTheorem(obb1, obb2, Arbiter::MAX_POINTS, collisionInfos, &count);
+    SeparatingAxisTheorem(obb1, obb2, MAX_CONTACT_POINTS, collisionInfos, &count);
 
     for (size_t i = 0; i < count; ++i)
     {
@@ -289,18 +291,59 @@ size_t CollideBoxBox(Contact* contacts, Body* body1, ShapeBox* shape1, Body* bod
     return count;
 }
 
-size_t CollideSphereSphere(Contact* contacts, Body* body1, ShapeSphere* shape1, Body* body2, ShapeSphere* shape2)
+size_t CollideBoxSphere(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape* shape2)
 {
-    const float overlap = glm::length(body2->position - body1->position) - shape1->radius - shape2->radius;
+    // TODO
+    return 0;
+}
+
+size_t CollideBoxCapsule(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape* shape2)
+{
+    // TODO
+    return 0;
+}
+
+size_t CollideSphereSphere(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape* shape2)
+{
+    ShapeSphere* shapeSphere1 = static_cast<ShapeSphere*>(shape1);
+    ShapeSphere* shapeSphere2 = static_cast<ShapeSphere*>(shape2);
+
+    const float overlap = glm::length(body2->position - body1->position) - shapeSphere1->radius - shapeSphere2->radius;
     if (overlap > 0.0f)
     {
         return 0;
     }
 
     contacts[0].normal = glm::normalize(body2->position - body1->position);
-    contacts[0].position = body1->position + contacts[0].normal * (shape1->radius + (overlap * 0.5f));
+    contacts[0].position = body1->position + contacts[0].normal * (shapeSphere1->radius + (overlap * 0.5f));
     contacts[0].separation = -overlap;
     contacts[0].feature = 0; // TODO
 
     return 1;
+}
+
+size_t CollideSphereCapsule(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape* shape2)
+{
+    // TODO
+    return 0;
+}
+
+size_t CollideCapsuleCapsule(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape* shape2)
+{
+    // TODO
+    return 0;
+}
+
+size_t Collide(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape* shape2)
+{
+    constexpr size_t shapeCount = static_cast<size_t>(ShapeType::Count);
+    static std::function<size_t(Contact*, Body*, Shape*, Body*, Shape*)> collisionMatrix[shapeCount][shapeCount]
+    {
+        {CollideBoxBox, CollideBoxSphere,     CollideBoxCapsule},
+        {nullptr,       CollideSphereSphere,  CollideSphereCapsule},
+        {nullptr,       nullptr,              CollideCapsuleCapsule}
+    };
+    const size_t shape1Type = static_cast<size_t>(shape1->GetType());
+    const size_t shape2Type = static_cast<size_t>(shape2->GetType());
+    return collisionMatrix[shape1Type][shape2Type](contacts, body1, shape1, body2, shape2);
 }

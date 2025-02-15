@@ -19,7 +19,7 @@ Arbiter::Arbiter(Shape* s1, Shape* s2)
     body1 = shape1->owner;
     body2 = shape2->owner;
 
-    numContacts = CollideBoxBox(contacts, body1, static_cast<ShapeBox*>(shape1), body2, static_cast<ShapeBox*>(shape2));
+    numContacts = Collide(contacts, body1, shape1, body2, shape2);
 
     const CombineMode effectiveFrictionCombineMode = std::max(shape1->material->frictionCombineMode, shape2->material->frictionCombineMode);
     switch (effectiveFrictionCombineMode)
@@ -84,9 +84,9 @@ Arbiter::Arbiter(Shape* s1, Shape* s2)
     }
 }
 
-void Arbiter::Update(Contact* newContacts, int numNewContacts)
+void Arbiter::Update(Contact* newContacts, size_t numNewContacts)
 {
-    Contact mergedContacts[MAX_POINTS];
+    Contact mergedContacts[MAX_CONTACT_POINTS];
 
     for (int i = 0; i < numNewContacts; ++i)
     {
