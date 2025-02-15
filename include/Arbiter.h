@@ -9,10 +9,10 @@ struct Arbiter
     void PreStep(float inv_dt);
     void ApplyImpulse();
 
-    Contact contacts[MAX_CONTACT_POINTS];
-    size_t numContacts;
     Body* body1;
     Body* body2;
+    Contact contacts[MAX_CONTACT_POINTS];
+    size_t numContacts;
     float staticFriction;
     float dynamicFriction;
     float restitution;

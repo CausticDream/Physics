@@ -24,63 +24,71 @@ Arbiter::Arbiter(Shape* s1, Shape* s2)
     const CombineMode effectiveFrictionCombineMode = std::max(shape1->material->frictionCombineMode, shape2->material->frictionCombineMode);
     switch (effectiveFrictionCombineMode)
     {
-    case CombineMode::Average:
-    {
-        staticFriction = (shape1->material->staticFriction + shape2->material->staticFriction) * 0.5f;
-        dynamicFriction = (shape1->material->dynamicFriction + shape2->material->dynamicFriction) * 0.5f;
-        break;
-    }
-    case CombineMode::Minimum:
-    {
-        staticFriction = std::min(shape1->material->staticFriction, shape2->material->staticFriction);
-        dynamicFriction = std::min(shape1->material->dynamicFriction, shape2->material->dynamicFriction);
-        break;
-    }
-    case CombineMode::Multiply:
-    {
-        staticFriction = shape1->material->staticFriction * shape2->material->staticFriction;
-        dynamicFriction = shape1->material->dynamicFriction * shape2->material->dynamicFriction;
-        break;
-    }
-    case CombineMode::Maximum:
-    {
-        staticFriction = std::max(shape1->material->staticFriction, shape2->material->staticFriction);
-        dynamicFriction = std::max(shape1->material->dynamicFriction, shape2->material->dynamicFriction);
-        break;
-    }
-    default:
-    {
-        assert(false);
-    }
+        case CombineMode::Average:
+        {
+            staticFriction = (shape1->material->staticFriction + shape2->material->staticFriction) * 0.5f;
+            dynamicFriction = (shape1->material->dynamicFriction + shape2->material->dynamicFriction) * 0.5f;
+            break;
+        }
+
+        case CombineMode::Minimum:
+        {
+            staticFriction = std::min(shape1->material->staticFriction, shape2->material->staticFriction);
+            dynamicFriction = std::min(shape1->material->dynamicFriction, shape2->material->dynamicFriction);
+            break;
+        }
+
+        case CombineMode::Multiply:
+        {
+            staticFriction = shape1->material->staticFriction * shape2->material->staticFriction;
+            dynamicFriction = shape1->material->dynamicFriction * shape2->material->dynamicFriction;
+            break;
+        }
+
+        case CombineMode::Maximum:
+        {
+            staticFriction = std::max(shape1->material->staticFriction, shape2->material->staticFriction);
+            dynamicFriction = std::max(shape1->material->dynamicFriction, shape2->material->dynamicFriction);
+            break;
+        }
+
+        default:
+        {
+            assert(false);
+        }
     }
 
     const CombineMode effectiveRestitutionCombineMode = std::max(shape1->material->restitutionCombineMode, shape2->material->restitutionCombineMode);
     switch (effectiveRestitutionCombineMode)
     {
-    case CombineMode::Average:
-    {
-        restitution = (shape1->material->restitution + shape2->material->restitution) * 0.5f;
-        break;
-    }
-    case CombineMode::Minimum:
-    {
-        restitution = std::min(shape1->material->restitution, shape2->material->restitution);
-        break;
-    }
-    case CombineMode::Multiply:
-    {
-        restitution = shape1->material->restitution * shape2->material->restitution;
-        break;
-    }
-    case CombineMode::Maximum:
-    {
-        restitution = std::max(shape1->material->restitution, shape2->material->restitution);
-        break;
-    }
-    default:
-    {
-        assert(false);
-    }
+        case CombineMode::Average:
+        {
+            restitution = (shape1->material->restitution + shape2->material->restitution) * 0.5f;
+            break;
+        }
+
+        case CombineMode::Minimum:
+        {
+            restitution = std::min(shape1->material->restitution, shape2->material->restitution);
+            break;
+        }
+
+        case CombineMode::Multiply:
+        {
+            restitution = shape1->material->restitution * shape2->material->restitution;
+            break;
+        }
+
+        case CombineMode::Maximum:
+        {
+            restitution = std::max(shape1->material->restitution, shape2->material->restitution);
+            break;
+        }
+
+        default:
+        {
+            assert(false);
+        }
     }
 }
 
