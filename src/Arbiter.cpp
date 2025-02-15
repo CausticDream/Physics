@@ -107,18 +107,9 @@ void Arbiter::Update(Contact* newContacts, size_t numNewContacts)
             Contact* c = mergedContacts + i;
             Contact* cOld = contacts + k;
             *c = *cNew;
-            if (World::warmStarting)
-            {
-                c->Pn = cOld->Pn;
-                c->Pt = cOld->Pt;
-                c->Pnb = cOld->Pnb;
-            }
-            else
-            {
-                c->Pn = 0.0f;
-                c->Pt = 0.0f;
-                c->Pnb = 0.0f;
-            }
+            c->Pn = cOld->Pn;
+            c->Pt = cOld->Pt;
+            c->Pnb = cOld->Pnb;
         }
         else
         {
@@ -136,9 +127,6 @@ void Arbiter::Update(Contact* newContacts, size_t numNewContacts)
 
 void Arbiter::PreStep(float inv_dt)
 {
-    const float k_allowedPenetration = 0.01f;
-    float k_biasFactor = World::positionCorrection ? 0.1f : 0.0f;
-
     for (int i = 0; i < numContacts; ++i)
     {
         Contact* c = contacts + i;
@@ -170,6 +158,8 @@ void Arbiter::PreStep(float inv_dt)
         kTangent += glm::dot(rt2, body2->invI * rt2);
         c->massTangent = 1.0f / kTangent;
 
+        constexpr float k_biasFactor = 0.1f;
+        constexpr float k_allowedPenetration = 0.01f;
         c->bias = -k_biasFactor * inv_dt * glm::min(0.0f, c->separation + k_allowedPenetration);
 
         glm::vec3 dv = body2->velocity + glm::cross(body2->angularVelocity, r2) - body1->velocity - glm::cross(body1->angularVelocity, r1);
@@ -180,17 +170,14 @@ void Arbiter::PreStep(float inv_dt)
             c->bias -= restitution * vn;
         }
 
-        if (World::accumulateImpulses)
-        {
-            // Apply normal + friction impulse.
-            glm::vec3 P = c->Pn * c->normal + c->Pt * tangent;
+        // Apply normal + friction impulse.
+        glm::vec3 P = c->Pn * c->normal + c->Pt * tangent;
 
-            body1->velocity -= body1->invMass * P;
-            body1->angularVelocity -= body1->invI * glm::cross(r1, P);
+        body1->velocity -= body1->invMass * P;
+        body1->angularVelocity -= body1->invI * glm::cross(r1, P);
 
-            body2->velocity += body2->invMass * P;
-            body2->angularVelocity += body2->invI * glm::cross(r2, P);
-        }
+        body2->velocity += body2->invMass * P;
+        body2->angularVelocity += body2->invI * glm::cross(r2, P);
     }
 }
 
@@ -210,17 +197,10 @@ void Arbiter::ApplyImpulse()
 
         float dPn = c->massNormal * (-vn + c->bias);
 
-        if (World::accumulateImpulses)
-        {
-            // Clamp the accumulated impulse
-            float Pn0 = c->Pn;
-            c->Pn = glm::max(Pn0 + dPn, 0.0f);
-            dPn = c->Pn - Pn0;
-        }
-        else
-        {
-            dPn = glm::max(dPn, 0.0f);
-        }
+        // Clamp the accumulated impulse
+        float Pn0 = c->Pn;
+        c->Pn = glm::max(Pn0 + dPn, 0.0f);
+        dPn = c->Pn - Pn0;
 
         // Apply contact impulse.
         glm::vec3 Pn = dPn * c->normal;
@@ -249,21 +229,13 @@ void Arbiter::ApplyImpulse()
         constexpr float velocityThreshold = 1.0f;
         const float effectiveFriction = (std::abs(vt) < velocityThreshold) ? staticFriction : dynamicFriction;
 
-        if (World::accumulateImpulses)
-        {
-            // Compute friction impulse.
-            float maxPt = effectiveFriction * c->Pn;
+        // Compute friction impulse.
+        float maxPt = effectiveFriction * c->Pn;
 
-            // Clamp friction.
-            float oldTangentImpulse = c->Pt;
-            c->Pt = glm::clamp(oldTangentImpulse + dPt, -maxPt, maxPt);
-            dPt = c->Pt - oldTangentImpulse;
-        }
-        else
-        {
-            float maxPt = effectiveFriction * dPn;
-            dPt = glm::clamp(dPt, -maxPt, maxPt);
-        }
+        // Clamp friction.
+        float oldTangentImpulse = c->Pt;
+        c->Pt = glm::clamp(oldTangentImpulse + dPt, -maxPt, maxPt);
+        dPt = c->Pt - oldTangentImpulse;
 
         // Apply contact impulse.
         glm::vec3 Pt = dPt * tangent;

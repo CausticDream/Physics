@@ -2,10 +2,6 @@
 #include "Body.h"
 #include "Joint.h"
 
-bool World::accumulateImpulses = true;
-bool World::warmStarting = true;
-bool World::positionCorrection = true;
-
 void World::Add(Body* body)
 {
     bodies.push_back(body);
@@ -25,13 +21,13 @@ void World::Clear()
 
 void World::BroadPhase()
 {
-    for (int i = 0; i < (int)bodies.size(); ++i)
+    for (size_t i = 0; i < bodies.size(); ++i)
     {
         Body* bi = bodies[i];
 
         for (size_t s1 = 0; s1 < bi->shapes.size(); ++s1)
         {
-            for (int j = i + 1; j < (int)bodies.size(); ++j)
+            for (size_t j = i + 1; j < bodies.size(); ++j)
             {
                 Body* bj = bodies[j];
 
@@ -74,7 +70,7 @@ void World::Step(float dt)
     BroadPhase();
 
     // Integrate forces.
-    for (int i = 0; i < (int)bodies.size(); ++i)
+    for (size_t i = 0; i < bodies.size(); ++i)
     {
         Body* b = bodies[i];
 
@@ -93,27 +89,27 @@ void World::Step(float dt)
         arb.second.PreStep(inv_dt);
     }
 
-    for (int i = 0; i < (int)joints.size(); ++i)
+    for (size_t i = 0; i < joints.size(); ++i)
     {
         joints[i]->PreStep(inv_dt);
     }
 
     // Perform iterations.
-    for (int i = 0; i < iterations; ++i)
+    for (uint32_t i = 0; i < iterations; ++i)
     {
         for (auto& arb : arbiters)
         {
             arb.second.ApplyImpulse();
         }
 
-        for (int j = 0; j < (int)joints.size(); ++j)
+        for (size_t j = 0; j < joints.size(); ++j)
         {
             joints[j]->ApplyImpulse();
         }
     }
 
     // Integrate Velocities.
-    for (int i = 0; i < (int)bodies.size(); ++i)
+    for (size_t i = 0; i < bodies.size(); ++i)
     {
         Body* b = bodies[i];
 

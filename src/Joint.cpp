@@ -51,28 +51,14 @@ void Joint::PreStep(float inv_dt)
     glm::vec3 p2 = body2->position + r2;
     glm::vec3 dp = p2 - p1;
 
-    if (World::positionCorrection)
-    {
-        bias = -biasFactor * inv_dt * dp;
-    }
-    else
-    {
-        bias = glm::vec3(0.0f, 0.0f, 0.0f);
-    }
+    bias = -biasFactor * inv_dt * dp;
 
-    if (World::warmStarting)
-    {
-        // Apply accumulated impulse.
-        body1->velocity -= body1->invMass * P;
-        body1->angularVelocity -= body1->invI * glm::cross(r1, P);
+    // Apply accumulated impulse.
+    body1->velocity -= body1->invMass * P;
+    body1->angularVelocity -= body1->invI * glm::cross(r1, P);
 
-        body2->velocity += body2->invMass * P;
-        body2->angularVelocity += body2->invI * glm::cross(r2, P);
-    }
-    else
-    {
-        P = glm::vec3(0.0f, 0.0f, 0.0f);
-    }
+    body2->velocity += body2->invMass * P;
+    body2->angularVelocity += body2->invI * glm::cross(r2, P);
 }
 
 void Joint::ApplyImpulse()

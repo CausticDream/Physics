@@ -640,18 +640,6 @@ static void Keyboard(GLFWwindow* window, int key, int scancode, int action, int 
             InitDemo(key - GLFW_KEY_1);
             break;
 
-        case GLFW_KEY_A:
-            World::accumulateImpulses = !World::accumulateImpulses;
-            break;
-
-        case GLFW_KEY_P:
-            World::positionCorrection = !World::positionCorrection;
-            break;
-
-        case GLFW_KEY_W:
-            World::warmStarting = !World::warmStarting;
-            break;
-
         case GLFW_KEY_SPACE:
             LaunchBomb();
             break;
@@ -757,16 +745,6 @@ int main(int, char**)
 
         DrawText(5, 5, demoStrings[demoIndex]);
         DrawText(5, 35, "Keys: 1-9 Demos, Space to Launch the Bomb");
-
-        char buffer[64];
-        sprintf(buffer, "(A)ccumulation %s", World::accumulateImpulses ? "ON" : "OFF");
-        DrawText(5, 65, buffer);
-
-        sprintf(buffer, "(P)osition Correction %s", World::positionCorrection ? "ON" : "OFF");
-        DrawText(5, 95, buffer);
-
-        sprintf(buffer, "(W)arm Starting %s", World::warmStarting ? "ON" : "OFF");
-        DrawText(5, 125, buffer);
 
         glMatrixMode(GL_MODELVIEW);
         glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 20.0f, 50.0f), glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
