@@ -1,5 +1,5 @@
-#include "box2d-lite/Arbiter.h"
-#include "box2d-lite/Body.h"
+#include "Arbiter.h"
+#include "Body.h"
 
 struct OBB
 {

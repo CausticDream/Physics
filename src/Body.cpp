@@ -1,4 +1,4 @@
-#include "box2d-lite/Body.h"
+#include "Body.h"
 #include <atomic>
 
 std::atomic<uint32_t> g_counter;

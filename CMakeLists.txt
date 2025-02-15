@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.8)
 
-project(box2d-lite LANGUAGES CXX)
+project(physics LANGUAGES CXX)
 
 add_subdirectory(src)
 
-option(BOX2D_BUILD_SAMPLES "Build the box2d-lite sample program" ON)
+option(PHYSICS_BUILD_SAMPLES "Build the samples" ON)
 
-if (BOX2D_BUILD_SAMPLES)
+if (PHYSICS_BUILD_SAMPLES)
 
 	add_subdirectory(extern/glad)
 	add_subdirectory(extern/glfw)

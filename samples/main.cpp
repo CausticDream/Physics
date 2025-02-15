@@ -1,14 +1,3 @@
-/*
- * Copyright (c) 2006-2007 Erin Catto http://www.gphysics.com
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies.
- * Erin Catto makes no representations about the suitability
- * of this software for any purpose.
- * It is provided "as is" without express or implied warranty.
- */
-
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
@@ -25,9 +14,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/random.hpp>
 
-#include "box2d-lite/Body.h"
-#include "box2d-lite/Joint.h"
-#include "box2d-lite/World.h"
+#include "Body.h"
+#include "Joint.h"
+#include "World.h"
 
 namespace
 {
@@ -697,7 +686,7 @@ int main(int, char**)
         return -1;
     }
 
-    mainWindow = glfwCreateWindow(width, height, "box2d-lite", NULL, NULL);
+    mainWindow = glfwCreateWindow(width, height, "Physics", NULL, NULL);
     if (mainWindow == NULL)
     {
         fprintf(stderr, "Failed to open GLFW mainWindow.\n");

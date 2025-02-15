@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <box2d-lite/Body.h>
+#include <Body.h>
 
 struct Contact
 {

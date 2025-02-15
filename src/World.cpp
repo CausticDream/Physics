@@ -1,6 +1,6 @@
-#include "box2d-lite/World.h"
-#include "box2d-lite/Body.h"
-#include "box2d-lite/Joint.h"
+#include "World.h"
+#include "Body.h"
+#include "Joint.h"
 
 bool World::accumulateImpulses = true;
 bool World::warmStarting = true;

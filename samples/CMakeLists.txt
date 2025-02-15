@@ -11,4 +11,4 @@ set (SAMPLE_HEADER_FILES
 
 add_executable(samples ${SAMPLE_SOURCE_FILES} ${SAMPLE_HEADER_FILES})
 target_include_directories(samples PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ../extern/glm)
-target_link_libraries(samples PUBLIC box2d-lite glfw imgui glad ${OPENGL_LIBRARIES})
+target_link_libraries(samples PUBLIC physics glfw imgui glad ${OPENGL_LIBRARIES})
