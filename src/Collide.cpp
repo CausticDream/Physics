@@ -189,7 +189,7 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
         float maxProj2;
         ProjectOBB(obb2Corners, axis, &minProj2, &maxProj2);
 
-        float overlap = std::max(0.0f, std::min(maxProj1, maxProj2) - std::max(minProj1, minProj2));
+        float overlap = std::min(maxProj1, maxProj2) - std::max(minProj1, minProj2);
         if (overlap <= 0.0f)
         {
             return;
