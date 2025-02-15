@@ -268,13 +268,13 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
     }
 }
 
-size_t CollideBoxBox(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape* shape2)
+size_t CollideBoxBox(Contact* contacts, glm::vec3 positionShape1, glm::quat rotationShape1, Shape* shape1, glm::vec3 positionShape2, glm::quat rotationShape2, Shape* shape2)
 {
     ShapeBox* shapeBox1 = static_cast<ShapeBox*>(shape1);
     ShapeBox* shapeBox2 = static_cast<ShapeBox*>(shape2);
 
-    OBB obb1 = OBB(body1->position, shapeBox1->halfSize, glm::mat3_cast(body1->rotation));
-    OBB obb2 = OBB(body2->position, shapeBox2->halfSize, glm::mat3_cast(body2->rotation));
+    OBB obb1 = OBB(positionShape1, shapeBox1->halfSize, glm::mat3_cast(rotationShape1));
+    OBB obb2 = OBB(positionShape2, shapeBox2->halfSize, glm::mat3_cast(rotationShape2));
 
     CollisionInfo collisionInfos[MAX_CONTACT_POINTS];
     size_t count;
@@ -291,44 +291,44 @@ size_t CollideBoxBox(Contact* contacts, Body* body1, Shape* shape1, Body* body2,
     return count;
 }
 
-size_t CollideBoxSphere(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape* shape2)
+size_t CollideBoxSphere(Contact* contacts, glm::vec3 positionShape1, glm::quat rotationShape1, Shape* shape1, glm::vec3 positionShape2, glm::quat rotationShape2, Shape* shape2)
 {
     // TODO
     return 0;
 }
 
-size_t CollideBoxCapsule(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape* shape2)
+size_t CollideBoxCapsule(Contact* contacts, glm::vec3 positionShape1, glm::quat rotationShape1, Shape* shape1, glm::vec3 positionShape2, glm::quat rotationShape2, Shape* shape2)
 {
     // TODO
     return 0;
 }
 
-size_t CollideSphereSphere(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape* shape2)
+size_t CollideSphereSphere(Contact* contacts, glm::vec3 positionShape1, glm::quat rotationShape1, Shape* shape1, glm::vec3 positionShape2, glm::quat rotationShape2, Shape* shape2)
 {
     ShapeSphere* shapeSphere1 = static_cast<ShapeSphere*>(shape1);
     ShapeSphere* shapeSphere2 = static_cast<ShapeSphere*>(shape2);
 
-    const float overlap = glm::length(body2->position - body1->position) - shapeSphere1->radius - shapeSphere2->radius;
+    const float overlap = glm::length(positionShape2 - positionShape1) - shapeSphere1->radius - shapeSphere2->radius;
     if (overlap > 0.0f)
     {
         return 0;
     }
 
-    contacts[0].normal = glm::normalize(body2->position - body1->position);
-    contacts[0].position = body1->position + contacts[0].normal * (shapeSphere1->radius + (overlap * 0.5f));
+    contacts[0].normal = glm::normalize(positionShape2 - positionShape1);
+    contacts[0].position = positionShape1 + contacts[0].normal * (shapeSphere1->radius + (overlap * 0.5f));
     contacts[0].separation = -overlap;
     contacts[0].feature = 0; // TODO
 
     return 1;
 }
 
-size_t CollideSphereCapsule(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape* shape2)
+size_t CollideSphereCapsule(Contact* contacts, glm::vec3 positionShape1, glm::quat rotationShape1, Shape* shape1, glm::vec3 positionShape2, glm::quat rotationShape2, Shape* shape2)
 {
     // TODO
     return 0;
 }
 
-size_t CollideCapsuleCapsule(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape* shape2)
+size_t CollideCapsuleCapsule(Contact* contacts, glm::vec3 positionShape1, glm::quat rotationShape1, Shape* shape1, glm::vec3 positionShape2, glm::quat rotationShape2, Shape* shape2)
 {
     // TODO
     return 0;
@@ -337,13 +337,17 @@ size_t CollideCapsuleCapsule(Contact* contacts, Body* body1, Shape* shape1, Body
 size_t Collide(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape* shape2)
 {
     constexpr size_t shapeCount = static_cast<size_t>(ShapeType::Count);
-    static std::function<size_t(Contact*, Body*, Shape*, Body*, Shape*)> collisionMatrix[shapeCount][shapeCount]
+    static std::function<size_t(Contact*, glm::vec3, glm::quat, Shape*, glm::vec3, glm::quat, Shape*)> collisionMatrix[shapeCount][shapeCount]
     {
         {CollideBoxBox, CollideBoxSphere,     CollideBoxCapsule},
         {nullptr,       CollideSphereSphere,  CollideSphereCapsule},
         {nullptr,       nullptr,              CollideCapsuleCapsule}
     };
+    const glm::vec3 worldPositionShape1 = (body1->rotation * shape1->position) + body1->position;
+    const glm::vec3 worldPositionShape2 = (body2->rotation * shape2->position) + body2->position;
+    const glm::quat worldRotationShape1 = body1->rotation * shape1->rotation;
+    const glm::quat worldRotationShape2 = body2->rotation * shape2->rotation;
     const size_t shape1Type = static_cast<size_t>(shape1->GetType());
     const size_t shape2Type = static_cast<size_t>(shape2->GetType());
-    return collisionMatrix[shape1Type][shape2Type](contacts, body1, shape1, body2, shape2);
+    return collisionMatrix[shape1Type][shape2Type](contacts, worldPositionShape1, worldRotationShape1, shape1, worldPositionShape2, worldRotationShape2, shape2);
 }
