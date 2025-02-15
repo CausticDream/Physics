@@ -14,6 +14,13 @@ uint64_t ComputeArbiterKey(Shape* s1, Shape* s2)
     }
 }
 
+void World::Clear()
+{
+    bodies.clear();
+    joints.clear();
+    arbiters.clear();
+}
+
 void World::Add(Body* body)
 {
     bodies.push_back(body);
@@ -26,6 +33,8 @@ void World::Add(Joint* joint)
 
 void World::Remove(Body* body)
 {
+    bodies.erase(std::find(bodies.begin(), bodies.end(), body));
+
     for (size_t i = 0; i < bodies.size(); ++i)
     {
         Body* bi = bodies[i];
@@ -47,13 +56,6 @@ void World::Remove(Body* body)
 void World::Remove(Joint* joint)
 {
     joints.erase(std::find(joints.begin(), joints.end(), joint));
-}
-
-void World::Clear()
-{
-    bodies.clear();
-    joints.clear();
-    arbiters.clear();
 }
 
 void World::BroadPhase()
