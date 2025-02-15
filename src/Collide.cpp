@@ -288,3 +288,19 @@ size_t CollideBoxBox(Contact* contacts, Body* body1, ShapeBox* shape1, Body* bod
 
     return count;
 }
+
+size_t CollideSphereSphere(Contact* contacts, Body* body1, ShapeSphere* shape1, Body* body2, ShapeSphere* shape2)
+{
+    const float overlap = glm::length(body2->position - body1->position) - shape1->radius - shape2->radius;
+    if (overlap > 0.0f)
+    {
+        return 0;
+    }
+
+    contacts[0].normal = glm::normalize(body2->position - body1->position);
+    contacts[0].position = body1->position + contacts[0].normal * (shape1->radius + (overlap * 0.5f));
+    contacts[0].separation = -overlap;
+    contacts[0].feature = 0; // TODO
+
+    return 1;
+}

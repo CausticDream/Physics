@@ -87,3 +87,4 @@ struct Arbiter
 };
 
 size_t CollideBoxBox(Contact* contacts, Body* body1, ShapeBox* shape1, Body* body2, ShapeBox* shape2);
+size_t CollideSphereSphere(Contact* contacts, Body* body1, ShapeSphere* shape1, Body* body2, ShapeSphere* shape2);
