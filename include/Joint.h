@@ -16,7 +16,6 @@ struct Joint
     }
 
     void Set(Body* body1, Body* body2, const glm::vec3& anchor);
-
     void PreStep(float inv_dt);
     void ApplyImpulse();
 

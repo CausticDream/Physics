@@ -19,9 +19,7 @@ struct World
     void Add(Body* body);
     void Add(Joint* joint);
     void Clear();
-
     void Step(float dt);
-
     void BroadPhase();
 
     std::vector<Body*> bodies;
