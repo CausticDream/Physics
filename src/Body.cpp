@@ -24,6 +24,8 @@ Shape::Shape(ShapeType t)
 {
     uniqueID = g_counter++;
     owner = nullptr;
+    position = glm::vec3(0.0f, 0.0f, 0.0f);
+    rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     type = t;
 }
 

@@ -38,6 +38,8 @@ struct Shape
     ~Shape();
 
     Body* owner;
+    glm::vec3 position;
+    glm::quat rotation;
     Material* material;
 
     uint32_t GetUniqueID() const
