@@ -13,7 +13,7 @@ void Joint::Set(Body* b1, Body* b2, const glm::vec3& anchor)
     P = glm::vec3(0.0f, 0.0f, 0.0f);
 
     softness = 0.0f;
-    biasFactor = 0.2f;
+    biasFactor = 0.1f;
 }
 
 void Joint::PreStep(float inv_dt)
