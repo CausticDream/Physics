@@ -2,6 +2,18 @@
 #include "Body.h"
 #include "Joint.h"
 
+uint64_t ComputeArbiterKey(Shape* s1, Shape* s2)
+{
+    if (s1->GetUniqueID() < s2->GetUniqueID())
+    {
+        return static_cast<size_t>((static_cast<uint64_t>(s1->GetUniqueID()) << 32) | s2->GetUniqueID());
+    }
+    else
+    {
+        return static_cast<size_t>((static_cast<uint64_t>(s2->GetUniqueID()) << 32) | s1->GetUniqueID());
+    }
+}
+
 void World::Add(Body* body)
 {
     bodies.push_back(body);
@@ -24,7 +36,6 @@ void World::BroadPhase()
     for (size_t i = 0; i < bodies.size(); ++i)
     {
         Body* bi = bodies[i];
-
         for (size_t s1 = 0; s1 < bi->shapes.size(); ++s1)
         {
             for (size_t j = i + 1; j < bodies.size(); ++j)
@@ -39,7 +50,8 @@ void World::BroadPhase()
                 for (size_t s2 = 0; s2 < bj->shapes.size(); ++s2)
                 {
                     Arbiter newArb(bi->shapes[s1], bj->shapes[s2]);
-                    const uint64_t key = static_cast<size_t>((static_cast<uint64_t>(bi->shapes[s1]->GetUniqueID()) << 32) | bj->shapes[s2]->GetUniqueID());
+                    const uint64_t key = ComputeArbiterKey(bi->shapes[s1], bj->shapes[s2]);
+
                     if (newArb.numContacts > 0)
                     {
                         const auto iter = arbiters.find(key);
