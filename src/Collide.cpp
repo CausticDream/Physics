@@ -339,9 +339,9 @@ size_t Collide(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape
     constexpr size_t shapeCount = static_cast<size_t>(ShapeType::Count);
     static const std::function<size_t(Contact*, glm::vec3, glm::quat, Shape*, glm::vec3, glm::quat, Shape*)> collisionMatrix[shapeCount][shapeCount]
     {
-        {CollideBoxBox, CollideBoxSphere,     CollideBoxCapsule},
-        {nullptr,       CollideSphereSphere,  CollideSphereCapsule},
-        {nullptr,       nullptr,              CollideCapsuleCapsule}
+        {CollideBoxBox,     CollideBoxSphere,     CollideBoxCapsule},
+        {CollideBoxSphere,  CollideSphereSphere,  CollideSphereCapsule},
+        {CollideBoxCapsule, CollideSphereCapsule, CollideCapsuleCapsule}
     };
     const glm::vec3 worldPositionShape1 = (body1->rotation * shape1->position) + body1->position;
     const glm::vec3 worldPositionShape2 = (body2->rotation * shape2->position) + body2->position;
