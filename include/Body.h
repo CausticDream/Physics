@@ -91,7 +91,7 @@ struct Body
     void SetMass(float m);
     void AddForce(const glm::vec3& f);
     void AddShape(Shape* shape);
-    void UpdateInvI();
+    void ComputeInvI();
 
     glm::vec3 position;
     glm::quat rotation;

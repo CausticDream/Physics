@@ -41,7 +41,7 @@ void ShapeBox::Set(const glm::vec3& hs)
 
     if (owner)
     {
-        owner->UpdateInvI();
+        owner->ComputeInvI();
     }
 }
 
@@ -57,7 +57,7 @@ void ShapeSphere::Set(float r)
 
     if (owner)
     {
-        owner->UpdateInvI();
+        owner->ComputeInvI();
     }
 }
 
@@ -75,13 +75,13 @@ void ShapeCapsule::Set(float r, float hh)
 
     if (owner)
     {
-        owner->UpdateInvI();
+        owner->ComputeInvI();
     }
 }
 
 glm::vec3 ComputeShapeI(Shape* s, float m)
 {
-    if ((m > 0.0f) && (m < FLT_MAX))
+    if ((m > 0.0f) && (m < std::numeric_limits<float>::infinity()))
     {
         switch (s->GetType())
         {
@@ -137,7 +137,7 @@ Body::Body()
     angularVelocity = glm::vec3(0.0f, 0.0f, 0.0f);
     force = glm::vec3(0.0f, 0.0f, 0.0f);
     torque = glm::vec3(0.0f, 0.0f, 0.0f);
-    mass = FLT_MAX;
+    mass = std::numeric_limits<float>::infinity();
     invMass = 0.0f;
     invI = glm::mat3(0.0f);
 }
@@ -153,7 +153,7 @@ Body::~Body()
 void Body::SetMass(float m)
 {
     mass = m;
-    if ((mass > 0.0f) && (mass < FLT_MAX))
+    if ((mass > 0.0f) && (mass < std::numeric_limits<float>::infinity()))
     {
         invMass = 1.0f / mass;
     }
@@ -161,7 +161,7 @@ void Body::SetMass(float m)
     {
         invMass = 0.0f;
     }
-    UpdateInvI();
+    ComputeInvI();
 }
 
 void Body::AddForce(const glm::vec3& f)
@@ -175,9 +175,9 @@ void Body::AddShape(Shape* shape)
     shapes.push_back(shape);
 }
 
-void Body::UpdateInvI()
+void Body::ComputeInvI()
 {
-    if ((mass > 0.0f) && (mass < FLT_MAX))
+    if ((mass > 0.0f) && (mass < std::numeric_limits<float>::infinity()))
     {
         glm::vec3 I = glm::vec3(0.0f, 0.0f, 0.0f);
         for (size_t i = 0; i < shapes.size(); ++i)

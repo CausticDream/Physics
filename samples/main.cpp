@@ -161,7 +161,7 @@ static void LaunchBomb()
 static void Demo1(Body* b, Joint* j)
 {
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b->shapes[0])->halfSize.y, 0.0f);
     world.Add(b);
     ++b;
@@ -180,7 +180,7 @@ static void Demo2(Body* b, Joint* j)
 {
     Body* b1 = b + 0;
     static_cast<ShapeBox*>(b1->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b1->SetMass(FLT_MAX);
+    b1->SetMass(std::numeric_limits<float>::infinity());
     b1->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b1->shapes[0])->halfSize.y, 0.0f);
     b1->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b1);
@@ -204,14 +204,14 @@ static void Demo2(Body* b, Joint* j)
 static void Demo3(Body* b, Joint* j)
 {
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b->shapes[0])->halfSize.y, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(6.5f, 0.125f, 0.125f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(-2.0f, 11.0f, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, -0.25f));
     world.Add(b);
@@ -219,14 +219,14 @@ static void Demo3(Body* b, Joint* j)
     ++numBodies;
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(0.125f, 0.5f, 0.5f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(5.25f, 9.5f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(6.5f, 0.125f, 0.125f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(2.0f, 7.0f, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.25f));
     world.Add(b);
@@ -234,14 +234,14 @@ static void Demo3(Body* b, Joint* j)
     ++numBodies;
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(0.125f, 0.5f, 0.5f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(-5.25f, 5.5f, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(6.5f, 0.125f, 0.125f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(-2.0f, 3.0f, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, -0.25f));
     world.Add(b);
@@ -266,7 +266,7 @@ static void Demo3(Body* b, Joint* j)
 static void Demo4(Body* b, Joint* j)
 {
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b->shapes[0])->halfSize.y, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
@@ -289,7 +289,7 @@ static void Demo4(Body* b, Joint* j)
 static void Demo5(Body* b, Joint* j)
 {
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b->shapes[0])->halfSize.y, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
@@ -324,7 +324,7 @@ static void Demo6(Body* b, Joint* j)
 {
     Body* b1 = b + 0;
     static_cast<ShapeBox*>(b1->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b1->SetMass(FLT_MAX);
+    b1->SetMass(std::numeric_limits<float>::infinity());
     b1->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b1->shapes[0])->halfSize.y, 0.0f);
     world.Add(b1);
 
@@ -364,7 +364,7 @@ static void Demo6(Body* b, Joint* j)
 static void Demo7(Body* b, Joint* j)
 {
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b->shapes[0])->halfSize.y, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
@@ -425,14 +425,14 @@ static void Demo8(Body* b, Joint* j)
 {
     Body* b1 = b;
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b->shapes[0])->halfSize.y, 0.0f);
     world.Add(b);
     ++b;
     ++numBodies;
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(6.0f, 0.25f, 0.25f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(-1.5f, 10.0f, 0.0f);
     world.Add(b);
     ++b;
@@ -451,7 +451,7 @@ static void Demo8(Body* b, Joint* j)
     }
 
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(7.0f, 0.25f, 0.25f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(1.0f, 6.0f, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.3f));
     world.Add(b);
@@ -460,7 +460,7 @@ static void Demo8(Body* b, Joint* j)
 
     Body* b2 = b;
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(0.25f, 1.5f, 1.5f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(-7.0f, 4.0f, 0.0f);
     world.Add(b);
     ++b;
@@ -525,7 +525,7 @@ static void Demo8(Body* b, Joint* j)
 static void Demo9(Body* b, Joint* j)
 {
     static_cast<ShapeBox*>(b->shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
-    b->SetMass(FLT_MAX);
+    b->SetMass(std::numeric_limits<float>::infinity());
     b->position = glm::vec3(0.0f, -static_cast<ShapeBox*>(b->shapes[0])->halfSize.y, 0.0f);
     b->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
     world.Add(b);
