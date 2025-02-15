@@ -2,7 +2,7 @@
 
 #include "Arbiter.h"
 #include <glm/glm.hpp>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 struct Body;
@@ -26,7 +26,7 @@ struct World
 
     std::vector<Body*> bodies;
     std::vector<Joint*> joints;
-    std::map<ArbiterKey, Arbiter> arbiters;
+    std::unordered_map<ArbiterKey, Arbiter> arbiters;
     glm::vec3 gravity;
     int iterations;
     static bool accumulateImpulses;

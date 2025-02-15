@@ -269,7 +269,7 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
     }
 }
 
-int CollideBoxBox(Contact* contacts, Body* body1, ShapeBox* shape1, Body* body2, ShapeBox* shape2)
+size_t CollideBoxBox(Contact* contacts, Body* body1, ShapeBox* shape1, Body* body2, ShapeBox* shape2)
 {
     OBB obb1 = OBB(body1->position, shape1->halfSize, glm::mat3_cast(body1->rotation));
     OBB obb2 = OBB(body2->position, shape2->halfSize, glm::mat3_cast(body2->rotation));

@@ -40,9 +40,26 @@ struct ArbiterKey
         }
     }
 
+    bool operator==(const ArbiterKey& other) const
+    {
+        return (shape1->GetUniqueID() == other.shape1->GetUniqueID()) && (shape2->GetUniqueID() == other.shape2->GetUniqueID());
+    }
+
     Shape* shape1;
     Shape* shape2;
 };
+
+namespace std
+{
+    template<>
+    struct hash<ArbiterKey>
+    {
+        size_t operator()(const ArbiterKey& s) const
+        {
+            return static_cast<size_t>((static_cast<uint64_t>(s.shape1->GetUniqueID()) << 32) | s.shape2->GetUniqueID());
+        }
+    };
+}
 
 struct Arbiter
 {
@@ -69,19 +86,4 @@ struct Arbiter
     float restitution;
 };
 
-inline bool operator<(const ArbiterKey& a1, const ArbiterKey& a2)
-{
-    if (a1.shape1->GetUniqueID() < a2.shape1->GetUniqueID())
-    {
-        return true;
-    }
-
-    if ((a1.shape1->GetUniqueID() == a2.shape1->GetUniqueID()) && (a1.shape2->GetUniqueID() < a2.shape2->GetUniqueID()))
-    {
-        return true;
-    }
-
-    return false;
-}
-
-int CollideBoxBox(Contact* contacts, Body* body1, ShapeBox* shape1, Body* body2, ShapeBox* shape2);
+size_t CollideBoxBox(Contact* contacts, Body* body1, ShapeBox* shape1, Body* body2, ShapeBox* shape2);
