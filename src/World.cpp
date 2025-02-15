@@ -24,6 +24,31 @@ void World::Add(Joint* joint)
     joints.push_back(joint);
 }
 
+void World::Remove(Body* body)
+{
+    for (size_t i = 0; i < bodies.size(); ++i)
+    {
+        Body* bi = bodies[i];
+        for (size_t s1 = 0; s1 < bi->shapes.size(); ++s1)
+        {
+            for (size_t j = i + 1; j < bodies.size(); ++j)
+            {
+                Body* bj = bodies[j];
+                for (size_t s2 = 0; s2 < bj->shapes.size(); ++s2)
+                {
+                    const uint64_t key = ComputeArbiterKey(bi->shapes[s1], bj->shapes[s2]);
+                    arbiters.erase(key);
+                }
+            }
+        }
+    }
+}
+
+void World::Remove(Joint* joint)
+{
+    joints.erase(std::find(joints.begin(), joints.end(), joint));
+}
+
 void World::Clear()
 {
     bodies.clear();
