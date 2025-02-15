@@ -8,20 +8,27 @@ constexpr size_t MAX_CONTACT_POINTS = 4;
 struct Contact
 {
     Contact()
-    : Pn(0.0f)
+    : separation(0.0f)
+    , Pn(0.0f)
     , Pt(0.0f)
     , Pnb(0.0f)
+    , massNormal(0.0f)
+    , massTangent(0.0f)
+    , bias(0.0f)
+    , feature(0)
     {
     }
 
     glm::vec3 position;
     glm::vec3 normal;
-    glm::vec3 r1, r2;
+    glm::vec3 r1;
+    glm::vec3 r2;
     float separation;
     float Pn;
     float Pt;
     float Pnb;
-    float massNormal, massTangent;
+    float massNormal;
+    float massTangent;
     float bias;
     int feature;
 };
