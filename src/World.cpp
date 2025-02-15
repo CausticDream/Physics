@@ -43,8 +43,7 @@ void World::BroadPhase()
                 for (size_t s2 = 0; s2 < bj->shapes.size(); ++s2)
                 {
                     Arbiter newArb(bi->shapes[s1], bj->shapes[s2]);
-                    ArbiterKey key(bi->shapes[s1], bj->shapes[s2]);
-
+                    const uint64_t key = static_cast<size_t>((static_cast<uint64_t>(bi->shapes[s1]->GetUniqueID()) << 32) | bj->shapes[s2]->GetUniqueID());
                     if (newArb.numContacts > 0)
                     {
                         const auto iter = arbiters.find(key);

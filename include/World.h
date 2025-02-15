@@ -26,7 +26,7 @@ struct World
 
     std::vector<Body*> bodies;
     std::vector<Joint*> joints;
-    std::unordered_map<ArbiterKey, Arbiter> arbiters;
+    std::unordered_map<uint64_t, Arbiter> arbiters;
     glm::vec3 gravity;
     int iterations;
     static bool accumulateImpulses;
