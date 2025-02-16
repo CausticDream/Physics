@@ -136,7 +136,20 @@ void World::Step(float elapsedTime)
 
     for (size_t i = 0; i < m_joints.size(); ++i)
     {
-        m_joints[i]->PreStep(invElapsedTime);
+        switch (m_joints[i]->GetType())
+        {
+            case JointType::Spherical:
+            {
+                JointSpherical* jointSpherical = static_cast<JointSpherical*>(m_joints[i]);
+                jointSpherical->PreStep(invElapsedTime);
+                break;
+            }
+
+            default:
+            {
+                assert(false);
+            }
+        }
     }
 
     // Perform iterations.
@@ -149,7 +162,20 @@ void World::Step(float elapsedTime)
 
         for (size_t j = 0; j < m_joints.size(); ++j)
         {
-            m_joints[j]->ApplyImpulse();
+            switch (m_joints[j]->GetType())
+            {
+                case JointType::Spherical:
+                {
+                    JointSpherical* jointSpherical = static_cast<JointSpherical*>(m_joints[j]);
+                    jointSpherical->ApplyImpulse();
+                    break;
+                }
+
+                default:
+                {
+                    assert(false);
+                }
+            }
         }
     }
 

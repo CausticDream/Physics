@@ -4,9 +4,27 @@
 
 struct Body;
 
+enum class JointType
+{
+    Spherical,
+    Hinge
+};
+
 struct Joint
 {
-    Joint();
+    JointType GetType() const
+    {
+        return m_type;
+    }
+
+protected:
+    Joint(JointType type);
+    JointType m_type;
+};
+
+struct JointSpherical : Joint
+{
+    JointSpherical();
     void Set(Body* body1, Body* body2, const glm::vec3& anchor);
     void PreStep(float invElapsedTime);
     void ApplyImpulse();

@@ -2,8 +2,14 @@
 #include "Body.h"
 #include "World.h"
 
-Joint::Joint()
-: m_body1(0)
+Joint::Joint(JointType type)
+: m_type(type)
+{
+}
+
+JointSpherical::JointSpherical()
+: Joint(JointType::Spherical)
+, m_body1(0)
 , m_body2(0)
 , m_P(0.0f, 0.0f, 0.0f)
 , m_biasFactor(0.2f)
@@ -11,7 +17,7 @@ Joint::Joint()
 {
 }
 
-void Joint::Set(Body* b1, Body* b2, const glm::vec3& anchor)
+void JointSpherical::Set(Body* b1, Body* b2, const glm::vec3& anchor)
 {
     m_body1 = b1;
     m_body2 = b2;
@@ -25,7 +31,7 @@ void Joint::Set(Body* b1, Body* b2, const glm::vec3& anchor)
     m_biasFactor = 0.1f;
 }
 
-void Joint::PreStep(float invElapsedTime)
+void JointSpherical::PreStep(float invElapsedTime)
 {
     // Pre-compute anchors, mass matrix, and bias.
     m_r1 = m_body1->m_rotation * m_localAnchor1;
@@ -70,7 +76,7 @@ void Joint::PreStep(float invElapsedTime)
     m_body2->m_angularVelocity += m_body2->m_invI * glm::cross(m_r2, m_P);
 }
 
-void Joint::ApplyImpulse()
+void JointSpherical::ApplyImpulse()
 {
     glm::vec3 dv = m_body2->m_velocity + glm::cross(m_body2->m_angularVelocity, m_r2) - m_body1->m_velocity - glm::cross(m_body1->m_angularVelocity, m_r1);
     glm::vec3 impulse = m_M * (m_bias - dv - m_softness * m_P);

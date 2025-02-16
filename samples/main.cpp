@@ -30,7 +30,7 @@ namespace
     float timeStep = 1.0f / 60.0f;
 
     Body bodies[200];
-    Joint joints[100];
+    JointSpherical joints[100];
 
     Body* bomb = NULL;
 
@@ -122,22 +122,27 @@ static void DrawShape(Body* body, Shape* shape)
 
 static void DrawJoint(Joint* joint)
 {
-    Body* b1 = joint->m_body1;
-    Body* b2 = joint->m_body2;
+    if (joint->GetType() == JointType::Spherical)
+    {
+        JointSpherical* jointSpherical = static_cast<JointSpherical*>(joint);
 
-    glm::vec3 x1 = b1->m_position;
-    glm::vec3 p1 = x1 + b1->m_rotation * joint->m_localAnchor1;
+        Body* b1 = jointSpherical->m_body1;
+        Body* b2 = jointSpherical->m_body2;
 
-    glm::vec3 x2 = b2->m_position;
-    glm::vec3 p2 = x2 + b2->m_rotation * joint->m_localAnchor2;
+        glm::vec3 x1 = b1->m_position;
+        glm::vec3 p1 = x1 + b1->m_rotation * jointSpherical->m_localAnchor1;
 
-    glColor3f(0.5f, 0.5f, 0.8f);
-    glBegin(GL_LINES);
-    glVertex3f(x1.x, x1.y, x1.z);
-    glVertex3f(p1.x, p1.y, p1.z);
-    glVertex3f(x2.x, x2.y, x2.z);
-    glVertex3f(p2.x, p2.y, p2.z);
-    glEnd();
+        glm::vec3 x2 = b2->m_position;
+        glm::vec3 p2 = x2 + b2->m_rotation * jointSpherical->m_localAnchor2;
+
+        glColor3f(0.5f, 0.5f, 0.8f);
+        glBegin(GL_LINES);
+        glVertex3f(x1.x, x1.y, x1.z);
+        glVertex3f(p1.x, p1.y, p1.z);
+        glVertex3f(x2.x, x2.y, x2.z);
+        glVertex3f(p2.x, p2.y, p2.z);
+        glEnd();
+    }
 }
 
 static void LaunchBomb()
@@ -158,7 +163,7 @@ static void LaunchBomb()
 }
 
 // Single box
-static void Demo1(Body* b, Joint* j)
+static void Demo1(Body* b, JointSpherical* j)
 {
     static_cast<ShapeBox*>(b->m_shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
     b->SetMass(std::numeric_limits<float>::infinity());
@@ -176,7 +181,7 @@ static void Demo1(Body* b, Joint* j)
 }
 
 // A simple pendulum
-static void Demo2(Body* b, Joint* j)
+static void Demo2(Body* b, JointSpherical* j)
 {
     Body* b1 = b + 0;
     static_cast<ShapeBox*>(b1->m_shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
@@ -201,7 +206,7 @@ static void Demo2(Body* b, Joint* j)
 }
 
 // Varying friction coefficients
-static void Demo3(Body* b, Joint* j)
+static void Demo3(Body* b, JointSpherical* j)
 {
     static_cast<ShapeBox*>(b->m_shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
     b->SetMass(std::numeric_limits<float>::infinity());
@@ -263,7 +268,7 @@ static void Demo3(Body* b, Joint* j)
 }
 
 // A vertical stack
-static void Demo4(Body* b, Joint* j)
+static void Demo4(Body* b, JointSpherical* j)
 {
     static_cast<ShapeBox*>(b->m_shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
     b->SetMass(std::numeric_limits<float>::infinity());
@@ -286,7 +291,7 @@ static void Demo4(Body* b, Joint* j)
 }
 
 // A pyramid
-static void Demo5(Body* b, Joint* j)
+static void Demo5(Body* b, JointSpherical* j)
 {
     static_cast<ShapeBox*>(b->m_shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
     b->SetMass(std::numeric_limits<float>::infinity());
@@ -320,7 +325,7 @@ static void Demo5(Body* b, Joint* j)
 }
 
 // A teeter
-static void Demo6(Body* b, Joint* j)
+static void Demo6(Body* b, JointSpherical* j)
 {
     Body* b1 = b + 0;
     static_cast<ShapeBox*>(b1->m_shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
@@ -361,7 +366,7 @@ static void Demo6(Body* b, Joint* j)
 }
 
 // A suspension bridge
-static void Demo7(Body* b, Joint* j)
+static void Demo7(Body* b, JointSpherical* j)
 {
     static_cast<ShapeBox*>(b->m_shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
     b->SetMass(std::numeric_limits<float>::infinity());
@@ -421,7 +426,7 @@ static void Demo7(Body* b, Joint* j)
 }
 
 // Dominos
-static void Demo8(Body* b, Joint* j)
+static void Demo8(Body* b, JointSpherical* j)
 {
     Body* b1 = b;
     static_cast<ShapeBox*>(b->m_shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
@@ -522,7 +527,7 @@ static void Demo8(Body* b, Joint* j)
 }
 
 // A multi-pendulum
-static void Demo9(Body* b, Joint* j)
+static void Demo9(Body* b, JointSpherical* j)
 {
     static_cast<ShapeBox*>(b->m_shapes[0])->Set(glm::vec3(50.0f, 10.0f, 10.0f));
     b->SetMass(std::numeric_limits<float>::infinity());
@@ -577,7 +582,7 @@ static void Demo9(Body* b, Joint* j)
     }
 }
 
-void (*demos[])(Body* b, Joint* j) = {Demo1, Demo2, Demo3, Demo4, Demo5, Demo6, Demo7, Demo8, Demo9};
+void (*demos[])(Body* b, JointSpherical* j) = {Demo1, Demo2, Demo3, Demo4, Demo5, Demo6, Demo7, Demo8, Demo9};
 const char* demoStrings[] = {
     "Demo 1: A Single Box",
     "Demo 2: Simple Pendulum",
