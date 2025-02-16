@@ -204,10 +204,9 @@ void Arbiter::ApplyImpulse()
 
         // Compute normal impulse.
         float vn = glm::dot(dv, c->m_normal);
-
         float dPn = c->m_massNormal * (-vn + c->m_bias);
 
-        // Clamp the accumulated impulse
+        // Clamp the accumulated impulse.
         float Pn0 = c->m_Pn;
         c->m_Pn = glm::max(Pn0 + dPn, 0.0f);
         dPn = c->m_Pn - Pn0;
