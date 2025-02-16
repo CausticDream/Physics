@@ -30,7 +30,7 @@ struct Contact
     float massNormal;
     float massTangent;
     float bias;
-    int feature;
+    uint32_t feature;
 };
 
 size_t CollideBoxBox(Contact* contacts, glm::vec3 positionShape1, glm::quat rotationShape1, Shape* shape1, glm::vec3 positionShape2, glm::quat rotationShape2, Shape* shape2);

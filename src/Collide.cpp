@@ -17,7 +17,7 @@ struct CollisionInfo
     glm::vec3 position;
     glm::vec3 normal;
     float separation;
-    int feature;
+    uint32_t feature;
 };
 
 void ComputeOBBCorners(const OBB& obb, glm::vec3* corners)
@@ -47,10 +47,10 @@ void ProjectOBB(const glm::vec3* corners, const glm::vec3& axis, float* minProj,
     }
 }
 
-void ClipPointsPlane(const glm::vec3* points, const glm::vec3& planeNormal, float planeOffset, int* indices, size_t* indexCount)
+void ClipPointsPlane(const glm::vec3* points, const glm::vec3& planeNormal, float planeOffset, size_t* indices, size_t* indexCount)
 {
     *indexCount = 0;
-    for (int i = 0; i < 8; ++i)
+    for (size_t i = 0; i < 8; ++i)
     {
         float distanceToPlane = glm::dot(points[i], planeNormal) - planeOffset;
         if (distanceToPlane <= 0.0f)
@@ -132,21 +132,21 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
     size_t counter = 0;
     glm::vec3 axes[15];
     bool axeEnabled[15];
-    for (int i = 0; i < 3; ++i)
+    for (size_t i = 0; i < 3; ++i)
     {
         axes[counter] = obb1.rotation[i];
         axeEnabled[counter] = true;
         ++counter;
     }
-    for (int i = 0; i < 3; ++i)
+    for (size_t i = 0; i < 3; ++i)
     {
         axes[counter] = obb2.rotation[i];
         axeEnabled[counter] = true;
         ++counter;
     }
-    for (int i = 0; i < 3; ++i)
+    for (size_t i = 0; i < 3; ++i)
     {
-        for (int j = 0; j < 3; ++j)
+        for (size_t j = 0; j < 3; ++j)
         {
             glm::vec3 crossAxis = glm::cross(obb1.rotation[i], obb2.rotation[j]);
             if (glm::length(crossAxis) > 1.0e-4f)
@@ -170,7 +170,7 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
 
     float minSeparation = std::numeric_limits<float>::infinity();
     glm::vec3 collisionNormal;
-    int bestAxisIndex = -1;
+    size_t bestAxisIndex;
     for (size_t i = 0; i < 15; ++i)
     {
         if (!axeEnabled[i])
@@ -198,7 +198,7 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
         {
             minSeparation = overlap;
             collisionNormal = axis;
-            bestAxisIndex = static_cast<int>(i);
+            bestAxisIndex = i;
         }
     }
 
@@ -215,7 +215,7 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
         const OBB& incidentBox = (bestAxisIndex < 3) ? obb2 : obb1;
         const glm::vec3* incidentCorners = (bestAxisIndex < 3) ? obb2Corners : obb1Corners;
 
-        int referenceAxisIndex = bestAxisIndex % 3;
+        size_t referenceAxisIndex = bestAxisIndex % 3;
         glm::vec3 referenceFaceNormal = referenceBox.rotation[referenceAxisIndex];
         if (bestAxisIndex >= 3)
         {
@@ -225,7 +225,7 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
         glm::vec3 faceCenter = referenceBox.center + referenceFaceNormal * referenceBox.halfExtents[referenceAxisIndex];
         float planeOffset = glm::dot(faceCenter, referenceFaceNormal);
 
-        int indices[8];
+        size_t indices[8];
         size_t indexCount;
         ClipPointsPlane(incidentCorners, referenceFaceNormal, planeOffset, indices, &indexCount);
 
@@ -236,15 +236,15 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
             collisionInfo.position = incidentCorners[indices[i]];
             collisionInfo.normal = collisionNormal;
             collisionInfo.separation = minSeparation;
-            collisionInfo.feature = static_cast<int>(referenceAxisIndex * 10 + indices[i]);
+            collisionInfo.feature = referenceAxisIndex * 10 + indices[i];
             ++(*count);
         }
     }
     else
     {
         // Edge-edge collision.
-        int edge1Index = (bestAxisIndex - 6) / 3;
-        int edge2Index = (bestAxisIndex - 6) % 3;
+        size_t edge1Index = (bestAxisIndex - 6) / 3;
+        size_t edge2Index = (bestAxisIndex - 6) % 3;
 
         glm::vec3 edge1Dir = obb1.rotation[edge1Index] * obb1.halfExtents[edge1Index];
         glm::vec3 edge2Dir = obb2.rotation[edge2Index] * obb2.halfExtents[edge2Index];
@@ -263,7 +263,7 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
         collisionInfo.position = (closestPoint1 + closestPoint2) * 0.5f;
         collisionInfo.normal = collisionNormal;
         collisionInfo.separation = minSeparation;
-        collisionInfo.feature = static_cast<int>(edge1Index * 10 + edge2Index * 100);
+        collisionInfo.feature = edge1Index * 10 + edge2Index * 100;
         ++(*count);
     }
 }
