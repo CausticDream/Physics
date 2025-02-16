@@ -14,10 +14,10 @@ struct OBB
 
 struct CollisionInfo
 {
-    glm::vec3 position;
-    glm::vec3 normal;
-    float separation;
-    uint32_t feature;
+    glm::vec3 m_position;
+    glm::vec3 m_normal;
+    float m_separation;
+    uint32_t m_feature;
 };
 
 void ComputeOBBCorners(const OBB& obb, glm::vec3* corners)
@@ -233,10 +233,10 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
         for (size_t i = 0; i < clampedIndexCount; ++i)
         {
             CollisionInfo& collisionInfo = collisionInfos[*count];
-            collisionInfo.position = incidentCorners[indices[i]];
-            collisionInfo.normal = collisionNormal;
-            collisionInfo.separation = minSeparation;
-            collisionInfo.feature = referenceAxisIndex * 10 + indices[i];
+            collisionInfo.m_position = incidentCorners[indices[i]];
+            collisionInfo.m_normal = collisionNormal;
+            collisionInfo.m_separation = minSeparation;
+            collisionInfo.m_feature = referenceAxisIndex * 10 + indices[i];
             ++(*count);
         }
     }
@@ -260,10 +260,10 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
         ComputeClosestPointsOnEdges(edge1Start, edge1End, edge2Start, edge2End, closestPoint1, closestPoint2);
 
         CollisionInfo& collisionInfo = collisionInfos[*count];
-        collisionInfo.position = (closestPoint1 + closestPoint2) * 0.5f;
-        collisionInfo.normal = collisionNormal;
-        collisionInfo.separation = minSeparation;
-        collisionInfo.feature = edge1Index * 10 + edge2Index * 100;
+        collisionInfo.m_position = (closestPoint1 + closestPoint2) * 0.5f;
+        collisionInfo.m_normal = collisionNormal;
+        collisionInfo.m_separation = minSeparation;
+        collisionInfo.m_feature = edge1Index * 10 + edge2Index * 100;
         ++(*count);
     }
 }
@@ -282,10 +282,10 @@ size_t CollideBoxBox(Contact* contacts, glm::vec3 positionShape1, glm::quat rota
 
     for (size_t i = 0; i < count; ++i)
     {
-        contacts[i].m_position = collisionInfos[i].position;
-        contacts[i].m_normal = collisionInfos[i].normal;
-        contacts[i].m_separation = collisionInfos[i].separation;
-        contacts[i].m_feature = collisionInfos[i].feature;
+        contacts[i].m_position = collisionInfos[i].m_position;
+        contacts[i].m_normal = collisionInfos[i].m_normal;
+        contacts[i].m_separation = collisionInfos[i].m_separation;
+        contacts[i].m_feature = collisionInfos[i].m_feature;
     }
 
     return count;
