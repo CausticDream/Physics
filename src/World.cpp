@@ -109,8 +109,6 @@ void World::BroadPhase()
 
 void World::Step(float elapsedTime)
 {
-    float invElapsedTime = (elapsedTime > 0.0f) ? 1.0f / elapsedTime : 0.0f;
-
     // Determine overlapping bodies and update contact points.
     BroadPhase();
 
@@ -129,6 +127,8 @@ void World::Step(float elapsedTime)
     }
 
     // Perform pre-steps.
+    float invElapsedTime = (elapsedTime > 0.0f) ? 1.0f / elapsedTime : 0.0f;
+
     for (auto& arb : m_arbiters)
     {
         arb.second.PreStep(invElapsedTime);
