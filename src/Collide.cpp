@@ -320,7 +320,7 @@ size_t CollideSphereSphere(Contact* contacts, glm::vec3 positionShape1, glm::qua
     contacts[0].m_normal = (shape1ToShape2Length > 0.0f) ? shape1ToShape2 * (1.0f / shape1ToShape2Length) : glm::vec3(0.0f, 1.0f, 0.0f);
     contacts[0].m_position = positionShape1 + contacts[0].m_normal * (shapeSphere1->m_radius + (overlap * 0.5f));
     contacts[0].m_separation = -overlap;
-    contacts[0].m_feature = 0; // TODO
+    contacts[0].m_feature = 0;
 
     return 1;
 }
