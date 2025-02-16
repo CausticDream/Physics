@@ -63,6 +63,7 @@ struct ShapeBox : Shape
 {
     ShapeBox();
     void Set(const glm::vec3& hs);
+    glm::vec3 ComputeI(float mass) const;
 
     glm::vec3 halfSize;
 };
@@ -71,6 +72,7 @@ struct ShapeSphere : Shape
 {
     ShapeSphere();
     void Set(float r);
+    glm::vec3 ComputeI(float mass) const;
 
     float radius;
 };
@@ -79,6 +81,7 @@ struct ShapeCapsule : Shape
 {
     ShapeCapsule();
     void Set(float r, float hh);
+    glm::vec3 ComputeI(float mass) const;
 
     float radius;
     float halfHeight;
