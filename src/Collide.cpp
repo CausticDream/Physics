@@ -308,13 +308,16 @@ size_t CollideSphereSphere(Contact* contacts, glm::vec3 positionShape1, glm::qua
     ShapeSphere* shapeSphere1 = static_cast<ShapeSphere*>(shape1);
     ShapeSphere* shapeSphere2 = static_cast<ShapeSphere*>(shape2);
 
-    const float overlap = glm::length(positionShape2 - positionShape1) - shapeSphere1->radius - shapeSphere2->radius;
+    const glm::vec3 shape1ToShape2 = positionShape2 - positionShape1;
+    const float shape1ToShape2Length = glm::length(shape1ToShape2);
+
+    const float overlap = shape1ToShape2Length - shapeSphere1->radius - shapeSphere2->radius;
     if (overlap > 0.0f)
     {
         return 0;
     }
 
-    contacts[0].normal = glm::normalize(positionShape2 - positionShape1);
+    contacts[0].normal = (shape1ToShape2Length > 0.0f) ? shape1ToShape2 * (1.0f / shape1ToShape2Length) : glm::vec3(0.0f, 1.0f, 0.0f);
     contacts[0].position = positionShape1 + contacts[0].normal * (shapeSphere1->radius + (overlap * 0.5f));
     contacts[0].separation = -overlap;
     contacts[0].feature = 0; // TODO
