@@ -117,6 +117,7 @@ glm::vec3 ShapeCapsule::ComputeI(float mass) const
 
 Body::Body()
 {
+    userData = nullptr;
     m_position = glm::vec3(0.0f, 0.0f, 0.0f);
     m_rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     m_velocity = glm::vec3(0.0f, 0.0f, 0.0f);

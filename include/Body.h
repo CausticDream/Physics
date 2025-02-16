@@ -96,6 +96,7 @@ struct Body
     void AddShape(Shape* shape);
     void ComputeInvI();
 
+    void* userData;
     glm::vec3 m_position;
     glm::quat m_rotation;
     glm::vec3 m_velocity;
