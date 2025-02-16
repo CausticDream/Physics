@@ -14,39 +14,45 @@ uint64_t ComputeArbiterKey(Shape* s1, Shape* s2)
     }
 }
 
+World::World(glm::vec3 gravity, uint32_t iterations)
+: m_gravity(gravity)
+, m_iterations(iterations)
+{
+}
+
 void World::Clear()
 {
-    bodies.clear();
-    joints.clear();
-    arbiters.clear();
+    m_bodies.clear();
+    m_joints.clear();
+    m_arbiters.clear();
 }
 
 void World::Add(Body* body)
 {
-    bodies.push_back(body);
+    m_bodies.push_back(body);
 }
 
 void World::Add(Joint* joint)
 {
-    joints.push_back(joint);
+    m_joints.push_back(joint);
 }
 
 void World::Remove(Body* body)
 {
-    bodies.erase(std::find(bodies.begin(), bodies.end(), body));
+    m_bodies.erase(std::find(m_bodies.begin(), m_bodies.end(), body));
 
-    for (size_t i = 0; i < bodies.size(); ++i)
+    for (size_t i = 0; i < m_bodies.size(); ++i)
     {
-        Body* bi = bodies[i];
-        for (size_t s1 = 0; s1 < bi->shapes.size(); ++s1)
+        Body* bi = m_bodies[i];
+        for (size_t s1 = 0; s1 < bi->m_shapes.size(); ++s1)
         {
-            for (size_t j = i + 1; j < bodies.size(); ++j)
+            for (size_t j = i + 1; j < m_bodies.size(); ++j)
             {
-                Body* bj = bodies[j];
-                for (size_t s2 = 0; s2 < bj->shapes.size(); ++s2)
+                Body* bj = m_bodies[j];
+                for (size_t s2 = 0; s2 < bj->m_shapes.size(); ++s2)
                 {
-                    const uint64_t key = ComputeArbiterKey(bi->shapes[s1], bj->shapes[s2]);
-                    arbiters.erase(key);
+                    const uint64_t key = ComputeArbiterKey(bi->m_shapes[s1], bj->m_shapes[s2]);
+                    m_arbiters.erase(key);
                 }
             }
         }
@@ -55,45 +61,45 @@ void World::Remove(Body* body)
 
 void World::Remove(Joint* joint)
 {
-    joints.erase(std::find(joints.begin(), joints.end(), joint));
+    m_joints.erase(std::find(m_joints.begin(), m_joints.end(), joint));
 }
 
 void World::BroadPhase()
 {
-    for (size_t i = 0; i < bodies.size(); ++i)
+    for (size_t i = 0; i < m_bodies.size(); ++i)
     {
-        Body* bi = bodies[i];
-        for (size_t s1 = 0; s1 < bi->shapes.size(); ++s1)
+        Body* bi = m_bodies[i];
+        for (size_t s1 = 0; s1 < bi->m_shapes.size(); ++s1)
         {
-            for (size_t j = i + 1; j < bodies.size(); ++j)
+            for (size_t j = i + 1; j < m_bodies.size(); ++j)
             {
-                Body* bj = bodies[j];
+                Body* bj = m_bodies[j];
 
-                if (bi->invMass == 0.0f && bj->invMass == 0.0f)
+                if (bi->m_invMass == 0.0f && bj->m_invMass == 0.0f)
                 {
                     continue;
                 }
 
-                for (size_t s2 = 0; s2 < bj->shapes.size(); ++s2)
+                for (size_t s2 = 0; s2 < bj->m_shapes.size(); ++s2)
                 {
-                    Arbiter newArb(bi->shapes[s1], bj->shapes[s2]);
-                    const uint64_t key = ComputeArbiterKey(bi->shapes[s1], bj->shapes[s2]);
+                    Arbiter newArb(bi->m_shapes[s1], bj->m_shapes[s2]);
+                    const uint64_t key = ComputeArbiterKey(bi->m_shapes[s1], bj->m_shapes[s2]);
 
-                    if (newArb.numContacts > 0)
+                    if (newArb.m_contactCount > 0)
                     {
-                        const auto iter = arbiters.find(key);
-                        if (iter == arbiters.end())
+                        const auto iter = m_arbiters.find(key);
+                        if (iter == m_arbiters.end())
                         {
-                            arbiters.insert({key, newArb});
+                            m_arbiters.insert({key, newArb});
                         }
                         else
                         {
-                            iter->second.Update(newArb.contacts, newArb.numContacts);
+                            iter->second.Update(newArb.m_contacts, newArb.m_contactCount);
                         }
                     }
                     else
                     {
-                        arbiters.erase(key);
+                        m_arbiters.erase(key);
                     }
                 }
             }
@@ -101,61 +107,61 @@ void World::BroadPhase()
     }
 }
 
-void World::Step(float dt)
+void World::Step(float elapsedTime)
 {
-    float inv_dt = dt > 0.0f ? 1.0f / dt : 0.0f;
+    float invElapsedTime = (elapsedTime > 0.0f) ? 1.0f / elapsedTime : 0.0f;
 
     // Determine overlapping bodies and update contact points.
     BroadPhase();
 
     // Integrate forces.
-    for (size_t i = 0; i < bodies.size(); ++i)
+    for (size_t i = 0; i < m_bodies.size(); ++i)
     {
-        Body* b = bodies[i];
+        Body* b = m_bodies[i];
 
-        if (b->invMass == 0.0f)
+        if (b->m_invMass == 0.0f)
         {
             continue;
         }
 
-        b->velocity += dt * (gravity + b->invMass * b->force);
-        b->angularVelocity += dt * (b->invI * b->torque);
+        b->m_velocity += elapsedTime * (m_gravity + b->m_invMass * b->m_force);
+        b->m_angularVelocity += elapsedTime * (b->m_invI * b->m_torque);
     }
 
     // Perform pre-steps.
-    for (auto& arb : arbiters)
+    for (auto& arb : m_arbiters)
     {
-        arb.second.PreStep(inv_dt);
+        arb.second.PreStep(invElapsedTime);
     }
 
-    for (size_t i = 0; i < joints.size(); ++i)
+    for (size_t i = 0; i < m_joints.size(); ++i)
     {
-        joints[i]->PreStep(inv_dt);
+        m_joints[i]->PreStep(invElapsedTime);
     }
 
     // Perform iterations.
-    for (uint32_t i = 0; i < iterations; ++i)
+    for (uint32_t i = 0; i < m_iterations; ++i)
     {
-        for (auto& arb : arbiters)
+        for (auto& arb : m_arbiters)
         {
             arb.second.ApplyImpulse();
         }
 
-        for (size_t j = 0; j < joints.size(); ++j)
+        for (size_t j = 0; j < m_joints.size(); ++j)
         {
-            joints[j]->ApplyImpulse();
+            m_joints[j]->ApplyImpulse();
         }
     }
 
     // Integrate Velocities.
-    for (size_t i = 0; i < bodies.size(); ++i)
+    for (size_t i = 0; i < m_bodies.size(); ++i)
     {
-        Body* b = bodies[i];
+        Body* b = m_bodies[i];
 
-        b->position += dt * b->velocity;
-        b->rotation = glm::normalize(glm::quat(dt * b->angularVelocity) * b->rotation);
+        b->m_position += elapsedTime * b->m_velocity;
+        b->m_rotation = glm::normalize(glm::quat(elapsedTime * b->m_angularVelocity) * b->m_rotation);
 
-        b->force = glm::vec3(0.0f, 0.0f, 0.0f);
-        b->torque = glm::vec3(0.0f, 0.0f, 0.0f);
+        b->m_force = glm::vec3(0.0f, 0.0f, 0.0f);
+        b->m_torque = glm::vec3(0.0f, 0.0f, 0.0f);
     }
 }

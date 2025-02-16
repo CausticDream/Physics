@@ -4,50 +4,50 @@
 std::atomic<uint32_t> g_counter;
 
 Material::Material()
-: staticFriction(0.5f)
-, dynamicFriction(0.5f)
-, restitution(0.0f)
-, frictionCombineMode(CombineMode::Average)
-, restitutionCombineMode(CombineMode::Average)
+: m_staticFriction(0.5f)
+, m_dynamicFriction(0.5f)
+, m_restitution(0.0f)
+, m_frictionCombineMode(CombineMode::Average)
+, m_restitutionCombineMode(CombineMode::Average)
 {
 }
 
 Shape::~Shape()
 {
-    if (owner)
+    if (m_owner)
     {
-        owner->shapes.erase(std::find(owner->shapes.begin(), owner->shapes.end(), this));
+        m_owner->m_shapes.erase(std::find(m_owner->m_shapes.begin(), m_owner->m_shapes.end(), this));
     }
 }
 
 Shape::Shape(ShapeType t)
 {
-    uniqueID = g_counter++;
-    owner = nullptr;
-    position = glm::vec3(0.0f, 0.0f, 0.0f);
-    rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-    type = t;
+    m_uniqueID = g_counter++;
+    m_owner = nullptr;
+    m_position = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    m_type = t;
 }
 
 ShapeBox::ShapeBox()
 : Shape(ShapeType::Box)
 {
-    halfSize = glm::vec3(0.5f, 0.5f, 0.5f);
+    m_halfSize = glm::vec3(0.5f, 0.5f, 0.5f);
 }
 
-void ShapeBox::Set(const glm::vec3& hs)
+void ShapeBox::Set(const glm::vec3& halfSize)
 {
-    halfSize = hs;
+    m_halfSize = halfSize;
 
-    if (owner)
+    if (m_owner)
     {
-        owner->ComputeInvI();
+        m_owner->ComputeInvI();
     }
 }
 
 glm::vec3 ShapeBox::ComputeI(float mass) const
 {
-    glm::vec3 s = 2.0f * halfSize;
+    glm::vec3 s = 2.0f * m_halfSize;
     constexpr float f = 1.0f / 12.0f;
     return glm::vec3(
         mass * (s.y * s.y + s.z * s.z) * f,
@@ -58,57 +58,57 @@ glm::vec3 ShapeBox::ComputeI(float mass) const
 ShapeSphere::ShapeSphere()
 : Shape(ShapeType::Sphere)
 {
-    radius = 0.5f;
+    m_radius = 0.5f;
 }
 
-void ShapeSphere::Set(float r)
+void ShapeSphere::Set(float radius)
 {
-    radius = r;
+    m_radius = radius;
 
-    if (owner)
+    if (m_owner)
     {
-        owner->ComputeInvI();
+        m_owner->ComputeInvI();
     }
 }
 
 glm::vec3 ShapeSphere::ComputeI(float mass) const
 {
-    float v = 1.0f / ((2.0f / 5.0f) * mass * radius * radius);
+    float v = 1.0f / ((2.0f / 5.0f) * mass * m_radius * m_radius);
     return glm::vec3(v, v, v);
 }
 
 ShapeCapsule::ShapeCapsule()
 : Shape(ShapeType::Capsule)
 {
-    radius = 0.5f;
-    halfHeight = 0.5f;
+    m_radius = 0.5f;
+    m_halfHeight = 0.5f;
 }
 
-void ShapeCapsule::Set(float r, float hh)
+void ShapeCapsule::Set(float radius, float halfHeight)
 {
-    radius = r;
-    halfHeight = hh;
+    m_radius = radius;
+    m_halfHeight = halfHeight;
 
-    if (owner)
+    if (m_owner)
     {
-        owner->ComputeInvI();
+        m_owner->ComputeInvI();
     }
 }
 
 glm::vec3 ShapeCapsule::ComputeI(float mass) const
 {
-    float volumeCylinder = glm::pi<float>() * radius * radius * (2.0f * halfHeight);
-    float volumeHemispheres = (4.0f / 3.0f) * glm::pi<float>() * radius * radius * radius;
+    float volumeCylinder = glm::pi<float>() * m_radius * m_radius * (2.0f * m_halfHeight);
+    float volumeHemispheres = (4.0f / 3.0f) * glm::pi<float>() * m_radius * m_radius * m_radius;
     float totalVolume = volumeCylinder + volumeHemispheres;
 
     float massCylinder = mass * (volumeCylinder / totalVolume);
     float massHemisphere = 0.5f * (mass - massCylinder);
 
-    float IcTransverse = (1.0f / 12.0f) * massCylinder * (3.0f * radius * radius + 4.0f * halfHeight * halfHeight);
-    float IcLongitudinal = 0.5f * massCylinder * radius * radius;
+    float IcTransverse = (1.0f / 12.0f) * massCylinder * (3.0f * m_radius * m_radius + 4.0f * m_halfHeight * m_halfHeight);
+    float IcLongitudinal = 0.5f * massCylinder * m_radius * m_radius;
 
-    float Ih = (2.0f / 5.0f) * massHemisphere * radius * radius;
-    float IhOffset = massHemisphere * (halfHeight + (3.0f / 8.0f) * radius) * (halfHeight + (3.0f / 8.0f) * radius);
+    float Ih = (2.0f / 5.0f) * massHemisphere * m_radius * m_radius;
+    float IhOffset = massHemisphere * (m_halfHeight + (3.0f / 8.0f) * m_radius) * (m_halfHeight + (3.0f / 8.0f) * m_radius);
 
     float Ixz = IcTransverse + 2.0f * (Ih + IhOffset);
     float Iy = IcLongitudinal + 2.0f * Ih;
@@ -117,90 +117,90 @@ glm::vec3 ShapeCapsule::ComputeI(float mass) const
 
 Body::Body()
 {
-    position = glm::vec3(0.0f, 0.0f, 0.0f);
-    rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-    velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-    angularVelocity = glm::vec3(0.0f, 0.0f, 0.0f);
-    force = glm::vec3(0.0f, 0.0f, 0.0f);
-    torque = glm::vec3(0.0f, 0.0f, 0.0f);
-    mass = std::numeric_limits<float>::infinity();
-    invMass = 0.0f;
-    invI = glm::mat3(0.0f);
+    m_position = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    m_velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_angularVelocity = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_force = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_torque = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_mass = std::numeric_limits<float>::infinity();
+    m_invMass = 0.0f;
+    m_invI = glm::mat3(0.0f);
 }
 
 Body::~Body()
 {
-    while (!shapes.empty())
+    while (!m_shapes.empty())
     {
-        delete shapes[0];
+        delete m_shapes[0];
     }
 }
 
-void Body::SetMass(float m)
+void Body::SetMass(float mass)
 {
-    mass = m;
-    if ((mass > 0.0f) && (mass < std::numeric_limits<float>::infinity()))
+    m_mass = mass;
+    if ((m_mass > 0.0f) && (m_mass < std::numeric_limits<float>::infinity()))
     {
-        invMass = 1.0f / mass;
+        m_invMass = 1.0f / m_mass;
     }
     else
     {
-        invMass = 0.0f;
+        m_invMass = 0.0f;
     }
     ComputeInvI();
 }
 
-void Body::AddForce(const glm::vec3& f)
+void Body::AddForce(const glm::vec3& force)
 {
-    force += f;
+    m_force += force;
 }
 
 void Body::AddShape(Shape* shape)
 {
-    shape->owner = this;
-    shapes.push_back(shape);
+    shape->m_owner = this;
+    m_shapes.push_back(shape);
 }
 
 void Body::ComputeInvI()
 {
-    if ((mass > 0.0f) && (mass < std::numeric_limits<float>::infinity()))
+    if ((m_mass > 0.0f) && (m_mass < std::numeric_limits<float>::infinity()))
     {
         glm::vec3 I = glm::vec3(0.0f, 0.0f, 0.0f);
-        for (size_t i = 0; i < shapes.size(); ++i)
+        for (size_t i = 0; i < m_shapes.size(); ++i)
         {
-            const Shape* s = shapes[i];
+            const Shape* s = m_shapes[i];
 
             switch (s->GetType())
             {
                 case ShapeType::Box:
                 {
                     const ShapeBox* shapeBox = static_cast<const ShapeBox*>(s);
-                    I += shapeBox->ComputeI(mass);
+                    I += shapeBox->ComputeI(m_mass);
                     break;
                 }
 
                 case ShapeType::Sphere:
                 {
                     const ShapeSphere* shapeSphere = static_cast<const ShapeSphere*>(s);
-                    I += shapeSphere->ComputeI(mass);
+                    I += shapeSphere->ComputeI(m_mass);
                     break;
                 }
 
                 case ShapeType::Capsule:
                 {
                     const ShapeCapsule* shapeCapsule = static_cast<const ShapeCapsule*>(s);
-                    I += shapeCapsule->ComputeI(mass);
+                    I += shapeCapsule->ComputeI(m_mass);
                     break;
                 }
             }
         }
-        invI = glm::mat3(
+        m_invI = glm::mat3(
             glm::vec3((I.x > 0.0f) ? 1.0f / I.x : 0.0f, 0.0f, 0.0f),
             glm::vec3(0.0f, (I.y > 0.0f) ? 1.0f / I.y : 0.0f, 0.0f),
             glm::vec3(0.0f, 0.0f, (I.z > 0.0f) ? 1.0f / I.z : 0.0f));
     }
     else
     {
-        invI = glm::mat3(0.0f);
+        m_invI = glm::mat3(0.0f);
     }
 }

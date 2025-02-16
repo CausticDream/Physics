@@ -3,13 +3,13 @@
 struct OBB
 {
     OBB(const glm::vec3& c, const glm::vec3& e, const glm::mat3& r)
-    : center(c), halfExtents(e), rotation(r)
+    : m_center(c), m_halfExtents(e), m_rotation(r)
     {
     }
 
-    glm::vec3 center;
-    glm::vec3 halfExtents;
-    glm::mat3 rotation;
+    glm::vec3 m_center;
+    glm::vec3 m_halfExtents;
+    glm::mat3 m_rotation;
 };
 
 struct CollisionInfo
@@ -22,17 +22,17 @@ struct CollisionInfo
 
 void ComputeOBBCorners(const OBB& obb, glm::vec3* corners)
 {
-    glm::vec3 rotatedX = obb.rotation * glm::vec3(obb.halfExtents.x, 0, 0);
-    glm::vec3 rotatedY = obb.rotation * glm::vec3(0, obb.halfExtents.y, 0);
-    glm::vec3 rotatedZ = obb.rotation * glm::vec3(0, 0, obb.halfExtents.z);
-    corners[0] = obb.center - rotatedX - rotatedY - rotatedZ;
-    corners[1] = obb.center + rotatedX - rotatedY - rotatedZ;
-    corners[2] = obb.center - rotatedX + rotatedY - rotatedZ;
-    corners[3] = obb.center + rotatedX + rotatedY - rotatedZ;
-    corners[4] = obb.center - rotatedX - rotatedY + rotatedZ;
-    corners[5] = obb.center + rotatedX - rotatedY + rotatedZ;
-    corners[6] = obb.center - rotatedX + rotatedY + rotatedZ;
-    corners[7] = obb.center + rotatedX + rotatedY + rotatedZ;
+    glm::vec3 rotatedX = obb.m_rotation * glm::vec3(obb.m_halfExtents.x, 0, 0);
+    glm::vec3 rotatedY = obb.m_rotation * glm::vec3(0, obb.m_halfExtents.y, 0);
+    glm::vec3 rotatedZ = obb.m_rotation * glm::vec3(0, 0, obb.m_halfExtents.z);
+    corners[0] = obb.m_center - rotatedX - rotatedY - rotatedZ;
+    corners[1] = obb.m_center + rotatedX - rotatedY - rotatedZ;
+    corners[2] = obb.m_center - rotatedX + rotatedY - rotatedZ;
+    corners[3] = obb.m_center + rotatedX + rotatedY - rotatedZ;
+    corners[4] = obb.m_center - rotatedX - rotatedY + rotatedZ;
+    corners[5] = obb.m_center + rotatedX - rotatedY + rotatedZ;
+    corners[6] = obb.m_center - rotatedX + rotatedY + rotatedZ;
+    corners[7] = obb.m_center + rotatedX + rotatedY + rotatedZ;
 }
 
 void ProjectOBB(const glm::vec3* corners, const glm::vec3& axis, float* minProj, float* maxProj)
@@ -134,13 +134,13 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
     bool axeEnabled[15];
     for (size_t i = 0; i < 3; ++i)
     {
-        axes[counter] = obb1.rotation[i];
+        axes[counter] = obb1.m_rotation[i];
         axeEnabled[counter] = true;
         ++counter;
     }
     for (size_t i = 0; i < 3; ++i)
     {
-        axes[counter] = obb2.rotation[i];
+        axes[counter] = obb2.m_rotation[i];
         axeEnabled[counter] = true;
         ++counter;
     }
@@ -148,7 +148,7 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
     {
         for (size_t j = 0; j < 3; ++j)
         {
-            glm::vec3 crossAxis = glm::cross(obb1.rotation[i], obb2.rotation[j]);
+            glm::vec3 crossAxis = glm::cross(obb1.m_rotation[i], obb2.m_rotation[j]);
             if (glm::length(crossAxis) > 1.0e-4f)
             {
                 axes[counter] = glm::normalize(crossAxis);
@@ -202,7 +202,7 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
         }
     }
 
-    glm::vec3 T = obb2.center - obb1.center;
+    glm::vec3 T = obb2.m_center - obb1.m_center;
     if (glm::dot(collisionNormal, T) < 0.0f)
     {
         collisionNormal = -collisionNormal;
@@ -216,13 +216,13 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
         const glm::vec3* incidentCorners = (bestAxisIndex < 3) ? obb2Corners : obb1Corners;
 
         size_t referenceAxisIndex = bestAxisIndex % 3;
-        glm::vec3 referenceFaceNormal = referenceBox.rotation[referenceAxisIndex];
+        glm::vec3 referenceFaceNormal = referenceBox.m_rotation[referenceAxisIndex];
         if (bestAxisIndex >= 3)
         {
             referenceFaceNormal = -referenceFaceNormal;
         }
 
-        glm::vec3 faceCenter = referenceBox.center + referenceFaceNormal * referenceBox.halfExtents[referenceAxisIndex];
+        glm::vec3 faceCenter = referenceBox.m_center + referenceFaceNormal * referenceBox.m_halfExtents[referenceAxisIndex];
         float planeOffset = glm::dot(faceCenter, referenceFaceNormal);
 
         size_t indices[8];
@@ -246,14 +246,14 @@ void SeparatingAxisTheorem(const OBB& obb1, const OBB& obb2, size_t maxCollision
         size_t edge1Index = (bestAxisIndex - 6) / 3;
         size_t edge2Index = (bestAxisIndex - 6) % 3;
 
-        glm::vec3 edge1Dir = obb1.rotation[edge1Index] * obb1.halfExtents[edge1Index];
-        glm::vec3 edge2Dir = obb2.rotation[edge2Index] * obb2.halfExtents[edge2Index];
+        glm::vec3 edge1Dir = obb1.m_rotation[edge1Index] * obb1.m_halfExtents[edge1Index];
+        glm::vec3 edge2Dir = obb2.m_rotation[edge2Index] * obb2.m_halfExtents[edge2Index];
 
-        glm::vec3 edge1Start = obb1.center - edge1Dir;
-        glm::vec3 edge1End = obb1.center + edge1Dir;
+        glm::vec3 edge1Start = obb1.m_center - edge1Dir;
+        glm::vec3 edge1End = obb1.m_center + edge1Dir;
 
-        glm::vec3 edge2Start = obb2.center - edge2Dir;
-        glm::vec3 edge2End = obb2.center + edge2Dir;
+        glm::vec3 edge2Start = obb2.m_center - edge2Dir;
+        glm::vec3 edge2End = obb2.m_center + edge2Dir;
 
         glm::vec3 closestPoint1;
         glm::vec3 closestPoint2;
@@ -273,19 +273,19 @@ size_t CollideBoxBox(Contact* contacts, glm::vec3 positionShape1, glm::quat rota
     ShapeBox* shapeBox1 = static_cast<ShapeBox*>(shape1);
     ShapeBox* shapeBox2 = static_cast<ShapeBox*>(shape2);
 
-    OBB obb1 = OBB(positionShape1, shapeBox1->halfSize, glm::mat3_cast(rotationShape1));
-    OBB obb2 = OBB(positionShape2, shapeBox2->halfSize, glm::mat3_cast(rotationShape2));
+    OBB obb1 = OBB(positionShape1, shapeBox1->m_halfSize, glm::mat3_cast(rotationShape1));
+    OBB obb2 = OBB(positionShape2, shapeBox2->m_halfSize, glm::mat3_cast(rotationShape2));
 
-    CollisionInfo collisionInfos[MAX_CONTACT_POINTS];
+    CollisionInfo collisionInfos[g_maxContactPoints];
     size_t count;
-    SeparatingAxisTheorem(obb1, obb2, MAX_CONTACT_POINTS, collisionInfos, &count);
+    SeparatingAxisTheorem(obb1, obb2, g_maxContactPoints, collisionInfos, &count);
 
     for (size_t i = 0; i < count; ++i)
     {
-        contacts[i].position = collisionInfos[i].position;
-        contacts[i].normal = collisionInfos[i].normal;
-        contacts[i].separation = collisionInfos[i].separation;
-        contacts[i].feature = collisionInfos[i].feature;
+        contacts[i].m_position = collisionInfos[i].position;
+        contacts[i].m_normal = collisionInfos[i].normal;
+        contacts[i].m_separation = collisionInfos[i].separation;
+        contacts[i].m_feature = collisionInfos[i].feature;
     }
 
     return count;
@@ -311,16 +311,16 @@ size_t CollideSphereSphere(Contact* contacts, glm::vec3 positionShape1, glm::qua
     const glm::vec3 shape1ToShape2 = positionShape2 - positionShape1;
     const float shape1ToShape2Length = glm::length(shape1ToShape2);
 
-    const float overlap = shape1ToShape2Length - shapeSphere1->radius - shapeSphere2->radius;
+    const float overlap = shape1ToShape2Length - shapeSphere1->m_radius - shapeSphere2->m_radius;
     if (overlap > 0.0f)
     {
         return 0;
     }
 
-    contacts[0].normal = (shape1ToShape2Length > 0.0f) ? shape1ToShape2 * (1.0f / shape1ToShape2Length) : glm::vec3(0.0f, 1.0f, 0.0f);
-    contacts[0].position = positionShape1 + contacts[0].normal * (shapeSphere1->radius + (overlap * 0.5f));
-    contacts[0].separation = -overlap;
-    contacts[0].feature = 0; // TODO
+    contacts[0].m_normal = (shape1ToShape2Length > 0.0f) ? shape1ToShape2 * (1.0f / shape1ToShape2Length) : glm::vec3(0.0f, 1.0f, 0.0f);
+    contacts[0].m_position = positionShape1 + contacts[0].m_normal * (shapeSphere1->m_radius + (overlap * 0.5f));
+    contacts[0].m_separation = -overlap;
+    contacts[0].m_feature = 0; // TODO
 
     return 1;
 }
@@ -346,10 +346,10 @@ size_t Collide(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape
         {CollideBoxSphere,  CollideSphereSphere,  CollideSphereCapsule},
         {CollideBoxCapsule, CollideSphereCapsule, CollideCapsuleCapsule}
     };
-    const glm::vec3 worldPositionShape1 = (body1->rotation * shape1->position) + body1->position;
-    const glm::vec3 worldPositionShape2 = (body2->rotation * shape2->position) + body2->position;
-    const glm::quat worldRotationShape1 = body1->rotation * shape1->rotation;
-    const glm::quat worldRotationShape2 = body2->rotation * shape2->rotation;
+    const glm::vec3 worldPositionShape1 = (body1->m_rotation * shape1->m_position) + body1->m_position;
+    const glm::vec3 worldPositionShape2 = (body2->m_rotation * shape2->m_position) + body2->m_position;
+    const glm::quat worldRotationShape1 = body1->m_rotation * shape1->m_rotation;
+    const glm::quat worldRotationShape2 = body2->m_rotation * shape2->m_rotation;
     const size_t shape1Type = static_cast<size_t>(shape1->GetType());
     const size_t shape2Type = static_cast<size_t>(shape2->GetType());
     return collisionMatrix[shape1Type][shape2Type](contacts, worldPositionShape1, worldRotationShape1, shape1, worldPositionShape2, worldRotationShape2, shape2);

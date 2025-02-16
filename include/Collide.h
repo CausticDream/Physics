@@ -3,34 +3,34 @@
 #include <glm/glm.hpp>
 #include <Body.h>
 
-constexpr size_t MAX_CONTACT_POINTS = 4;
+constexpr size_t g_maxContactPoints = 4;
 
 struct Contact
 {
     Contact()
-    : separation(0.0f)
-    , Pn(0.0f)
-    , Pt(0.0f)
-    , Pnb(0.0f)
-    , massNormal(0.0f)
-    , massTangent(0.0f)
-    , bias(0.0f)
-    , feature(0)
+    : m_separation(0.0f)
+    , m_Pn(0.0f)
+    , m_Pt(0.0f)
+    , m_Pnb(0.0f)
+    , m_massNormal(0.0f)
+    , m_massTangent(0.0f)
+    , m_bias(0.0f)
+    , m_feature(0)
     {
     }
 
-    glm::vec3 position;
-    glm::vec3 normal;
-    glm::vec3 r1;
-    glm::vec3 r2;
-    float separation;
-    float Pn;
-    float Pt;
-    float Pnb;
-    float massNormal;
-    float massTangent;
-    float bias;
-    uint32_t feature;
+    glm::vec3 m_position;
+    glm::vec3 m_normal;
+    glm::vec3 m_r1;
+    glm::vec3 m_r2;
+    float m_separation;
+    float m_Pn;
+    float m_Pt;
+    float m_Pnb;
+    float m_massNormal;
+    float m_massTangent;
+    float m_bias;
+    uint32_t m_feature;
 };
 
 size_t CollideBoxBox(Contact* contacts, glm::vec3 positionShape1, glm::quat rotationShape1, Shape* shape1, glm::vec3 positionShape2, glm::quat rotationShape2, Shape* shape2);

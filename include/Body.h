@@ -18,11 +18,11 @@ struct Material
 {
     Material();
 
-    float staticFriction;
-    float dynamicFriction;
-    float restitution;
-    CombineMode frictionCombineMode;
-    CombineMode restitutionCombineMode;
+    float m_staticFriction;
+    float m_dynamicFriction;
+    float m_restitution;
+    CombineMode m_frictionCombineMode;
+    CombineMode m_restitutionCombineMode;
 };
 
 enum class ShapeType : size_t
@@ -37,73 +37,73 @@ struct Shape
 {
     ~Shape();
 
-    Body* owner;
-    glm::vec3 position;
-    glm::quat rotation;
-    Material* material;
+    Body* m_owner;
+    glm::vec3 m_position;
+    glm::quat m_rotation;
+    Material* m_material;
 
     uint32_t GetUniqueID() const
     {
-        return uniqueID;
+        return m_uniqueID;
     }
 
     ShapeType GetType() const
     {
-        return type;
+        return m_type;
     }
 
 protected:
     Shape(ShapeType type);
 
-    uint32_t uniqueID;
-    ShapeType type;
+    uint32_t m_uniqueID;
+    ShapeType m_type;
 };
 
 struct ShapeBox : Shape
 {
     ShapeBox();
-    void Set(const glm::vec3& hs);
+    void Set(const glm::vec3& halfSize);
     glm::vec3 ComputeI(float mass) const;
 
-    glm::vec3 halfSize;
+    glm::vec3 m_halfSize;
 };
 
 struct ShapeSphere : Shape
 {
     ShapeSphere();
-    void Set(float r);
+    void Set(float radius);
     glm::vec3 ComputeI(float mass) const;
 
-    float radius;
+    float m_radius;
 };
 
 struct ShapeCapsule : Shape
 {
     ShapeCapsule();
-    void Set(float r, float hh);
+    void Set(float radius, float halfHeight);
     glm::vec3 ComputeI(float mass) const;
 
-    float radius;
-    float halfHeight;
+    float m_radius;
+    float m_halfHeight;
 };
 
 struct Body
 {
     Body();
     ~Body();
-    void SetMass(float m);
-    void AddForce(const glm::vec3& f);
+    void SetMass(float mass);
+    void AddForce(const glm::vec3& force);
     void AddShape(Shape* shape);
     void ComputeInvI();
 
-    glm::vec3 position;
-    glm::quat rotation;
-    glm::vec3 velocity;
-    glm::vec3 angularVelocity;
-    glm::vec3 force;
-    glm::vec3 torque;
-    float mass;
-    float invMass;
-    std::vector<Shape*> shapes;
-    glm::mat3 invI;
+    glm::vec3 m_position;
+    glm::quat m_rotation;
+    glm::vec3 m_velocity;
+    glm::vec3 m_angularVelocity;
+    glm::vec3 m_force;
+    glm::vec3 m_torque;
+    float m_mass;
+    float m_invMass;
+    std::vector<Shape*> m_shapes;
+    glm::mat3 m_invI;
 };

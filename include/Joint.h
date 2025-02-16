@@ -6,26 +6,20 @@ struct Body;
 
 struct Joint
 {
-    Joint()
-    : body1(0)
-    , body2(0)
-    , P(0.0f, 0.0f, 0.0f)
-    , biasFactor(0.2f)
-    , softness(0.0f)
-    {
-    }
-
+    Joint();
     void Set(Body* body1, Body* body2, const glm::vec3& anchor);
-    void PreStep(float inv_dt);
+    void PreStep(float invElapsedTime);
     void ApplyImpulse();
 
-    glm::mat3 M;
-    glm::vec3 localAnchor1, localAnchor2;
-    glm::vec3 r1, r2;
-    glm::vec3 bias;
-    glm::vec3 P;
-    Body* body1;
-    Body* body2;
-    float biasFactor;
-    float softness;
+    glm::mat3 m_M;
+    glm::vec3 m_localAnchor1;
+    glm::vec3 m_localAnchor2;
+    glm::vec3 m_r1;
+    glm::vec3 m_r2;
+    glm::vec3 m_bias;
+    glm::vec3 m_P;
+    Body* m_body1;
+    Body* m_body2;
+    float m_biasFactor;
+    float m_softness;
 };
