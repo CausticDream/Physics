@@ -145,6 +145,13 @@ void World::Step(float elapsedTime)
                 break;
             }
 
+            case JointType::Hinge:
+            {
+                JointHinge* jointHinge = static_cast<JointHinge*>(m_joints[i]);
+                jointHinge->PreStep(invElapsedTime);
+                break;
+            }
+
             default:
             {
                 assert(false);
@@ -168,6 +175,13 @@ void World::Step(float elapsedTime)
                 {
                     JointSpherical* jointSpherical = static_cast<JointSpherical*>(m_joints[j]);
                     jointSpherical->ApplyImpulse();
+                    break;
+                }
+
+                case JointType::Hinge:
+                {
+                    JointHinge* jointHinge = static_cast<JointHinge*>(m_joints[i]);
+                    jointHinge->ApplyImpulse();
                     break;
                 }
 
