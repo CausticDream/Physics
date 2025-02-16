@@ -96,11 +96,12 @@ void Arbiter::Update(Contact* newContacts, size_t numNewContacts)
 {
     Contact mergedContacts[MAX_CONTACT_POINTS];
 
-    for (int i = 0; i < numNewContacts; ++i)
+    for (size_t i = 0; i < numNewContacts; ++i)
     {
         Contact* cNew = newContacts + i;
-        int k = -1;
-        for (int j = 0; j < numContacts; ++j)
+
+        size_t k = std::numeric_limits<size_t>::max();
+        for (size_t j = 0; j < numContacts; ++j)
         {
             Contact* cOld = contacts + j;
             if (cNew->feature == cOld->feature)
@@ -110,7 +111,7 @@ void Arbiter::Update(Contact* newContacts, size_t numNewContacts)
             }
         }
 
-        if (k > -1)
+        if (k != std::numeric_limits<size_t>::max())
         {
             Contact* c = mergedContacts + i;
             Contact* cOld = contacts + k;
@@ -125,7 +126,7 @@ void Arbiter::Update(Contact* newContacts, size_t numNewContacts)
         }
     }
 
-    for (int i = 0; i < numNewContacts; ++i)
+    for (size_t i = 0; i < numNewContacts; ++i)
     {
         contacts[i] = mergedContacts[i];
     }
@@ -135,7 +136,7 @@ void Arbiter::Update(Contact* newContacts, size_t numNewContacts)
 
 void Arbiter::PreStep(float inv_dt)
 {
-    for (int i = 0; i < numContacts; ++i)
+    for (size_t i = 0; i < numContacts; ++i)
     {
         Contact* c = contacts + i;
 
@@ -191,9 +192,10 @@ void Arbiter::PreStep(float inv_dt)
 
 void Arbiter::ApplyImpulse()
 {
-    for (int i = 0; i < numContacts; ++i)
+    for (size_t i = 0; i < numContacts; ++i)
     {
         Contact* c = contacts + i;
+
         c->r1 = c->position - body1->position;
         c->r2 = c->position - body2->position;
 
