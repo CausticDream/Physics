@@ -170,9 +170,9 @@ void Arbiter::PreStep(float inv_dt)
         constexpr float k_allowedPenetration = 0.01f;
         c->bias = -k_biasFactor * inv_dt * glm::min(0.0f, c->separation + k_allowedPenetration);
 
+        constexpr float velocityThreshold = 1.0f;
         glm::vec3 dv = body2->velocity + glm::cross(body2->angularVelocity, r2) - body1->velocity - glm::cross(body1->angularVelocity, r1);
         float vn = glm::dot(dv, c->normal);
-        constexpr float velocityThreshold = 1.0f;
         if (vn < -velocityThreshold)
         {
             c->bias -= restitution * vn;

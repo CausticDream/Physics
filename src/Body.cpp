@@ -79,56 +79,6 @@ void ShapeCapsule::Set(float r, float hh)
     }
 }
 
-glm::vec3 ComputeShapeI(Shape* s, float m)
-{
-    if ((m > 0.0f) && (m < std::numeric_limits<float>::infinity()))
-    {
-        switch (s->GetType())
-        {
-            case ShapeType::Box:
-            {
-                ShapeBox* shapeBox = static_cast<ShapeBox*>(s);
-                glm::vec3 s = 2.0f * shapeBox->halfSize;
-                constexpr float f = 1.0f / 12.0f;
-                return glm::vec3(
-                    m * (s.y * s.y + s.z * s.z) * f,
-                    m * (s.x * s.x + s.z * s.z) * f,
-                    m * (s.x * s.x + s.y * s.y) * f);
-            }
-
-            case ShapeType::Sphere:
-            {
-                ShapeSphere* shapeSphere = static_cast<ShapeSphere*>(s);
-                float v = 1.0f / ((2.0f / 5.0f) * m * shapeSphere->radius * shapeSphere->radius);
-                return glm::vec3(v, v, v);
-            }
-
-            case ShapeType::Capsule:
-            {
-                ShapeCapsule* shapeCapsule = static_cast<ShapeCapsule*>(s);
-
-                float volumeCylinder = glm::pi<float>() * shapeCapsule->radius * shapeCapsule->radius * (2.0f * shapeCapsule->halfHeight);
-                float volumeHemispheres = (4.0f / 3.0f) * glm::pi<float>() * shapeCapsule->radius * shapeCapsule->radius * shapeCapsule->radius;
-                float totalVolume = volumeCylinder + volumeHemispheres;
-
-                float massCylinder = m * (volumeCylinder / totalVolume);
-                float massHemisphere = 0.5f * (m - massCylinder);
-
-                float IcTransverse = (1.0f / 12.0f) * massCylinder * (3.0f * shapeCapsule->radius * shapeCapsule->radius + 4.0f * shapeCapsule->halfHeight * shapeCapsule->halfHeight);
-                float IcLongitudinal = 0.5f * massCylinder * shapeCapsule->radius * shapeCapsule->radius;
-
-                float Ih = (2.0f / 5.0f) * massHemisphere * shapeCapsule->radius * shapeCapsule->radius;
-                float IhOffset = massHemisphere * (shapeCapsule->halfHeight + (3.0f / 8.0f) * shapeCapsule->radius) * (shapeCapsule->halfHeight + (3.0f / 8.0f) * shapeCapsule->radius);
-
-                float Ixz = IcTransverse + 2.0f * (Ih + IhOffset);
-                float Iy = IcLongitudinal + 2.0f * Ih;
-                return glm::vec3(Ixz, Iy, Ixz);
-            }
-        }
-    }
-    return glm::vec3(0.0f, 0.0f, 0.0f);
-}
-
 Body::Body()
 {
     position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -182,7 +132,53 @@ void Body::ComputeInvI()
         glm::vec3 I = glm::vec3(0.0f, 0.0f, 0.0f);
         for (size_t i = 0; i < shapes.size(); ++i)
         {
-            I += ComputeShapeI(shapes[i], mass);
+            const Shape* s = shapes[i];
+
+            switch (s->GetType())
+            {
+                case ShapeType::Box:
+                {
+                    const ShapeBox* shapeBox = static_cast<const ShapeBox*>(s);
+                    glm::vec3 s = 2.0f * shapeBox->halfSize;
+                    constexpr float f = 1.0f / 12.0f;
+                    I += glm::vec3(
+                        mass * (s.y * s.y + s.z * s.z) * f,
+                        mass * (s.x * s.x + s.z * s.z) * f,
+                        mass * (s.x * s.x + s.y * s.y) * f);
+                    break;
+                }
+
+                case ShapeType::Sphere:
+                {
+                    const ShapeSphere* shapeSphere = static_cast<const ShapeSphere*>(s);
+                    float v = 1.0f / ((2.0f / 5.0f) * mass * shapeSphere->radius * shapeSphere->radius);
+                    I += glm::vec3(v, v, v);
+                    break;
+                }
+
+                case ShapeType::Capsule:
+                {
+                    const ShapeCapsule* shapeCapsule = static_cast<const ShapeCapsule*>(s);
+
+                    float volumeCylinder = glm::pi<float>() * shapeCapsule->radius * shapeCapsule->radius * (2.0f * shapeCapsule->halfHeight);
+                    float volumeHemispheres = (4.0f / 3.0f) * glm::pi<float>() * shapeCapsule->radius * shapeCapsule->radius * shapeCapsule->radius;
+                    float totalVolume = volumeCylinder + volumeHemispheres;
+
+                    float massCylinder = mass * (volumeCylinder / totalVolume);
+                    float massHemisphere = 0.5f * (mass - massCylinder);
+
+                    float IcTransverse = (1.0f / 12.0f) * massCylinder * (3.0f * shapeCapsule->radius * shapeCapsule->radius + 4.0f * shapeCapsule->halfHeight * shapeCapsule->halfHeight);
+                    float IcLongitudinal = 0.5f * massCylinder * shapeCapsule->radius * shapeCapsule->radius;
+
+                    float Ih = (2.0f / 5.0f) * massHemisphere * shapeCapsule->radius * shapeCapsule->radius;
+                    float IhOffset = massHemisphere * (shapeCapsule->halfHeight + (3.0f / 8.0f) * shapeCapsule->radius) * (shapeCapsule->halfHeight + (3.0f / 8.0f) * shapeCapsule->radius);
+
+                    float Ixz = IcTransverse + 2.0f * (Ih + IhOffset);
+                    float Iy = IcLongitudinal + 2.0f * Ih;
+                    I += glm::vec3(Ixz, Iy, Ixz);
+                    break;
+                }
+            }
         }
         invI = glm::mat3(
             glm::vec3((I.x > 0.0f) ? 1.0f / I.x : 0.0f, 0.0f, 0.0f),
