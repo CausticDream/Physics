@@ -69,13 +69,14 @@ void World::BroadPhase()
     for (size_t i = 0; i < m_bodies.size(); ++i)
     {
         Body* bi = m_bodies[i];
+
         for (size_t s1 = 0; s1 < bi->m_shapes.size(); ++s1)
         {
             for (size_t j = i + 1; j < m_bodies.size(); ++j)
             {
                 Body* bj = m_bodies[j];
 
-                if (bi->m_invMass == 0.0f && bj->m_invMass == 0.0f)
+                if ((bi->m_invMass == 0.0f) && (bj->m_invMass == 0.0f))
                 {
                     continue;
                 }
@@ -91,10 +92,46 @@ void World::BroadPhase()
                         if (iter == m_arbiters.end())
                         {
                             m_arbiters.insert({key, newArb});
+
+                            if (!m_worldListeners.empty())
+                            {
+                                CollisionResult collisionResults[g_maxContactPoints];
+                                for (size_t k = 0; k < newArb.m_contactCount; ++k)
+                                {
+                                    collisionResults[k].m_position = newArb.m_contacts[k].m_position;
+                                    collisionResults[k].m_normal = newArb.m_contacts[k].m_normal;
+                                    collisionResults[k].m_impulse = newArb.m_contacts[k].m_normal * newArb.m_contacts[k].m_Pn;
+                                    collisionResults[k].m_separation = newArb.m_contacts[k].m_separation;
+                                }
+
+                                for (size_t k = 0; k < m_worldListeners.size(); ++k)
+                                {
+                                    m_worldListeners[k]->OnCollision(newArb.m_body1, newArb.m_body2, collisionResults, newArb.m_contactCount);
+                                }
+                            }
                         }
                         else
                         {
-                            iter->second.Update(newArb.m_contacts, newArb.m_contactCount);
+                            Contact newContacts[g_maxContactPoints];
+                            size_t newContactCount;
+                            iter->second.Update(newArb.m_contacts, newArb.m_contactCount, newContacts, newContactCount);
+
+                            if (!m_worldListeners.empty())
+                            {
+                                CollisionResult collisionResults[g_maxContactPoints];
+                                for (size_t k = 0; k < newContactCount; ++k)
+                                {
+                                    collisionResults[k].m_position = newContacts[k].m_position;
+                                    collisionResults[k].m_normal = newContacts[k].m_normal;
+                                    collisionResults[k].m_impulse = newContacts[k].m_normal * newContacts[k].m_Pn;
+                                    collisionResults[k].m_separation = newContacts[k].m_separation;
+                                }
+
+                                for (size_t k = 0; k < m_worldListeners.size(); ++k)
+                                {
+                                    m_worldListeners[k]->OnCollision(newArb.m_body1, newArb.m_body2, collisionResults, newContactCount);
+                                }
+                            }
                         }
                     }
                     else

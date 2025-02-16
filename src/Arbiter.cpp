@@ -92,13 +92,14 @@ Arbiter::Arbiter(Shape* shape1, Shape* shape2)
     }
 }
 
-void Arbiter::Update(Contact* newContacts, size_t newContactCount)
+void Arbiter::Update(Contact* contacts, size_t contactCount, Contact* newContacts, size_t& newContactCount)
 {
+    newContactCount = 0;
     Contact mergedContacts[g_maxContactPoints];
 
-    for (size_t i = 0; i < newContactCount; ++i)
+    for (size_t i = 0; i < contactCount; ++i)
     {
-        Contact* cNew = newContacts + i;
+        Contact* cNew = contacts + i;
 
         size_t k = std::numeric_limits<size_t>::max();
         for (size_t j = 0; j < m_contactCount; ++j)
@@ -122,16 +123,19 @@ void Arbiter::Update(Contact* newContacts, size_t newContactCount)
         }
         else
         {
-            mergedContacts[i] = newContacts[i];
+            mergedContacts[i] = contacts[i];
+
+            newContacts[newContactCount] = contacts[i];
+            ++newContactCount;
         }
     }
 
-    for (size_t i = 0; i < newContactCount; ++i)
+    for (size_t i = 0; i < contactCount; ++i)
     {
         m_contacts[i] = mergedContacts[i];
     }
 
-    m_contactCount = newContactCount;
+    m_contactCount = contactCount;
 }
 
 void Arbiter::PreStep(float invElapsedTime)
