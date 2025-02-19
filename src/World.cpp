@@ -66,6 +66,8 @@ void World::Remove(Joint* joint)
 
 void World::BroadPhase()
 {
+    m_onCollisions.clear();
+
     for (size_t i = 0; i < m_bodies.size(); ++i)
     {
         Body* bi = m_bodies[i];
@@ -95,18 +97,16 @@ void World::BroadPhase()
 
                             if (!m_worldListeners.empty())
                             {
-                                CollisionResult collisionResults[g_maxContactPoints];
                                 for (size_t k = 0; k < newArb.m_contactCount; ++k)
                                 {
-                                    collisionResults[k].m_position = newArb.m_contacts[k].m_position;
-                                    collisionResults[k].m_normal = newArb.m_contacts[k].m_normal;
-                                    collisionResults[k].m_impulse = newArb.m_contacts[k].m_normal * newArb.m_contacts[k].m_Pn;
-                                    collisionResults[k].m_separation = newArb.m_contacts[k].m_separation;
-                                }
-
-                                for (size_t k = 0; k < m_worldListeners.size(); ++k)
-                                {
-                                    m_worldListeners[k]->OnCollision(newArb.m_body1, newArb.m_body2, collisionResults, newArb.m_contactCount);
+                                    CollisionResult collisionResult;
+                                    collisionResult.m_body1 = newArb.m_body1;
+                                    collisionResult.m_body2 = newArb.m_body2;
+                                    collisionResult.m_position = newArb.m_contacts[k].m_position;
+                                    collisionResult.m_normal = newArb.m_contacts[k].m_normal;
+                                    collisionResult.m_impulse = newArb.m_contacts[k].m_normal * newArb.m_contacts[k].m_Pn;
+                                    collisionResult.m_separation = newArb.m_contacts[k].m_separation;
+                                    m_onCollisions.push_back(collisionResult);
                                 }
                             }
                         }
@@ -118,18 +118,16 @@ void World::BroadPhase()
 
                             if (!m_worldListeners.empty())
                             {
-                                CollisionResult collisionResults[g_maxContactPoints];
                                 for (size_t k = 0; k < newContactCount; ++k)
                                 {
-                                    collisionResults[k].m_position = newContacts[k].m_position;
-                                    collisionResults[k].m_normal = newContacts[k].m_normal;
-                                    collisionResults[k].m_impulse = newContacts[k].m_normal * newContacts[k].m_Pn;
-                                    collisionResults[k].m_separation = newContacts[k].m_separation;
-                                }
-
-                                for (size_t k = 0; k < m_worldListeners.size(); ++k)
-                                {
-                                    m_worldListeners[k]->OnCollision(newArb.m_body1, newArb.m_body2, collisionResults, newContactCount);
+                                    CollisionResult collisionResult;
+                                    collisionResult.m_body1 = newArb.m_body1;
+                                    collisionResult.m_body2 = newArb.m_body2;
+                                    collisionResult.m_position = newContacts[k].m_position;
+                                    collisionResult.m_normal = newContacts[k].m_normal;
+                                    collisionResult.m_impulse = newContacts[k].m_normal * newContacts[k].m_Pn;
+                                    collisionResult.m_separation = newContacts[k].m_separation;
+                                    m_onCollisions.push_back(collisionResult);
                                 }
                             }
                         }
@@ -141,6 +139,11 @@ void World::BroadPhase()
                 }
             }
         }
+    }
+
+    for (size_t i = 0; i < m_worldListeners.size(); ++i)
+    {
+        m_worldListeners[i]->OnCollision(&m_onCollisions[0], m_onCollisions.size());
     }
 }
 

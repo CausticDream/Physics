@@ -10,6 +10,8 @@ struct Joint;
 
 struct CollisionResult
 {
+    Body* m_body1;
+    Body* m_body2;
     glm::vec3 m_position;
     glm::vec3 m_normal;
     glm::vec3 m_impulse;
@@ -18,7 +20,7 @@ struct CollisionResult
 
 struct WorldListener
 {
-    virtual void OnCollision(Body* body1, Body* body2, CollisionResult* collisionResults, size_t collisionCount) = 0;
+    virtual void OnCollision(CollisionResult* collisionResults, size_t collisionCount) = 0;
 };
 
 struct World
@@ -38,4 +40,5 @@ struct World
     std::vector<Joint*> m_joints;
     std::unordered_map<uint64_t, Arbiter> m_arbiters;
     std::vector<WorldListener*> m_worldListeners;
+    std::vector<CollisionResult> m_onCollisions;
 };
