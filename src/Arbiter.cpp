@@ -2,6 +2,24 @@
 #include "Body.h"
 #include "World.h"
 
+void ComputeBasis(const glm::vec3& n, glm::vec3& b1, glm::vec3& b2)
+{
+    if (n.z < 0.)
+    {
+        const float a = 1.0f / (1.0f - n.z);
+        const float b = n.x * n.y * a;
+        b1 = glm::vec3(1.0f - n.x * n.x * a, -b, n.x);
+        b2 = glm::vec3(b, n.y * n.y * a - 1.0f, -n.y);
+    }
+    else
+    {
+        const float a = 1.0f / (1.0f + n.z);
+        const float b = -n.x * n.y * a;
+        b1 = glm::vec3(1.0f - n.x * n.x * a, b, -n.x);
+        b2 = glm::vec3(b, 1.0f - n.y * n.y * a, -n.y);
+    }
+}
+
 Arbiter::Arbiter(Shape* shape1, Shape* shape2)
 {
     Shape* firstShape;
@@ -156,14 +174,9 @@ void Arbiter::PreStep(float invElapsedTime)
         c->m_massNormal = 1.0f / kNormal;
 
         glm::vec3 tangent;
-        if ((1.0f - std::abs(glm::dot(c->m_normal, glm::vec3(1.0f, 0.0f, 0.0f)))) < 1.0e-4f)
-        {
-            tangent = glm::normalize(glm::cross(c->m_normal, glm::vec3(0.0f, 1.0f, 0.0f)));
-        }
-        else
-        {
-            tangent = glm::normalize(glm::cross(c->m_normal, glm::vec3(1.0f, 0.0f, 0.0f)));
-        }
+        glm::vec3 bitangent;
+        ComputeBasis(c->m_normal, tangent, bitangent);
+
         glm::vec3 rt1 = glm::cross(r1, tangent);
         glm::vec3 rt2 = glm::cross(r2, tangent);
         float kTangent = m_body1->m_invMass + m_body2->m_invMass;
@@ -228,14 +241,9 @@ void Arbiter::ApplyImpulse()
         dv = m_body2->m_velocity + glm::cross(m_body2->m_angularVelocity, c->m_r2) - m_body1->m_velocity - glm::cross(m_body1->m_angularVelocity, c->m_r1);
 
         glm::vec3 tangent;
-        if ((1.0f - std::abs(glm::dot(c->m_normal, glm::vec3(1.0f, 0.0f, 0.0f)))) < 1.0e-4f)
-        {
-            tangent = glm::normalize(glm::cross(c->m_normal, glm::vec3(0.0f, 1.0f, 0.0f)));
-        }
-        else
-        {
-            tangent = glm::normalize(glm::cross(c->m_normal, glm::vec3(1.0f, 0.0f, 0.0f)));
-        }
+        glm::vec3 bitangent;
+        ComputeBasis(c->m_normal, tangent, bitangent);
+
         float vt = glm::dot(dv, tangent);
         float dPt = c->m_massTangent * (-vt);
 
