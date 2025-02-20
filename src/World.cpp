@@ -67,6 +67,8 @@ void World::Remove(Joint* joint)
 void World::BroadPhase()
 {
     m_onCollisions.clear();
+    m_onTriggerEnters.clear();
+    m_onTriggerExits.clear();
 
     for (size_t i = 0; i < m_bodies.size(); ++i)
     {
@@ -97,16 +99,26 @@ void World::BroadPhase()
 
                             if (!m_worldListeners.empty())
                             {
-                                for (size_t k = 0; k < newArb.m_contactCount; ++k)
+                                if (bi->m_shapes[s1]->m_isTrigger || bj->m_shapes[s2]->m_isTrigger)
                                 {
-                                    CollisionResult collisionResult;
-                                    collisionResult.m_body1 = newArb.m_body1;
-                                    collisionResult.m_body2 = newArb.m_body2;
-                                    collisionResult.m_position = newArb.m_contacts[k].m_position;
-                                    collisionResult.m_normal = newArb.m_contacts[k].m_normal;
-                                    collisionResult.m_impulse = newArb.m_contacts[k].m_normal * newArb.m_contacts[k].m_Pn;
-                                    collisionResult.m_separation = newArb.m_contacts[k].m_separation;
-                                    m_onCollisions.push_back(collisionResult);
+                                    TriggerResult triggerResult;
+                                    triggerResult.m_body1 = newArb.m_body1;
+                                    triggerResult.m_body2 = newArb.m_body2;
+                                    m_onTriggerEnters.push_back(triggerResult);
+                                }
+                                else
+                                {
+                                    for (size_t k = 0; k < newArb.m_contactCount; ++k)
+                                    {
+                                        CollisionResult collisionResult;
+                                        collisionResult.m_body1 = newArb.m_body1;
+                                        collisionResult.m_body2 = newArb.m_body2;
+                                        collisionResult.m_position = newArb.m_contacts[k].m_position;
+                                        collisionResult.m_normal = newArb.m_contacts[k].m_normal;
+                                        collisionResult.m_impulse = newArb.m_contacts[k].m_Pn;
+                                        collisionResult.m_separation = newArb.m_contacts[k].m_separation;
+                                        m_onCollisions.push_back(collisionResult);
+                                    }
                                 }
                             }
                         }
@@ -125,7 +137,7 @@ void World::BroadPhase()
                                     collisionResult.m_body2 = newArb.m_body2;
                                     collisionResult.m_position = newContacts[k].m_position;
                                     collisionResult.m_normal = newContacts[k].m_normal;
-                                    collisionResult.m_impulse = newContacts[k].m_normal * newContacts[k].m_Pn;
+                                    collisionResult.m_impulse = newContacts[k].m_Pn;
                                     collisionResult.m_separation = newContacts[k].m_separation;
                                     m_onCollisions.push_back(collisionResult);
                                 }
@@ -134,6 +146,18 @@ void World::BroadPhase()
                     }
                     else
                     {
+                        if (bi->m_shapes[s1]->m_isTrigger || bj->m_shapes[s2]->m_isTrigger)
+                        {
+                            const auto iter = m_arbiters.find(key);
+                            if (iter != m_arbiters.end())
+                            {
+                                TriggerResult triggerResult;
+                                triggerResult.m_body1 = newArb.m_body1;
+                                triggerResult.m_body2 = newArb.m_body2;
+                                m_onTriggerExits.push_back(triggerResult);
+                            }
+                        }
+
                         m_arbiters.erase(key);
                     }
                 }
@@ -143,7 +167,20 @@ void World::BroadPhase()
 
     for (size_t i = 0; i < m_worldListeners.size(); ++i)
     {
-        m_worldListeners[i]->OnCollision(&m_onCollisions[0], m_onCollisions.size());
+        if (!m_onCollisions.empty())
+        {
+            m_worldListeners[i]->OnCollision(&m_onCollisions[0], m_onCollisions.size());
+        }
+
+        if (!m_onTriggerEnters.empty())
+        {
+            m_worldListeners[i]->OnTriggerEnter(&m_onTriggerEnters[0], m_onTriggerEnters.size());
+        }
+
+        if (!m_onTriggerExits.empty())
+        {
+            m_worldListeners[i]->OnTriggerEnter(&m_onTriggerExits[0], m_onTriggerExits.size());
+        }
     }
 }
 

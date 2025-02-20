@@ -11,7 +11,6 @@ struct Contact
     : m_separation(0.0f)
     , m_Pn(0.0f)
     , m_Pt(0.0f)
-    , m_Pnb(0.0f)
     , m_massNormal(0.0f)
     , m_massTangent(0.0f)
     , m_bias(0.0f)
@@ -26,7 +25,6 @@ struct Contact
     float m_separation;
     float m_Pn;
     float m_Pt;
-    float m_Pnb;
     float m_massNormal;
     float m_massTangent;
     float m_bias;

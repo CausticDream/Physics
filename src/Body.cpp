@@ -26,6 +26,8 @@ Shape::Shape(ShapeType t)
     m_owner = nullptr;
     m_position = glm::vec3(0.0f, 0.0f, 0.0f);
     m_rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    m_material = nullptr;
+    m_isTrigger = false;
     m_type = t;
 }
 
@@ -170,6 +172,11 @@ void Body::ComputeInvI()
         for (size_t i = 0; i < m_shapes.size(); ++i)
         {
             const Shape* s = m_shapes[i];
+
+            if (s->m_isTrigger)
+            {
+                continue;
+            }
 
             switch (s->GetType())
             {

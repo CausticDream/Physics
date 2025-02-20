@@ -41,6 +41,7 @@ struct Shape
     glm::vec3 m_position;
     glm::quat m_rotation;
     Material* m_material;
+    bool m_isTrigger;
 
     uint32_t GetUniqueID() const
     {

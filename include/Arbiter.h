@@ -16,4 +16,5 @@ struct Arbiter
     float m_staticFriction;
     float m_dynamicFriction;
     float m_restitution;
+    bool m_isTrigger;
 };

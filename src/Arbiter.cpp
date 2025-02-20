@@ -4,7 +4,7 @@
 
 void ComputeBasis(const glm::vec3& n, glm::vec3& b1, glm::vec3& b2)
 {
-    if (n.z < 0.)
+    if (n.z < 0.0f)
     {
         const float a = 1.0f / (1.0f - n.z);
         const float b = n.x * n.y * a;
@@ -36,6 +36,7 @@ Arbiter::Arbiter(Shape* shape1, Shape* shape2)
     }
     m_body1 = firstShape->m_owner;
     m_body2 = secondShape->m_owner;
+    m_isTrigger = shape1->m_isTrigger || shape2->m_isTrigger;
 
     m_contactCount = Collide(m_contacts, m_body1, firstShape, m_body2, secondShape);
 
@@ -112,6 +113,11 @@ Arbiter::Arbiter(Shape* shape1, Shape* shape2)
 
 void Arbiter::Update(Contact* contacts, size_t contactCount, Contact* newContacts, size_t& newContactCount)
 {
+    if (m_isTrigger)
+    {
+        return;
+    }
+
     newContactCount = 0;
     Contact mergedContacts[g_maxContactPoints];
 
@@ -137,7 +143,6 @@ void Arbiter::Update(Contact* contacts, size_t contactCount, Contact* newContact
             *c = *cNew;
             c->m_Pn = cOld->m_Pn;
             c->m_Pt = cOld->m_Pt;
-            c->m_Pnb = cOld->m_Pnb;
         }
         else
         {
@@ -158,6 +163,11 @@ void Arbiter::Update(Contact* contacts, size_t contactCount, Contact* newContact
 
 void Arbiter::PreStep(float invElapsedTime)
 {
+    if (m_isTrigger)
+    {
+        return;
+    }
+
     for (size_t i = 0; i < m_contactCount; ++i)
     {
         Contact* c = m_contacts + i;
@@ -209,6 +219,11 @@ void Arbiter::PreStep(float invElapsedTime)
 
 void Arbiter::ApplyImpulse()
 {
+    if (m_isTrigger)
+    {
+        return;
+    }
+
     for (size_t i = 0; i < m_contactCount; ++i)
     {
         Contact* c = m_contacts + i;

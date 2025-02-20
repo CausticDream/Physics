@@ -14,13 +14,21 @@ struct CollisionResult
     Body* m_body2;
     glm::vec3 m_position;
     glm::vec3 m_normal;
-    glm::vec3 m_impulse;
+    float m_impulse;
     float m_separation;
+};
+
+struct TriggerResult
+{
+    Body* m_body1;
+    Body* m_body2;
 };
 
 struct WorldListener
 {
-    virtual void OnCollision(CollisionResult* collisionResults, size_t collisionCount) = 0;
+    virtual void OnCollision(CollisionResult* collisionResults, size_t collisionResultCount) = 0;
+    virtual void OnTriggerEnter(TriggerResult* triggerResults, size_t triggerResultCount) = 0;
+    virtual void OnTriggerExit(TriggerResult* triggerResults, size_t triggerResultCount) = 0;
 };
 
 struct World
@@ -41,4 +49,6 @@ struct World
     std::unordered_map<uint64_t, Arbiter> m_arbiters;
     std::vector<WorldListener*> m_worldListeners;
     std::vector<CollisionResult> m_onCollisions;
+    std::vector<TriggerResult> m_onTriggerEnters;
+    std::vector<TriggerResult> m_onTriggerExits;
 };
