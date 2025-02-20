@@ -2,22 +2,23 @@
 #include "Body.h"
 #include "World.h"
 
-void ComputeBasis(const glm::vec3& n, glm::vec3& b1, glm::vec3& b2)
+constexpr float velocityThreshold = 1.0f;
+
+void ComputeBasis(const glm::vec3& a, glm::vec3& b, glm::vec3& c)
 {
-    if (n.z < 0.0f)
-    {
-        const float a = 1.0f / (1.0f - n.z);
-        const float b = n.x * n.y * a;
-        b1 = glm::vec3(1.0f - n.x * n.x * a, -b, n.x);
-        b2 = glm::vec3(b, n.y * n.y * a - 1.0f, -n.y);
-    }
+    // Suppose vector a has all equal components and is a unit vector:
+    // a = (s, s, s)
+    // Then 3*s*s = 1, s = sqrt(1/3) = 0.57735. This means that at
+    // least one component of a unit vector must be greater or equal
+    // to 0.57735.
+
+    if (std::abs(a.x) >= 0.57735f)
+        b = glm::vec3(a.y, -a.x, 0.0f);
     else
-    {
-        const float a = 1.0f / (1.0f + n.z);
-        const float b = -n.x * n.y * a;
-        b1 = glm::vec3(1.0f - n.x * n.x * a, b, -n.x);
-        b2 = glm::vec3(b, 1.0f - n.y * n.y * a, -n.y);
-    }
+        b = glm::vec3(0.0f, a.z, -a.y);
+
+    b = glm::normalize(b);
+    c = glm::cross(a, b);
 }
 
 Arbiter::Arbiter(Shape* shape1, Shape* shape2)
@@ -143,6 +144,7 @@ void Arbiter::Update(Contact* contacts, size_t contactCount, Contact* newContact
             *c = *cNew;
             c->m_Pn = cOld->m_Pn;
             c->m_Pt = cOld->m_Pt;
+            c->m_Pb = cOld->m_Pb;
         }
         else
         {
@@ -194,11 +196,17 @@ void Arbiter::PreStep(float invElapsedTime)
         kTangent += glm::dot(rt2, m_body2->m_invI * rt2);
         c->m_massTangent = 1.0f / kTangent;
 
+        glm::vec3 rb1 = glm::cross(r1, bitangent);
+        glm::vec3 rb2 = glm::cross(r2, bitangent);
+        float kBitangent = m_body1->m_invMass + m_body2->m_invMass;
+        kBitangent += glm::dot(rb1, m_body1->m_invI * rb1);
+        kBitangent += glm::dot(rb2, m_body2->m_invI * rb2);
+        c->m_massBitangent = 1.0f / kBitangent;
+
         constexpr float k_biasFactor = 0.1f;
         constexpr float k_allowedPenetration = 0.01f;
         c->m_bias = -k_biasFactor * invElapsedTime * glm::min(0.0f, c->m_separation + k_allowedPenetration);
 
-        constexpr float velocityThreshold = 1.0f;
         glm::vec3 dv = m_body2->m_velocity + glm::cross(m_body2->m_angularVelocity, r2) - m_body1->m_velocity - glm::cross(m_body1->m_angularVelocity, r1);
         float vn = glm::dot(dv, c->m_normal);
         if (vn < -velocityThreshold)
@@ -207,7 +215,7 @@ void Arbiter::PreStep(float invElapsedTime)
         }
 
         // Apply normal + friction impulse.
-        glm::vec3 P = c->m_Pn * c->m_normal + c->m_Pt * tangent;
+        glm::vec3 P = (c->m_Pn * c->m_normal) + (c->m_Pt * tangent) + (c->m_Pb * bitangent);
 
         m_body1->m_velocity -= m_body1->m_invMass * P;
         m_body1->m_angularVelocity -= m_body1->m_invI * glm::cross(r1, P);
@@ -252,18 +260,17 @@ void Arbiter::ApplyImpulse()
         m_body2->m_velocity += m_body2->m_invMass * Pn;
         m_body2->m_angularVelocity += m_body2->m_invI * glm::cross(c->m_r2, Pn);
 
-        // Relative velocity at contact.
-        dv = m_body2->m_velocity + glm::cross(m_body2->m_angularVelocity, c->m_r2) - m_body1->m_velocity - glm::cross(m_body1->m_angularVelocity, c->m_r1);
-
         glm::vec3 tangent;
         glm::vec3 bitangent;
         ComputeBasis(c->m_normal, tangent, bitangent);
 
+        // Relative velocity at contact.
+        dv = m_body2->m_velocity + glm::cross(m_body2->m_angularVelocity, c->m_r2) - m_body1->m_velocity - glm::cross(m_body1->m_angularVelocity, c->m_r1);
+
         float vt = glm::dot(dv, tangent);
         float dPt = c->m_massTangent * (-vt);
 
-        constexpr float velocityThreshold = 1.0f;
-        const float effectiveFriction = (std::abs(vt) < velocityThreshold) ? m_staticFriction : m_dynamicFriction;
+        float effectiveFriction = (std::abs(vt) < velocityThreshold) ? m_staticFriction : m_dynamicFriction;
 
         // Compute friction impulse.
         float maxPt = effectiveFriction * c->m_Pn;
@@ -281,5 +288,30 @@ void Arbiter::ApplyImpulse()
 
         m_body2->m_velocity += m_body2->m_invMass * Pt;
         m_body2->m_angularVelocity += m_body2->m_invI * glm::cross(c->m_r2, Pt);
+
+        // Relative velocity at contact.
+        dv = m_body2->m_velocity + glm::cross(m_body2->m_angularVelocity, c->m_r2) - m_body1->m_velocity - glm::cross(m_body1->m_angularVelocity, c->m_r1);
+
+        float vb = glm::dot(dv, bitangent);
+        float dPb = c->m_massBitangent * (-vb);
+
+        effectiveFriction = (std::abs(vb) < velocityThreshold) ? m_staticFriction : m_dynamicFriction;
+
+        // Compute friction impulse.
+        float maxPb = effectiveFriction * c->m_Pn;
+
+        // Clamp friction.
+        float oldBitangentImpulse = c->m_Pb;
+        c->m_Pb = glm::clamp(oldBitangentImpulse + dPb, -maxPb, maxPb);
+        dPb = c->m_Pb - oldBitangentImpulse;
+
+        // Apply contact impulse.
+        glm::vec3 Pb = dPb * bitangent;
+
+        m_body1->m_velocity -= m_body1->m_invMass * Pb;
+        m_body1->m_angularVelocity -= m_body1->m_invI * glm::cross(c->m_r1, Pb);
+
+        m_body2->m_velocity += m_body2->m_invMass * Pb;
+        m_body2->m_angularVelocity += m_body2->m_invI * glm::cross(c->m_r2, Pb);
     }
 }

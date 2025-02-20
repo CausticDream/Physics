@@ -11,8 +11,10 @@ struct Contact
     : m_separation(0.0f)
     , m_Pn(0.0f)
     , m_Pt(0.0f)
+    , m_Pb(0.0f)
     , m_massNormal(0.0f)
     , m_massTangent(0.0f)
+    , m_massBitangent(0.0f)
     , m_bias(0.0f)
     , m_feature(0)
     {
@@ -25,8 +27,10 @@ struct Contact
     float m_separation;
     float m_Pn;
     float m_Pt;
+    float m_Pb;
     float m_massNormal;
     float m_massTangent;
+    float m_massBitangent;
     float m_bias;
     uint32_t m_feature;
 };
