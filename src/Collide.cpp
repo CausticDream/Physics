@@ -293,12 +293,16 @@ size_t CollideBoxBox(Contact* contacts, glm::vec3 positionShape1, glm::quat rota
 
 size_t CollideBoxSphere(Contact* contacts, glm::vec3 positionShape1, glm::quat rotationShape1, Shape* shape1, glm::vec3 positionShape2, glm::quat rotationShape2, Shape* shape2)
 {
+    ShapeBox* shapeBox = static_cast<ShapeBox*>(shape1);
+    ShapeSphere* shapeSphere = static_cast<ShapeSphere*>(shape2);
     // TODO
     return 0;
 }
 
 size_t CollideBoxCapsule(Contact* contacts, glm::vec3 positionShape1, glm::quat rotationShape1, Shape* shape1, glm::vec3 positionShape2, glm::quat rotationShape2, Shape* shape2)
 {
+    ShapeBox* shapeBox = static_cast<ShapeBox*>(shape1);
+    ShapeCapsule* shapeCapsule = static_cast<ShapeCapsule*>(shape2);
     // TODO
     return 0;
 }
@@ -327,12 +331,16 @@ size_t CollideSphereSphere(Contact* contacts, glm::vec3 positionShape1, glm::qua
 
 size_t CollideSphereCapsule(Contact* contacts, glm::vec3 positionShape1, glm::quat rotationShape1, Shape* shape1, glm::vec3 positionShape2, glm::quat rotationShape2, Shape* shape2)
 {
+    ShapeSphere* shapeSphere = static_cast<ShapeSphere*>(shape1);
+    ShapeCapsule* shapeCapsule = static_cast<ShapeCapsule*>(shape2);
     // TODO
     return 0;
 }
 
 size_t CollideCapsuleCapsule(Contact* contacts, glm::vec3 positionShape1, glm::quat rotationShape1, Shape* shape1, glm::vec3 positionShape2, glm::quat rotationShape2, Shape* shape2)
 {
+    ShapeCapsule* shapeCapsule1 = static_cast<ShapeCapsule*>(shape1);
+    ShapeCapsule* shapeCapsule2 = static_cast<ShapeCapsule*>(shape2);
     // TODO
     return 0;
 }
@@ -342,15 +350,33 @@ size_t Collide(Contact* contacts, Body* body1, Shape* shape1, Body* body2, Shape
     constexpr size_t shapeCount = static_cast<size_t>(ShapeType::Count);
     static const std::function<size_t(Contact*, glm::vec3, glm::quat, Shape*, glm::vec3, glm::quat, Shape*)> collisionMatrix[shapeCount][shapeCount]
     {
-        {CollideBoxBox,     CollideBoxSphere,     CollideBoxCapsule},
-        {CollideBoxSphere,  CollideSphereSphere,  CollideSphereCapsule},
-        {CollideBoxCapsule, CollideSphereCapsule, CollideCapsuleCapsule}
+        {CollideBoxBox, CollideBoxSphere,    CollideBoxCapsule},
+        {nullptr,       CollideSphereSphere, CollideSphereCapsule},
+        {nullptr,       nullptr,             CollideCapsuleCapsule}
     };
-    const glm::vec3 worldPositionShape1 = (body1->m_rotation * shape1->m_position) + body1->m_position;
-    const glm::vec3 worldPositionShape2 = (body2->m_rotation * shape2->m_position) + body2->m_position;
-    const glm::quat worldRotationShape1 = body1->m_rotation * shape1->m_rotation;
-    const glm::quat worldRotationShape2 = body2->m_rotation * shape2->m_rotation;
-    const size_t shape1Type = static_cast<size_t>(shape1->GetType());
-    const size_t shape2Type = static_cast<size_t>(shape2->GetType());
-    return collisionMatrix[shape1Type][shape2Type](contacts, worldPositionShape1, worldRotationShape1, shape1, worldPositionShape2, worldRotationShape2, shape2);
+    Body* lowestBody;
+    Shape* lowestShape;
+    Body* highestBody;
+    Shape* highestShape;
+    if (shape1->GetType() <= shape2->GetType())
+    {
+        lowestBody = body1;
+        lowestShape = shape1;
+        highestBody = body2;
+        highestShape = shape2;
+    }
+    else
+    {
+        lowestBody = body2;
+        lowestShape = shape2;
+        highestBody = body1;
+        highestShape = shape1;
+    }
+    const size_t shape1Type = static_cast<size_t>(lowestShape->GetType());
+    const size_t shape2Type = static_cast<size_t>(highestShape->GetType());
+    const glm::vec3 worldPositionShape1 = (lowestBody->m_rotation * lowestShape->m_position) + lowestBody->m_position;
+    const glm::vec3 worldPositionShape2 = (highestBody->m_rotation * highestShape->m_position) + highestBody->m_position;
+    const glm::quat worldRotationShape1 = lowestBody->m_rotation * lowestShape->m_rotation;
+    const glm::quat worldRotationShape2 = highestBody->m_rotation * highestShape->m_rotation;
+    return collisionMatrix[shape1Type][shape2Type](contacts, worldPositionShape1, worldRotationShape1, lowestShape, worldPositionShape2, worldRotationShape2, highestShape);
 }
