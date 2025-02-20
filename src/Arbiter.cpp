@@ -114,11 +114,6 @@ Arbiter::Arbiter(Shape* shape1, Shape* shape2)
 
 void Arbiter::Update(Contact* contacts, size_t contactCount, Contact* newContacts, size_t& newContactCount)
 {
-    if (m_isTrigger)
-    {
-        return;
-    }
-
     newContactCount = 0;
     Contact mergedContacts[g_maxContactPoints];
 
