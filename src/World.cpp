@@ -204,6 +204,9 @@ void World::Step(float elapsedTime)
         }
         b->m_velocity += elapsedTime * totalForce;
         b->m_angularVelocity += elapsedTime * (b->m_invI * b->m_torque);
+
+        b->m_velocity *= std::pow(1.0f - b->m_linearDamping, elapsedTime);
+        b->m_angularVelocity *= std::pow(1.0f - b->m_angularDamping, elapsedTime);
     }
 
     float invElapsedTime = (elapsedTime > 0.0f) ? 1.0f / elapsedTime : 0.0f;

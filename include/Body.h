@@ -113,6 +113,8 @@ struct Body
     glm::vec3 m_torque;
     float m_mass;
     float m_invMass;
+    float m_linearDamping;
+    float m_angularDamping;
     bool m_useGravity;
     std::vector<Shape*> m_shapes;
     glm::mat3 m_invI;

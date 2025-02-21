@@ -138,6 +138,8 @@ Body::Body()
     m_torque = glm::vec3(0.0f, 0.0f, 0.0f);
     m_mass = std::numeric_limits<float>::infinity();
     m_invMass = 0.0f;
+    m_linearDamping = 0.0f;
+    m_angularDamping = 0.0f;
     m_useGravity = true;
     m_invI = glm::mat3(0.0f);
 }
