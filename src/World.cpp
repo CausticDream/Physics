@@ -199,7 +199,12 @@ void World::Step(float elapsedTime)
             continue;
         }
 
-        b->m_velocity += elapsedTime * (m_gravity + b->m_invMass * b->m_force);
+        glm::vec3 totalForce = b->m_invMass * b->m_force;
+        if (b->m_useGravity)
+        {
+            totalForce += m_gravity;
+        }
+        b->m_velocity += elapsedTime * totalForce;
         b->m_angularVelocity += elapsedTime * (b->m_invI * b->m_torque);
     }
 
