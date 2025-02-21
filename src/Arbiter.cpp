@@ -172,7 +172,6 @@ void Arbiter::PreStep(float invElapsedTime)
         glm::vec3 r1 = c->m_position - m_body1->m_position;
         glm::vec3 r2 = c->m_position - m_body2->m_position;
 
-        // Precompute normal mass, tangent mass, and bias.
         glm::vec3 rn1 = glm::cross(r1, c->m_normal);
         glm::vec3 rn2 = glm::cross(r2, c->m_normal);
         float kNormal = m_body1->m_invMass + m_body2->m_invMass;
@@ -209,7 +208,6 @@ void Arbiter::PreStep(float invElapsedTime)
             c->m_bias -= m_restitution * vn;
         }
 
-        // Apply normal + friction impulse.
         glm::vec3 P = (c->m_Pn * c->m_normal) + (c->m_Pt * tangent) + (c->m_Pb * bitangent);
 
         m_body1->m_velocity -= m_body1->m_invMass * P;

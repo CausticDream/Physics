@@ -186,10 +186,8 @@ void World::BroadPhase()
 
 void World::Step(float elapsedTime)
 {
-    // Determine overlapping bodies and update contact points.
     BroadPhase();
 
-    // Integrate forces.
     for (size_t i = 0; i < m_bodies.size(); ++i)
     {
         Body* b = m_bodies[i];
@@ -208,7 +206,6 @@ void World::Step(float elapsedTime)
         b->m_angularVelocity += elapsedTime * (b->m_invI * b->m_torque);
     }
 
-    // Perform pre-steps.
     float invElapsedTime = (elapsedTime > 0.0f) ? 1.0f / elapsedTime : 0.0f;
 
     for (auto& arb : m_arbiters)
@@ -241,7 +238,6 @@ void World::Step(float elapsedTime)
         }
     }
 
-    // Perform iterations.
     for (uint32_t i = 0; i < m_iterations; ++i)
     {
         for (auto& arb : m_arbiters)
@@ -275,7 +271,6 @@ void World::Step(float elapsedTime)
         }
     }
 
-    // Integrate Velocities.
     for (size_t i = 0; i < m_bodies.size(); ++i)
     {
         Body* b = m_bodies[i];

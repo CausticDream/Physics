@@ -33,12 +33,9 @@ void JointSpherical::Set(Body* b1, Body* b2, const glm::vec3& anchor)
 
 void JointSpherical::PreStep(float invElapsedTime)
 {
-    // Pre-compute anchors, mass matrix, and bias.
     m_r1 = m_body1->m_rotation * m_localAnchor1;
     m_r2 = m_body2->m_rotation * m_localAnchor2;
 
-    // deltaV = deltaV0 + K * impulse
-    // invM = [(1/m1 + 1/m2) * eye(3) - skew(r1) * invI1 * skew(r1)^T - skew(r2) * invI2 * skew(r2)^T]
     glm::mat3 K1 = glm::mat3(m_body1->m_invMass + m_body2->m_invMass);
 
     glm::mat3 skewR1 = glm::mat3(
@@ -68,7 +65,6 @@ void JointSpherical::PreStep(float invElapsedTime)
 
     m_bias = -m_biasFactor * invElapsedTime * dp;
 
-    // Apply accumulated impulse.
     m_body1->m_velocity -= m_body1->m_invMass * m_P;
     m_body1->m_angularVelocity -= m_body1->m_invI * glm::cross(m_r1, m_P);
 
@@ -121,14 +117,11 @@ void JointHinge::Set(Body* b1, Body* b2, const glm::vec3& anchor, const glm::vec
 
 void JointHinge::PreStep(float invElapsedTime)
 {
-    // Pre-compute anchors, mass matrix, and bias.
     m_r1 = m_body1->m_rotation * m_localAnchor1;
     m_r2 = m_body2->m_rotation * m_localAnchor2;
     m_a1 = m_body1->m_rotation * m_localAxis1;
     m_a2 = m_body2->m_rotation * m_localAxis2;
 
-    // deltaV = deltaV0 + K * impulse
-    // invM = [(1/m1 + 1/m2) * eye(3) - skew(r1) * invI1 * skew(r1)^T - skew(r2) * invI2 * skew(r2)^T]
     glm::mat3 K1 = glm::mat3(m_body1->m_invMass + m_body2->m_invMass);
 
     glm::mat3 skewR1 = glm::mat3(
@@ -163,7 +156,6 @@ void JointHinge::PreStep(float invElapsedTime)
     float angle = glm::acos(glm::dot(m_a1, m_a2));
     m_angularBias = -m_biasFactor * invElapsedTime * angle;
 
-    // Apply accumulated impulse.
     m_body1->m_velocity -= m_body1->m_invMass * m_P;
     m_body1->m_angularVelocity -= m_body1->m_invI * (glm::cross(m_r1, m_P) + m_angularImpulse * m_a1);
 
