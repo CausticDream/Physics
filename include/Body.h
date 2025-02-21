@@ -41,7 +41,13 @@ struct Shape
     glm::vec3 m_position;
     glm::quat m_rotation;
     Material* m_material;
-    bool m_isTrigger;
+
+    void SetIsTrigger(bool isTrigger);
+
+    bool IsTrigger() const
+    {
+        return m_isTrigger;
+    }
 
     uint32_t GetUniqueID() const
     {
@@ -58,6 +64,7 @@ protected:
 
     uint32_t m_uniqueID;
     ShapeType m_type;
+    bool m_isTrigger;
 };
 
 struct ShapeBox : Shape

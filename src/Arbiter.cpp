@@ -37,7 +37,7 @@ Arbiter::Arbiter(Shape* shape1, Shape* shape2)
     }
     m_body1 = lowestShape->m_owner;
     m_body2 = highestShape->m_owner;
-    m_isTrigger = shape1->m_isTrigger || shape2->m_isTrigger;
+    m_isTrigger = shape1->IsTrigger() || shape2->IsTrigger();
 
     m_contactCount = Collide(m_contacts, m_body1, lowestShape, m_body2, highestShape);
 

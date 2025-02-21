@@ -99,7 +99,7 @@ void World::BroadPhase()
 
                             if (!m_worldListeners.empty())
                             {
-                                if (bi->m_shapes[s1]->m_isTrigger || bj->m_shapes[s2]->m_isTrigger)
+                                if (bi->m_shapes[s1]->IsTrigger() || bj->m_shapes[s2]->IsTrigger())
                                 {
                                     TriggerResult triggerResult;
                                     triggerResult.m_body1 = newArb.m_body1;
@@ -146,7 +146,7 @@ void World::BroadPhase()
                     }
                     else
                     {
-                        if (bi->m_shapes[s1]->m_isTrigger || bj->m_shapes[s2]->m_isTrigger)
+                        if (bi->m_shapes[s1]->IsTrigger() || bj->m_shapes[s2]->IsTrigger())
                         {
                             const auto iter = m_arbiters.find(key);
                             if (iter != m_arbiters.end())

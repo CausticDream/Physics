@@ -20,6 +20,16 @@ Shape::~Shape()
     }
 }
 
+void Shape::SetIsTrigger(bool isTrigger)
+{
+    m_isTrigger = isTrigger;
+
+    if (m_owner)
+    {
+        m_owner->ComputeInvI();
+    }
+}
+
 Shape::Shape(ShapeType t)
 {
     m_uniqueID = g_counter++;
@@ -173,7 +183,7 @@ void Body::ComputeInvI()
         {
             const Shape* s = m_shapes[i];
 
-            if (s->m_isTrigger)
+            if (s->IsTrigger())
             {
                 continue;
             }
